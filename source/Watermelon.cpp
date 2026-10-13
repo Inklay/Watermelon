@@ -104,7 +104,7 @@ void Watermelon::tcpListenLoop() {
 			continue;
 		}
 
-		log("New TCP connection", Logger::INFO);
+		log("New TCP connection", Logger::DEBUG);
 
 		{
 			std::lock_guard<std::mutex> lock(m_clientsMutex);

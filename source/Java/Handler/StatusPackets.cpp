@@ -20,7 +20,7 @@ namespace Java {
 						{"sample", json::array()}
 					}},
 					{"description", {
-						{"text", server->getConfig()["networking"]["java"]["description"].value_or("A (hopefully) blazingly fast Watermelon server!")}
+						{"text", server->getConfig()["networking"]["java"]["motd"].value_or("A (hopefully) blazingly fast Watermelon server!")}
 					}}
 				};
 

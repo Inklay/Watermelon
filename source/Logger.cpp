@@ -11,8 +11,6 @@ Logger::Logger(toml::table& config) :
 	if (m_stream.bad()) {
 		log("Can't create log file '" + m_config["file"].value_or<std::string>("latest.log") + "'", "Watermelon", ERR);
 	}
-
-	std::cout << m_config << std::endl;
 }
 
 Logger::~Logger() {
