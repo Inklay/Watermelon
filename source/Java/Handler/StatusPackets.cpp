@@ -15,12 +15,12 @@ namespace Java {
 						{"protocol", server->getVersion().protocol}
 					}},
 					{"players", {
-						{"max", 100},
+						{"max", server->getConfig()["networking"]["java"]["max_players"].value_or(10)},
 						{"online", 0},
 						{"sample", json::array()}
 					}},
 					{"description", {
-						{"text", "Watermelon Server"}
+						{"text", server->getConfig()["networking"]["java"]["description"].value_or("A (hopefully) blazingly fast Watermelon server!")}
 					}}
 				};
 

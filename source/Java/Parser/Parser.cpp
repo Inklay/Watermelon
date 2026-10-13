@@ -1,7 +1,9 @@
 #include "Java/Parser/Parser.h"
 #include "Java/Parser/HandshakePackets.h"
 #include "Java/Parser/StatusPackets.h"
+#include "Java/Parser/LoginPackets.h"
 #include <string>
+
 namespace Java {
 	namespace Parser {
 		Java::Packet::Header parseHeader(std::shared_ptr<Client> client) {
@@ -23,7 +25,9 @@ namespace Java {
 					return Java::Parser::HandshakePackets::parse(client, header, server);
 				case Client::Status::STATUS:
 					return Java::Parser::StatusPackets::parse(client, header, server);
-				}
+				case Client::Status::LOGIN:
+					return Java::Parser::LoginPackets::parse(client, header, server);
+			}
 		}
 	};
 };

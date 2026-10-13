@@ -2,7 +2,7 @@
 
 int main()
 {
-	Watermelon server("0.0.0.0", 25565);
+	Watermelon server;
 	if (server.start()) {
 		server.run();
 	}

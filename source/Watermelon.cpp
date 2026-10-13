@@ -1,17 +1,20 @@
 #include <string>
+#define TOML_IMPLEMENTATION
+#include "Config.h"
 #include "Watermelon.h"
 #include "Java/Packet.h"
 #include "Java/Parser/Parser.h"
 
-#ifndef _WIN32
+#ifdef _WIN32
+#include <ws2tcpip.h>
+#else
 #include <sys/socket.h>
 #endif
 
-Watermelon::Watermelon(const std::string& address, uint16_t port) :
-	m_address(address),
-	m_logger("latest.log"),
+Watermelon::Watermelon() :
 	m_version({ "Watermelon 26.3", 777 }),
-	m_port(port),
+	m_config(loadConfig()),
+	m_logger(*m_config["logging"].as_table()),
 	m_running(false)
 {
 #ifdef _WIN32
@@ -47,10 +50,22 @@ Watermelon::~Watermelon() {
 bool Watermelon::start() {
 	m_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 
+	if (!m_config["networking"]["java"]["enabled"].value_or(true)) {
+		return false;
+	}
+
+	const std::string configuredAddress = m_config["networking"]["java"]["address"].value_or("0.0.0.0:25565");
+	const int port = configuredAddress.find(':') != std::string::npos ? std::stoi(configuredAddress.substr(configuredAddress.find(':') + 1)) : 25565;
+	const std::string address = configuredAddress.find(':') != std::string::npos ? configuredAddress.substr(0, configuredAddress.find(':')) : "0.0.0.0";
 	sockaddr_in serverAddress;
 	serverAddress.sin_family = AF_INET;
-	serverAddress.sin_port = htons(m_port);
-	serverAddress.sin_addr.s_addr = INADDR_ANY;
+	serverAddress.sin_port = htons(port);
+	
+	if (address == "0.0.0.0") {
+		serverAddress.sin_addr.s_addr = INADDR_ANY;
+	} else {
+		inet_pton(AF_INET, address.c_str(), &serverAddress.sin_addr);
+	}
 
 	if (bind(m_serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
 #ifdef _WIN32
@@ -58,12 +73,12 @@ bool Watermelon::start() {
 #else
 		log("Bind error:" + strerror(errno), Logger::DEBUG);
 #endif
-		log("Can't listen to port " + std::to_string(m_port) + ", maybe it's already being used?", Logger::ERR);
+		log("Can't listen to port " + std::to_string(port) + ", maybe it's already being used?", Logger::ERR);
 		return false;
 	}
 
 	listen(m_serverSocket, 5);
-	log("listening on port " + std::to_string(m_port), Logger::INFO);
+	log("Listening on port TCP/" + std::to_string(port), Logger::INFO);
 	m_running = true;
 	m_tcpListenThread = std::thread(&Watermelon::tcpListenLoop, this);
 	m_networkThread = std::thread(&Watermelon::networkLoop, this);
@@ -218,4 +233,8 @@ void Watermelon::sendDataToClient(std::shared_ptr<Client> client, const std::vec
 	fullPacket.insert(fullPacket.end(), data.begin(), data.end());
 	std::lock_guard<std::mutex> lock(m_clientsMutex);
 	send(client->socket, fullPacket.data(), (int)fullPacket.size(), 0);
+}
+
+toml::table Watermelon::getConfig() {
+	return m_config;
 }

@@ -4,12 +4,15 @@
 #include <format>
 #include "Logger.h"
 
-Logger::Logger(const std::string& path) :
-	m_stream(path, std::ios::out | std::ios::trunc)
+Logger::Logger(toml::table& config) :
+	m_config(config),
+	m_stream(config["file"].value_or("latest.log"), std::ios::out | std::ios::trunc)
 {
 	if (m_stream.bad()) {
-		log("Can't create log file '" + path + "'", "Watermelon", ERR);
+		log("Can't create log file '" + m_config["file"].value_or<std::string>("latest.log") + "'", "Watermelon", ERR);
 	}
+
+	std::cout << m_config << std::endl;
 }
 
 Logger::~Logger() {
@@ -17,19 +20,25 @@ Logger::~Logger() {
 }
 
 void Logger::log(const std::string& message, const std::string& caller, Level level) {
-	if (level > ERR) {
+	if (!m_config["enabled"].value_or(true) || m_config["level"].value_or("info") == "off") {
 		return;
 	}
 
-#ifdef _DEBUG
-	if (level < DEBUG) {
+	if (level > ERR || level < DEBUG) {
 		return;
 	}
-#else
-	if (level < INFO) {
+
+	if (level < INFO && m_config["level"].value_or<std::string>("info") == "info") {
 		return;
 	}
-#endif
+
+	if (level < WARN && m_config["level"].value_or<std::string>("info") == "warn") {
+		return;
+	}
+
+	if (level < ERR && m_config["level"].value_or<std::string>("info") == "error") {
+		return;
+	}
 
 	std::stringstream log;
 	auto now = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());

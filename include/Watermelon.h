@@ -9,6 +9,8 @@
 #include <functional>
 #include "Logger.h"
 #include "Client.h"
+#define TOML_IMPLEMENTATION
+#include "Utils/TOML.h"
 
 class Watermelon {
 public:
@@ -17,7 +19,7 @@ public:
 		int protocol;
 	};
 
-	Watermelon(const std::string& address, uint16_t port);
+	Watermelon();
 	~Watermelon();
 	bool start();
 	void run();
@@ -27,14 +29,15 @@ public:
 	Version getVersion();
 	Logger& getLogger();
 	void sendDataToClient(std::shared_ptr<Client> client, const std::vector<char>& data);
+	toml::table getConfig();
 
 private:
 	void log(const std::string& message, Logger::Level level);
 	void tcpListenLoop();
 	void networkLoop();
 
-	const std::string m_address;
 	Socket m_serverSocket;
+	toml::table m_config;
 	Logger m_logger;
 	std::thread m_tcpListenThread;
 	std::thread m_networkThread;
@@ -43,6 +46,5 @@ private:
 	std::mutex m_packetQueueMutex;
 	std::queue<std::pair<std::shared_ptr<Client>, std::function<std::vector<char>()>>> m_packetQueue;
 	Version m_version;
-	const uint16_t m_port;
 	bool m_running;
 };

@@ -22,6 +22,10 @@ namespace Java {
 				STATUS = 0x00,
 				PING = 0x01
 			};
+
+			enum Login {
+				LOGIN_START = 0x00
+			};
 		};
 
 		struct Header {

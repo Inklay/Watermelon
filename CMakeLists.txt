@@ -12,12 +12,15 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(SOURCES
 	source/main.cpp
 	source/Logger.cpp
+	source/Config.cpp
 	source/Watermelon.cpp
     source/Java/Packet.cpp
     source/Java/Parser/Parser.cpp
     source/Java/Parser/HandshakePackets.cpp
     source/Java/Parser/StatusPackets.cpp
     source/Java/Handler/StatusPackets.cpp
+    source/Java/Handler/LoginPackets.cpp
+    source/Java/Parser/LoginPackets.cpp
 )
 
 add_executable(Watermelon ${SOURCES})
