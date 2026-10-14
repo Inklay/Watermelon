@@ -67,5 +67,14 @@ vcpkg_installed/
 Testing/
 .cache/
 
+# visual studio folders
 .vs/
 out/
+
+# official server data
+registries.json
+data/
+
+# generated code
+include/Registry/BuiltIn.h
+include/Registry/Synchronised.h

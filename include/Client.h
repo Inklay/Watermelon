@@ -10,7 +10,8 @@
 #define Socket int
 #endif
 
-struct Client {
+class Client {
+public:
 	enum Type {
 		JAVA,
 		BEDROCK
@@ -23,6 +24,8 @@ struct Client {
 		CONFIGURATION,
 		PLAY
 	};
+
+	bool hasPack(const std::string& name);
 
 	int operator==(const Client& other) {
 		return socket == other.socket;

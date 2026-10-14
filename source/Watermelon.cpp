@@ -15,7 +15,8 @@ Watermelon::Watermelon() :
 	m_version({ "26.3", 777 }),
 	m_config(loadConfig()),
 	m_logger(*m_config["logging"].as_table()),
-	m_running(false)
+	m_running(false),
+	m_registryManager(RegistryManager::getInstance())
 {
 #ifdef _WIN32
 	WSADATA wsaData;

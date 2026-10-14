@@ -25,7 +25,7 @@ set(SOURCES
     source/Java/Packet/Client/StatusPackets.cpp
     source/Java/Packet/Client/LoginPackets.cpp
     source/Java/Packet/Client/ConfigurationPackets.cpp
-)
+ "source/Registry/RegistryManager.cpp" "source/Client.cpp")
 
 add_executable(Watermelon ${SOURCES})
 

@@ -1,5 +1,6 @@
 #include "Java/Packet/Packet.h"
 #include "Java/Packet/Client/StatusPackets.h"
+#include "Registry/RegistryManager.h"
 
 namespace Java {
 	namespace Packet {
@@ -14,8 +15,19 @@ namespace Java {
 				}
 
 				void registryData(std::shared_ptr<::Client> client, Watermelon* server) {
-					std::vector<char> buffer;
-					server->sendDataToClient(client, buffer);
+					for (const Registry* syncReg : RegistryManager::getInstance().getSynchronizedRegistries()) {
+						std::vector<char> buffer;
+
+						Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::ConfigurationClient::REGISTRY_DATA, buffer);
+
+						if (syncReg->name.starts_with("minecraft:") || client->hasPack(syncReg->name)) {
+							Java::Packet::writeRegistry(syncReg, false, buffer);
+						} else {
+							Java::Packet::writeRegistry(syncReg, false, buffer);
+						}
+
+						server->sendDataToClient(client, buffer);
+					}
 				}
 			};
 		};

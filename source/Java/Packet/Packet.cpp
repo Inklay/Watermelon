@@ -2,7 +2,7 @@
 
 namespace Java {
     namespace Packet {
-        std::string readString(std::shared_ptr<Client> client, uint32_t& offset) {
+        std::string readString(std::shared_ptr<::Client> client, uint32_t& offset) {
             int32_t length = readVarInt(client, offset);
 
             if (length == -1) {
@@ -19,7 +19,7 @@ namespace Java {
             return result;
         }
 
-        int32_t readVarInt(std::shared_ptr<Client> client, uint32_t& offset) {
+        int32_t readVarInt(std::shared_ptr<::Client> client, uint32_t& offset) {
             char currentByte;
             int32_t value = 0;
             int shift = 0;
@@ -46,7 +46,7 @@ namespace Java {
             return value;
         }
 
-        uint8_t readU8(std::shared_ptr<Client> client, uint32_t& offset) {
+        uint8_t readU8(std::shared_ptr<::Client> client, uint32_t& offset) {
             uint8_t value = 0;
             int bytesRead = recv(client->socket, reinterpret_cast<char*>(&value), sizeof(value), 0);
 
@@ -57,7 +57,7 @@ namespace Java {
             return value;
         }
 
-        uint16_t readU16(std::shared_ptr<Client> client, uint32_t& offset) {
+        uint16_t readU16(std::shared_ptr<::Client> client, uint32_t& offset) {
             uint16_t value = 0;
             int bytesRead = recv(client->socket, reinterpret_cast<char*>(&value), sizeof(value), 0);
 
@@ -68,7 +68,7 @@ namespace Java {
             return ntohs(value);
         }
 
-        uint32_t readU32(std::shared_ptr<Client> client, uint32_t& offset) {
+        uint32_t readU32(std::shared_ptr<::Client> client, uint32_t& offset) {
             uint32_t value = 0;
             int bytesRead = recv(client->socket, reinterpret_cast<char*>(&value), sizeof(value), 0);
 
@@ -79,7 +79,7 @@ namespace Java {
             return ntohl(value);
         }
 
-        int64_t read64(std::shared_ptr<Client> client, uint32_t& offset) {
+        int64_t read64(std::shared_ptr<::Client> client, uint32_t& offset) {
             int64_t value = 0;
             int bytesRead = recv(client->socket, reinterpret_cast<char*>(&value), sizeof(value), 0);
 
@@ -142,6 +142,14 @@ namespace Java {
 			} while (value != 0);
         }
 
+        void writeBool(bool value, std::vector<char>& buffer) {
+            write8(value ? 0x01 : 0x02, buffer);
+        }
+
+        void writeU8(uint8_t value, std::vector<char>& buffer) {
+            buffer.insert(buffer.end(), reinterpret_cast<const char*>(&value), reinterpret_cast<const char*>(&value) + sizeof(value));
+        }
+
         void write8(int8_t value, std::vector<char>& buffer) {
             buffer.insert(buffer.end(), reinterpret_cast<const char*>(&value), reinterpret_cast<const char*>(&value) + sizeof(value));
         }
@@ -173,6 +181,27 @@ namespace Java {
                 writeString(i.nameSpace, buffer);
                 writeString(i.id, buffer);
                 writeString(i.version, buffer);
+            }
+        }
+
+        void writeRegistry(const Registry* registry, bool skipNbt, std::vector<char>& buffer) {
+            writeString(registry->name, buffer);
+            writeVarInt((int32_t)registry->entries.size(), buffer);
+            
+            for (const Registry::Entry& entry : registry->entries) {
+                writeString(entry.textId, buffer);
+                if (skipNbt) {
+                    writeBool(false, buffer);
+                } else {
+                    writeBool(true, buffer);
+                    writeNBT(entry.nbtPayload, buffer);
+                }
+            }
+        }
+
+        void writeNBT(std::vector<uint8_t> data, std::vector<char>& buffer) {
+            for (const uint8_t byte : data) {
+                writeU8(byte, buffer);
             }
         }
     };

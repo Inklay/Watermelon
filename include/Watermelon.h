@@ -11,6 +11,7 @@
 #include "Client.h"
 #define TOML_IMPLEMENTATION
 #include "Utils/TOML.h"
+#include "Registry/RegistryManager.h"
 
 class Watermelon {
 public:
@@ -46,6 +47,7 @@ private:
 	std::mutex m_packetQueueMutex;
 	std::queue<std::pair<std::shared_ptr<Client>, std::function<void()>>> m_packetQueue;
 	std::vector<Java::Pack> m_packs;
+	RegistryManager& m_registryManager;
 	Version m_version;
 	bool m_running;
 };
