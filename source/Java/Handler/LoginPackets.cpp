@@ -25,11 +25,11 @@ namespace Java {
 				if (server->getConfig()["networking"]["java"]["online_mode"].value_or(true)) {
 					// encryption packet
 				} else {
-					Java::Packet::writeVarInt(Java::Packet::PacketId::LoginClient::LOGIN_SUCCESS, buffer);
-					Java::Packet::writeUUID(sessionUUID, buffer);
+					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::LoginClient::LOGIN_SUCCESS, buffer);
 					Java::Packet::writeUUID(uuid, buffer);
 					Java::Packet::writeString(username, buffer);
 					Java::Packet::writeVarInt(0, buffer);
+					Java::Packet::writeUUID(sessionUUID, buffer);
 				}
 
 				return buffer;

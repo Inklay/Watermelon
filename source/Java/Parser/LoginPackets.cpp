@@ -1,5 +1,6 @@
 #include "Java/Parser/LoginPackets.h"
 #include "Java/Handler/LoginPackets.h"
+#include "Java/Handler/ConfigurationPackets.h"
 
 namespace Java {
 	namespace Parser {
@@ -23,13 +24,17 @@ namespace Java {
 					std::lock_guard<std::mutex> lock(server->getClientMutex());
 					client->status = Client::Status::CONFIGURATION;
 				}
+
+				server->addPacketToQueue(client, [client, server]() {
+					return Java::Handler::Configuration::registryDataPacket(client, server);
+				});
 			}
 
 			void parse(std::shared_ptr<Client> client, const Java::Packet::Header& header, Watermelon* server) {
 				switch (header.packetId) {
-					case Java::Packet::PacketId::LoginServer::LOGIN_START:
+					case (int32_t)Java::Packet::PacketId::LoginServer::LOGIN_START:
 						return loginStart(client, header, server);
-					case Java::Packet::PacketId::LoginServer::LOGIN_AKNOWLEDGED:
+					case (int32_t)Java::Packet::PacketId::LoginServer::LOGIN_ACKNOWLEDGED:
 						return loginAknowledged(client, header, server);
 				}
 			}

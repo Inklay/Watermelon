@@ -130,15 +130,18 @@ namespace Java {
         }
 
         void write16(int16_t value, std::vector<char>& buffer) {
-            buffer.insert(buffer.end(), reinterpret_cast<const char*>(&value), reinterpret_cast<const char*>(&value) + sizeof(value));
+            int16_t networkValue = htons(value);
+            buffer.insert(buffer.end(), reinterpret_cast<const char*>(&networkValue), reinterpret_cast<const char*>(&networkValue) + sizeof(networkValue));
         }
 
         void write32(int32_t value, std::vector<char>& buffer) {
-            buffer.insert(buffer.end(), reinterpret_cast<const char*>(&value), reinterpret_cast<const char*>(&value) + sizeof(value));
+            int32_t networkValue = htonl(value);
+            buffer.insert(buffer.end(), reinterpret_cast<const char*>(&networkValue), reinterpret_cast<const char*>(&networkValue) + sizeof(networkValue));
         }
 
         void write64(int64_t value, std::vector<char>& buffer) {
-            buffer.insert(buffer.end(), reinterpret_cast<const char*>(&value), reinterpret_cast<const char*>(&value) + sizeof(value));
+            int64_t networkValue = htonll(value);
+            buffer.insert(buffer.end(), reinterpret_cast<const char*>(&networkValue), reinterpret_cast<const char*>(&networkValue) + sizeof(networkValue));
         }
 
         void writeUUID(std::pair<uint64_t, uint64_t> uuid, std::vector<char>& buffer) {

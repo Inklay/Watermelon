@@ -24,7 +24,7 @@ namespace Java {
 					}}
 				};
 
-				Java::Packet::writeVarInt(Java::Packet::PacketId::StatusClient::STATUS_RESPONSE, buffer);
+				Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::StatusClient::STATUS_RESPONSE, buffer);
 				Java::Packet::writeString(data.dump(), buffer);
 				return buffer;
 			}

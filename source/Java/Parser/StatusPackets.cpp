@@ -15,16 +15,16 @@ namespace Java {
 				int64_t ping = Java::Packet::read64(client, offset);
 
 				std::vector<char> buffer;
-				Java::Packet::writeVarInt(Java::Packet::PacketId::StatusClient::PONG, buffer);
+				Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::StatusClient::PONG, buffer);
 				Java::Packet::write64(ping, buffer);
 				server->sendDataToClient(client, buffer);
 			}
 
 			void parse(std::shared_ptr<Client> client, const Java::Packet::Header& header, Watermelon* server) {
 				switch (header.packetId) {
-					case Java::Packet::PacketId::StatusServer::STATUS_REQUEST:
+					case (int32_t)Java::Packet::PacketId::StatusServer::STATUS_REQUEST:
 						return status(client, header, server);
-					case Java::Packet::PacketId::StatusServer::PING:
+					case (int32_t)Java::Packet::PacketId::StatusServer::PING:
 						return ping(client, header, server);
 				}
 			}

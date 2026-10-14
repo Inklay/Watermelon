@@ -2,6 +2,7 @@
 #include "Java/Parser/HandshakePackets.h"
 #include "Java/Parser/StatusPackets.h"
 #include "Java/Parser/LoginPackets.h"
+#include "Java/Parser/ConfigurationPackets.h"
 #include <string>
 
 namespace Java {
@@ -27,6 +28,8 @@ namespace Java {
 					return Java::Parser::StatusPackets::parse(client, header, server);
 				case Client::Status::LOGIN:
 					return Java::Parser::LoginPackets::parse(client, header, server);
+				case Client::Status::CONFIGURATION:
+					return Java::Parser::ConfigurationPackets::parse(client, header, server);
 			}
 		}
 	};
