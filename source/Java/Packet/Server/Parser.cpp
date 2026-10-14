@@ -1,5 +1,6 @@
 #include <string>
 #include "Java/Packet/Server/Parser.h"
+#include "Java/Packet/Server/PlayPackets.h"
 #include "Java/Packet/Server/LoginPackets.h"
 #include "Java/Packet/Server/StatusPackets.h"
 #include "Java/Packet/Server/HandshakePackets.h"
@@ -25,13 +26,15 @@ namespace Java {
 					server->getLogger().log("Received packet with ID: " + std::to_string(header.packetId) + " and client status: " + std::to_string(client->status), "Java Parser", Logger::DEBUG);
 					switch (client->status) {
 					case Client::Status::HANDSHAKING:
-						return Java::Packet::Server::HandshakePackets::parse(client, header, server);
+						return Java::Packet::Server::Handshake::parse(client, header, server);
 					case Client::Status::STATUS:
-						return Java::Packet::Server::StatusPackets::parse(client, header, server);
+						return Java::Packet::Server::Status::parse(client, header, server);
 					case Client::Status::LOGIN:
-						return Java::Packet::Server::LoginPackets::parse(client, header, server);
+						return Java::Packet::Server::Login::parse(client, header, server);
 					case Client::Status::CONFIGURATION:
-						return Java::Packet::Server::ConfigurationPackets::parse(client, header, server);
+						return Java::Packet::Server::Configuration::parse(client, header, server);
+					case Client::Status::PLAY:
+						return Java::Packet::Server::Play::parse(client, header, server);
 					}
 				}
 			};

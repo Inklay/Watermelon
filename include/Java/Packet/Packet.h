@@ -146,6 +146,28 @@ namespace Java {
 				UPDATE_LIGHT = 0x31,
 				LOGIN = 0x32,
 				LOW_DISK_SPACE_WARNING = 0x33,
+				MAP_DATA = 0x34,
+				MERCHANT_OFFERS = 0x35,
+				UPDATE_ENTITY_POSITION = 0x36,
+				UPDATE_ENTITY_POSITION_AND_ROTATION = 0x37,
+				MOVE_MINECART_ALON_TRACK = 0x38,
+				UPDATE_ENTITY_ROTATION = 0x39,
+				MOVE_VEHICLE = 0x3A,
+				OPEN_BOOK = 0x3B,
+				OPEN_SCREEN = 0x3C,
+				OPEN_SIGN_EDITOR = 0x3D,
+				PING = 0x3E,
+				PING_RESPONSE = 0x3F,
+				PLACE_GHOST_RECIPE = 0x40,
+				PLAYER_ABILITIES = 0x41,
+				PLAYER_CHAT_MESSAGE = 0x42,
+				END_COMBAT = 0x43,
+				ENTER_COMBAT = 0x44,
+				COMBAT_DEATH = 0x45,
+				PLAYER_INFO_REMOVE = 0x46,
+				PLAYER_INFO_UPDATE = 0x47,
+				LOOKT_AT = 0x48,
+				SYNCHRONIZE_PLAYER_POSITION = 0x49,
 			};
 		};
 
@@ -160,6 +182,8 @@ namespace Java {
 		uint16_t readU16(std::shared_ptr<::Client> client, uint32_t& offset);
 		uint32_t readU32(std::shared_ptr<::Client> client, uint32_t& offset);
 		int64_t read64(std::shared_ptr<::Client> client, uint32_t& offset);
+		float readFloat(std::shared_ptr<::Client> client, uint32_t& offset);
+		double readDouble(std::shared_ptr<::Client> client, uint32_t& offset);
 		std::pair<uint64_t, uint64_t> readUUID(std::shared_ptr<::Client> client, uint32_t& offset);
 		std::vector<Pack> readPacks(std::shared_ptr<::Client> client, uint32_t& offset);
 
@@ -171,6 +195,8 @@ namespace Java {
 		void write16(int16_t value, std::vector<char>& buffer);
 		void write32(int32_t value, std::vector<char>& buffer);
 		void write64(int64_t value, std::vector<char>& buffer);
+		void writeFloat(float value, std::vector<char>& buffer);
+		void writeDouble(double value, std::vector<char>& buffer);
 		void writeUUID(std::pair<uint64_t, uint64_t>, std::vector<char>& buffer);
 		void writePacks(std::vector<Pack>&, std::vector<char>& buffer);
 		void writeRegistry(const Registry* registry, bool skipNbt, std::vector<char>& buffer);

@@ -5,7 +5,7 @@
 namespace Java {
 	namespace Packet {
 		namespace Server {
-			namespace ConfigurationPackets {
+			namespace Configuration {
 				static void knownPacks(std::shared_ptr<::Client> client, const Java::Packet::Header& header, Watermelon* server) {
 					uint32_t offset = 0;
 					std::vector<Java::Pack> packs = Java::Packet::readPacks(client, offset);
@@ -34,6 +34,7 @@ namespace Java {
 
 					server->addPacketToQueue(client, [client, server]() {
 						Java::Packet::Client::Play::loginPacket(client, server);
+						Java::Packet::Client::Play::synchronizePlayerPosition(client, server);
 					});
 				}
 

@@ -4,7 +4,7 @@
 namespace Java {
 	namespace Packet {
 		namespace Server {
-			namespace StatusPackets {
+			namespace Status {
 				static void status(std::shared_ptr<::Client> client, const Java::Packet::Header& header, Watermelon* server) {
 					server->addPacketToQueue(client, [client, server]() {
 						return Java::Packet::Client::Status::statusPacket(client, server);

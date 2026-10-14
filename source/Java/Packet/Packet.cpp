@@ -90,6 +90,28 @@ namespace Java {
             return ntohll(value);
         }
 
+        float readFloat(std::shared_ptr<::Client> client, uint32_t& offset) {
+            uint32_t value = 0;
+            int bytesRead = recv(client->socket, reinterpret_cast<char*>(&value), sizeof(value), 0);
+
+            if (bytesRead <= 0) {
+                return 0;
+            }
+
+            return ntohf(value);
+        }
+
+        double readDouble(std::shared_ptr<::Client> client, uint32_t& offset) {
+            uint64_t value = 0;
+            int bytesRead = recv(client->socket, reinterpret_cast<char*>(&value), sizeof(value), 0);
+
+            if (bytesRead <= 0) {
+                return 0;
+            }
+
+            return ntohd(value);
+        }
+
         std::pair<uint64_t, uint64_t> readUUID(std::shared_ptr<Client> client, uint32_t& offset) {
             uint64_t a, b = 0;
             int bytesRead = recv(client->socket, reinterpret_cast<char*>(&a), sizeof(a), 0);
@@ -166,6 +188,16 @@ namespace Java {
 
         void write64(int64_t value, std::vector<char>& buffer) {
             int64_t networkValue = htonll(value);
+            buffer.insert(buffer.end(), reinterpret_cast<const char*>(&networkValue), reinterpret_cast<const char*>(&networkValue) + sizeof(networkValue));
+        }
+
+        void writeFloat(float value, std::vector<char>& buffer) {
+            uint32_t networkValue = htonf(value);
+            buffer.insert(buffer.end(), reinterpret_cast<const char*>(&networkValue), reinterpret_cast<const char*>(&networkValue) + sizeof(networkValue));
+        }
+
+        void writeDouble(double value, std::vector<char>& buffer) {
+            uint64_t networkValue = htond(value);
             buffer.insert(buffer.end(), reinterpret_cast<const char*>(&networkValue), reinterpret_cast<const char*>(&networkValue) + sizeof(networkValue));
         }
 

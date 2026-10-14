@@ -3,7 +3,7 @@
 namespace Java {
 	namespace Packet {
 		namespace Server {
-			namespace HandshakePackets {
+			namespace Handshake {
 				static void handshake(std::shared_ptr<::Client> client, const Java::Packet::Header& header, Watermelon* server) {
 					if (header.length == 0) {
 						return;

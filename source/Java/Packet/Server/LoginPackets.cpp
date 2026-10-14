@@ -5,7 +5,7 @@
 namespace Java {
 	namespace Packet {
 		namespace Server {
-			namespace LoginPackets {
+			namespace Login {
 				static void loginStart(std::shared_ptr<::Client> client, const Java::Packet::Header& header, Watermelon* server) {
 					uint32_t offset = 0;
 					std::string username = Java::Packet::readString(client, offset);

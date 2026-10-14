@@ -7,7 +7,7 @@
 namespace Java {
 	namespace Packet {
 		namespace Server {
-			namespace HandshakePackets {
+			namespace Handshake {
 				void parse(std::shared_ptr<::Client> client, const Java::Packet::Header& header, Watermelon* server);
 			};
 		};

@@ -41,4 +41,6 @@ public:
 	Player player;
 	std::pair<uint64_t, uint64_t> sessionUUID = { -1, -1 };
 	std::vector<Java::Pack> packs;
+	int32_t teleportIdCounter = 0;
+	bool teleporting = false;
 };

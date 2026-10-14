@@ -23,6 +23,7 @@ set(SOURCES
     source/Java/Packet/Server/StatusPackets.cpp
     source/Java/Packet/Server/LoginPackets.cpp
     source/Java/Packet/Server/ConfigurationPackets.cpp
+    source/Java/Packet/Server/PlayPackets.cpp
     source/Java/Packet/Client/StatusPackets.cpp
     source/Java/Packet/Client/LoginPackets.cpp
     source/Java/Packet/Client/ConfigurationPackets.cpp
