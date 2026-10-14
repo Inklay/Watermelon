@@ -3,8 +3,9 @@
 #include <mutex>
 #include <memory>
 #include <vector>
-#include "../Client.h"
-#include "../Logger.h"
+#include "Client.h"
+#include "Logger.h"
+#include "Java/Pack.h"
 
 namespace Java {
 	namespace Packet {
@@ -95,6 +96,7 @@ namespace Java {
 		uint32_t readU32(std::shared_ptr<Client> client, uint32_t& offset);
 		int64_t read64(std::shared_ptr<Client> client, uint32_t& offset);
 		std::pair<uint64_t, uint64_t> readUUID(std::shared_ptr<Client> client, uint32_t& offset);
+		std::vector<Pack> readPacks(std::shared_ptr<Client> client, uint32_t& offset);
 
 		void writeString(const std::string& str, std::vector<char>& buffer);
 		void writeVarInt(int32_t value, std::vector<char>& buffer);
@@ -103,5 +105,6 @@ namespace Java {
 		void write32(int32_t value, std::vector<char>& buffer);
 		void write64(int64_t value, std::vector<char>& buffer);
 		void writeUUID(std::pair<uint64_t, uint64_t>, std::vector<char>& buffer);
+		void writePacks(std::vector<Pack>&, std::vector<char>& buffer);
 	};
 }

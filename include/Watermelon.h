@@ -24,12 +24,12 @@ public:
 	bool start();
 	void run();
 	std::mutex& getClientMutex();
-	int getJavaProtocolVersion();
-	void addPacketToQueue(std::shared_ptr<Client> client, std::function<std::vector<char>()> packetHandler);
-	Version getVersion();
+	void addPacketToQueue(std::shared_ptr<Client> client, std::function<void()> packetHandler);
+	Version& getVersion();
 	Logger& getLogger();
 	void sendDataToClient(std::shared_ptr<Client> client, const std::vector<char>& data);
-	toml::table getConfig();
+	toml::table& getConfig();
+	std::vector<Java::Pack>& getPacks();
 
 private:
 	void log(const std::string& message, Logger::Level level);
@@ -44,7 +44,8 @@ private:
 	std::vector<std::shared_ptr<Client>> m_clients;
 	std::mutex m_clientsMutex;
 	std::mutex m_packetQueueMutex;
-	std::queue<std::pair<std::shared_ptr<Client>, std::function<std::vector<char>()>>> m_packetQueue;
+	std::queue<std::pair<std::shared_ptr<Client>, std::function<void()>>> m_packetQueue;
+	std::vector<Java::Pack> m_packs;
 	Version m_version;
 	bool m_running;
 };

@@ -16,17 +16,18 @@ set(SOURCES
 	source/Config.cpp
 	source/Watermelon.cpp
     source/Utils/UUID.cpp
-    source/Java/Packet.cpp
-    source/Java/Parser/Parser.cpp
-    source/Java/Parser/HandshakePackets.cpp
-    source/Java/Parser/StatusPackets.cpp
-    source/Java/Parser/LoginPackets.cpp
-    source/Java/Handler/StatusPackets.cpp
-    source/Java/Handler/LoginPackets.cpp
-    source/Java/Handler/ConfigurationPackets.cpp
- "source/Java/Parser/ConfigurationPackets.cpp")
+    source/Java/Packet/Packet.cpp
+    source/Java/Packet/Server/Parser.cpp
+    source/Java/Packet/Server/HandshakePackets.cpp
+    source/Java/Packet/Server/StatusPackets.cpp
+    source/Java/Packet/Server/LoginPackets.cpp
+    source/Java/Packet/Server/ConfigurationPackets.cpp
+    source/Java/Packet/Client/StatusPackets.cpp
+    source/Java/Packet/Client/LoginPackets.cpp
+    source/Java/Packet/Client/ConfigurationPackets.cpp
+)
 
-add_executable(Watermelon ${SOURCES} )
+add_executable(Watermelon ${SOURCES})
 
 # ---------------------------------------------------------------------------
 # Include directories

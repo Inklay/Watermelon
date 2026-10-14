@@ -2,8 +2,8 @@
 #define TOML_IMPLEMENTATION
 #include "Config.h"
 #include "Watermelon.h"
-#include "Java/Packet.h"
-#include "Java/Parser/Parser.h"
+#include "Java/Packet/Packet.h"
+#include "Java/Packet/Server/Parser.h"
 
 #ifdef _WIN32
 #include <ws2tcpip.h>
@@ -24,6 +24,8 @@ Watermelon::Watermelon() :
 		log("WSA Straptup failed : " + std::to_string(wsaResult), Logger::ERR);
 	}
 #endif
+
+	m_packs.emplace_back("minecraft", "core", m_version.name);
 }
 
 Watermelon::~Watermelon() {
@@ -149,7 +151,7 @@ void Watermelon::networkLoop() {
 		for (const auto& client : clientsToCheck) {
 			if (FD_ISSET(client->socket, &readFDs)) {
 				if (client->type == Client::Type::JAVA) {
-					Java::Packet::Header header = Java::Parser::parseHeader(client);
+					Java::Packet::Header header = Java::Packet::Server::Parser::parseHeader(client);
 
 					if (header.length == -1) {
 						bool timedOut = false;
@@ -171,7 +173,7 @@ void Watermelon::networkLoop() {
 						continue;
 					}
 					
-					Java::Parser::parsePacket(client, header, this);
+					Java::Packet::Server::Parser::parsePacket(client, header, this);
 				}
 			}
 		}
@@ -181,7 +183,7 @@ void Watermelon::networkLoop() {
 
 void Watermelon::run() {
 	while (m_running) {
-		std::queue<std::pair<std::shared_ptr<Client>, std::function<std::vector<char>()>>> queuedPackets;
+		std::queue<std::pair<std::shared_ptr<Client>, std::function<void()>>> queuedPackets;
 		{
 			std::lock_guard<std::mutex> lock(m_packetQueueMutex);
 			std::swap(m_packetQueue, queuedPackets);
@@ -189,12 +191,8 @@ void Watermelon::run() {
 
 		while (!queuedPackets.empty()) {
 			auto& [client, packetHandler] = queuedPackets.front();
-			std::vector<char> response = packetHandler();
+			packetHandler();
 			queuedPackets.pop();
-
-			if (!response.empty()) {
-				sendDataToClient(client, response);
-			}
 		}
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -205,20 +203,16 @@ void Watermelon::log(const std::string& message, Logger::Level level) {
 	m_logger.log(message, "Watermelon", level);
 }
 
-int Watermelon::getJavaProtocolVersion() {
-	return 777;
-}
-
 std::mutex& Watermelon::getClientMutex() {
 	return m_clientsMutex;
 }
 
-void Watermelon::addPacketToQueue(std::shared_ptr<Client> client, std::function<std::vector<char>()> packetHandler) {
+void Watermelon::addPacketToQueue(std::shared_ptr<Client> client, std::function<void()> packetHandler) {
 	std::lock_guard<std::mutex> lock(m_packetQueueMutex);
 	m_packetQueue.push(std::make_pair(client, packetHandler));
 }
 
-Watermelon::Version Watermelon::getVersion() {
+Watermelon::Version& Watermelon::getVersion() {
 	return m_version;
 }
 
@@ -235,6 +229,10 @@ void Watermelon::sendDataToClient(std::shared_ptr<Client> client, const std::vec
 	send(client->socket, fullPacket.data(), (int)fullPacket.size(), 0);
 }
 
-toml::table Watermelon::getConfig() {
+toml::table& Watermelon::getConfig() {
 	return m_config;
+}
+
+std::vector<Java::Pack>& Watermelon::getPacks() {
+	return m_packs;
 }

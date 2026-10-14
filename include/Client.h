@@ -1,6 +1,8 @@
 #pragma once
 
+#include <vector>
 #include "Player.h"
+#include "Java/Pack.h"
 #ifdef _WIN32
 #include <winsock2.h>
 #define Socket SOCKET
@@ -35,4 +37,5 @@ struct Client {
 	Status status;
 	Player player;
 	std::pair<uint64_t, uint64_t> sessionUUID = { -1, -1 };
+	std::vector<Java::Pack> packs;
 };

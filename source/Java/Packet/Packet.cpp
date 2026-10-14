@@ -1,4 +1,4 @@
-#include "Java/Packet.h"
+#include "Java/Packet/Packet.h"
 
 namespace Java {
     namespace Packet {
@@ -107,6 +107,23 @@ namespace Java {
             return std::make_pair(ntohll(a), ntohll(b));
         }
 
+        std::vector<Pack> readPacks(std::shared_ptr<Client> client, uint32_t& offset) {
+            int32_t size = readVarInt(client, offset);
+            std::vector<Pack> packs;
+            std::string nameSpace, id, version;
+            packs.reserve(size);
+
+            for (int i = 0; i < size; i++) {
+                nameSpace = readString(client, offset);
+                id = readString(client, offset);
+                version = readString(client, offset);
+
+                packs.emplace_back(nameSpace, id, version);
+            }
+
+            return packs;
+        }
+
         void writeString(const std::string& str, std::vector<char>& buffer) {
             writeVarInt((int)str.size(), buffer);
             for (char c : str) {
@@ -147,6 +164,16 @@ namespace Java {
         void writeUUID(std::pair<uint64_t, uint64_t> uuid, std::vector<char>& buffer) {
             write64(uuid.first, buffer);
             write64(uuid.second, buffer);
+        }
+
+        void writePacks(std::vector<Pack>& packs, std::vector<char>& buffer) {
+            writeVarInt((int32_t)packs.size(), buffer);
+
+            for (const Pack& i : packs) {
+                writeString(i.nameSpace, buffer);
+                writeString(i.id, buffer);
+                writeString(i.version, buffer);
+            }
         }
     };
 };
