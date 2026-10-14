@@ -78,3 +78,4 @@ data/
 # generated code
 include/Registry/BuiltIn.h
 include/Registry/Synchronised.h
+protocol_mapping.json

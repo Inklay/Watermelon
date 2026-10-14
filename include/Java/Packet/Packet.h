@@ -7,6 +7,7 @@
 #include "Logger.h"
 #include "Java/Pack.h"
 #include "Registry/Registry.h"
+#include "Tag/RegistryTag.h"
 
 namespace Java {
 	namespace Packet {
@@ -110,6 +111,7 @@ namespace Java {
 		void writeUUID(std::pair<uint64_t, uint64_t>, std::vector<char>& buffer);
 		void writePacks(std::vector<Pack>&, std::vector<char>& buffer);
 		void writeRegistry(const Registry* registry, bool skipNbt, std::vector<char>& buffer);
-		void writeNBT(std::vector<uint8_t>, std::vector<char>& buffer);
+		void writeNBT(const std::vector<uint8_t>& data, std::vector<char>& buffer);
+		void writeTags(const std::vector<RegistryTag>& tags, std::vector<char>& buffer);
 	};
 }

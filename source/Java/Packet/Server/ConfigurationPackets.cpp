@@ -15,8 +15,10 @@ namespace Java {
 					}
 
 					server->addPacketToQueue(client, [client, server]() {
-						return Java::Packet::Client::Configuration::registryData(client, server);
-						});
+						Java::Packet::Client::Configuration::registryData(client, server);
+						Java::Packet::Client::Configuration::updateTags(client, server);
+						Java::Packet::Client::Configuration::finishConfiguration(client, server);
+					});
 				}
 
 				void parse(std::shared_ptr<::Client> client, const Java::Packet::Header& header, Watermelon* server) {

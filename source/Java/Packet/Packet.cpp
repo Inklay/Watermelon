@@ -1,5 +1,5 @@
 #include "Java/Packet/Packet.h"
-
+#include <iostream>
 namespace Java {
     namespace Packet {
         std::string readString(std::shared_ptr<::Client> client, uint32_t& offset) {
@@ -185,6 +185,7 @@ namespace Java {
         }
 
         void writeRegistry(const Registry* registry, bool skipNbt, std::vector<char>& buffer) {
+            std::cout << "Sending registry '" << registry->name << "'" << std::endl;
             writeString(registry->name, buffer);
             writeVarInt((int32_t)registry->entries.size(), buffer);
             
@@ -199,10 +200,28 @@ namespace Java {
             }
         }
 
-        void writeNBT(std::vector<uint8_t> data, std::vector<char>& buffer) {
+        void writeNBT(const std::vector<uint8_t>& data, std::vector<char>& buffer) {
             for (const uint8_t byte : data) {
                 writeU8(byte, buffer);
             }
+        }
+
+        void writeTags(const std::vector<RegistryTag>& tags, std::vector<char>& buffer) {
+			writeVarInt((int32_t)tags.size(), buffer);
+
+			for (const RegistryTag& registryTag : tags) {
+				writeString(registryTag.registryName, buffer);
+				writeVarInt((int32_t)registryTag.tags.size(), buffer);
+
+				for (const RegistryTag::Tag& tag : registryTag.tags) {
+					writeString(tag.name, buffer);
+					writeVarInt((int32_t)tag.values.size(), buffer);
+
+					for (const int32_t value : tag.values) {
+						writeVarInt(value, buffer);
+					}
+				}
+			}
         }
     };
 };

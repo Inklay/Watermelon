@@ -1,6 +1,7 @@
 #include "Registry/Registrymanager.h"
 #include "Registry/BuiltIn.h"
 #include "Registry/Synchronised.h"
+#include "Tag/Tags.h"
 
 RegistryManager::RegistryManager() {
 	m_registryList.reserve(Registries::BUILT_IN_REGISTRIES_COUNT);
@@ -13,6 +14,10 @@ RegistryManager::RegistryManager() {
 	for (const Registry* reg : Registries::SYNCHRONIZED_REGISTRIES) {
 		m_registryList.push_back(*reg);
 		m_registryMap[reg->name] = m_registryList.size() - 1;
+	}
+
+	for (const RegistryTag* regTag : Tags::REGISTRY_TAGS) {
+		m_registryTagList.push_back(*regTag);
 	}
 }
 
@@ -39,4 +44,8 @@ std::vector<const Registry*> RegistryManager::getSynchronizedRegistries() {
 	}
 
 	return regs;
+}
+
+std::vector<RegistryTag>& RegistryManager::getRegistryTags() {
+	return m_registryTagList;
 }

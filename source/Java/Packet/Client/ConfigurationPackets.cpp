@@ -14,6 +14,20 @@ namespace Java {
 					server->sendDataToClient(client, buffer);
 				}
 
+				void finishConfiguration(std::shared_ptr<::Client> client, Watermelon* server) {
+					std::vector<char> buffer;
+
+					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::ConfigurationClient::FINISH_CONFIGURATION, buffer);
+					server->sendDataToClient(client, buffer);
+				}
+
+				void updateTags(std::shared_ptr<::Client> client, Watermelon* server) {
+					std::vector<char> buffer;
+					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::ConfigurationClient::UPDATE_TAGS, buffer);
+					Java::Packet::writeTags(RegistryManager::getInstance().getRegistryTags(), buffer);
+					server->sendDataToClient(client, buffer);
+				}
+
 				void registryData(std::shared_ptr<::Client> client, Watermelon* server) {
 					for (const Registry* syncReg : RegistryManager::getInstance().getSynchronizedRegistries()) {
 						std::vector<char> buffer;

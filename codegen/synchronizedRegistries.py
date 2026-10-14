@@ -2,7 +2,7 @@ import json
 import os
 import sys
 import io
-from nbtlib import serialize_tag, Compound, String, Int, Byte, Short, Long, Float, Double, List, File
+from nbtlib import serialize_tag, Compound, String, Int, Byte, Short, Long, Float, Double, List
 
 DATA_PATH = sys.argv[1] + "/minecraft/"
 OUTPUT_HPP = "include/Registry/Synchronised.h"
@@ -24,6 +24,10 @@ REGISTRY_MAPPING = {
     "trim_material": "minecraft:trim_material",
     "trim_pattern": "minecraft:trim_pattern",
     "worldgen/biome": "minecraft:worldgen/biome",
+    #"worldgen/feature": "minecraft:worldgen/feature",
+    #"worldgen/flat_level_generator_preset": "minecraft:worldgen/flat_level_generator_preset",
+    #"worldgen/structure": "minecraft:worldgen/structure",
+    #"worldgen/world_preset": "minecraft:worldgen/world_preset",
     "world_clock": "minecraft:world_clock",
     "cat_variant": "minecraft:cat_variant",
     "cat_sound_variant": "minecraft:cat_sound_variant",
@@ -36,7 +40,9 @@ REGISTRY_MAPPING = {
     "pig_sound_variant": "minecraft:pig_sound_variant",
     "wolf_variant": "minecraft:wolf_variant",
     "wolf_sound_variant": "minecraft:wolf_sound_variant",
-    "zombie_nautilus_variant": "minecraft:zombie_nautilus_variant"
+    "zombie_nautilus_variant": "minecraft:zombie_nautilus_variant",
+    "decorated_pot_pattern": "minecraft:decorated_pot_pattern",
+    "block_transformer": "minecraft:block_transformer"
 }
 
 registries = {}
@@ -63,9 +69,9 @@ def jsonToNetworkNbt(jsonData):
         return value
 
     nbtObj = castToNbt(jsonData)
-    nbtFile = File(nbtObj, gzipped=False)
     output = io.BytesIO()
-    nbtFile.write(output)
+    output.write(bytes([nbtObj.tag_id]))
+    nbtObj.write(output)
     return list(output.getvalue())
 
 def main():
@@ -74,25 +80,40 @@ def main():
         return
 
     for root, _, files in os.walk(DATA_PATH):
+        registryName = None
         dirName = os.path.relpath(root, DATA_PATH).replace("\\", "/")
-        if dirName in REGISTRY_MAPPING:
-            registryName = REGISTRY_MAPPING[dirName]
-            if registryName not in registries:
-                registries[registryName] = []
+        is_villager_trade = dirName.startswith("villager_trade")
 
-            for file in sorted(files):
-                if file.endswith(".json"):
-                    filePath = os.path.join(root, file)
-                    entryName = os.path.splitext(file)[0]
+        if is_villager_trade:
+            #registryName = "minecraft:villager_trade"
+            continue
+        elif dirName in REGISTRY_MAPPING:
+            registryName = REGISTRY_MAPPING[dirName]
+        if registryName is None:
+            continue
+        if registryName not in registries:
+            registries[registryName] = []
+        for file in sorted(files):
+            if file.endswith(".json"):
+                filePath = os.path.join(root, file)
+                entryName = os.path.splitext(file)[0]
+                if is_villager_trade:
+                    tradePath = dirName.replace("villager_trade/", "")
+                    if tradePath == "villager_trade" or not tradePath:
+                        textId = f"minecraft:{entryName}"
+                    else:
+                        textId = f"minecraft:{tradePath}/{entryName}"
+                else:
                     textId = f"minecraft:{entryName}"
 
-                    with open(filePath, "r", encoding="utf-8") as f:
-                        try:
-                            jsonContent = json.load(f)
-                            nbtBytes = jsonToNetworkNbt(jsonContent)
-                            registries[registryName].append((textId, nbtBytes))
-                        except Exception as e:
-                            print(f"Error while parsing {filePath}: {e}")
+                with open(filePath, "r", encoding="utf-8") as f:
+                    try:
+                        jsonContent = json.load(f)
+                        nbtBytes = jsonToNetworkNbt(jsonContent)
+                        protoId = len(registries[registryName])
+                        registries[registryName].append((textId, protoId, nbtBytes))
+                    except Exception as e:
+                        print(f"Error while parsing {filePath}: {e}")
             
     with open(OUTPUT_HPP, "w", encoding="utf-8") as out:
         generatedVars = []
@@ -115,7 +136,7 @@ def main():
             out.write(f"        Registry::Type::SYNCHRONISED,\n")
             out.write(f"        {{\n")
 
-            for protoId, (textId, nbtBytes) in enumerate(entries):
+            for textId, protoId, nbtBytes in entries:
                 bytesStr = ", ".join(f"0x{b:02x}" for b in nbtBytes)
                 out.write(f'            {{ {protoId}, "{textId}", {{ {bytesStr} }} }},\n')
 
@@ -128,7 +149,21 @@ def main():
         out.write(f"    }};\n")
         out.write(f"    inline const std::size_t SYNCHRONIZED_REGISTRIES_COUNT = {len(generatedVars)};\n")
         out.write(f"}};\n")
-    print(f"Successfully generated '{OUTPUT_HPP}'")
+
+        mappingData = {}
+        for registryName, entries in registries.items():
+            if registryName not in mappingData:
+                mappingData[registryName] = {"entries": {}}
+            
+            for textId, protoId, _ in entries:
+                mappingData[registryName]["entries"][textId] = {
+                    "protocol_id": protoId
+                }
+
+        with open("protocol_mapping.json", "w", encoding="utf-8") as f:
+            json.dump(mappingData, f, indent=2)
+
+        print(f"Successfully generated '{OUTPUT_HPP}'")
 
 if __name__ == "__main__":
     main()

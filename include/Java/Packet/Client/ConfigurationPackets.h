@@ -9,6 +9,8 @@ namespace Java {
 			namespace Configuration {
 				void knownPacks(std::shared_ptr<::Client> client, Watermelon* server);
 				void registryData(std::shared_ptr<::Client> client, Watermelon* server);
+				void finishConfiguration(std::shared_ptr<::Client> client, Watermelon* server);
+				void updateTags(std::shared_ptr<::Client> client, Watermelon* server);
 			};
 		};
 	};
