@@ -16,7 +16,8 @@ Watermelon::Watermelon() :
 	m_config(loadConfig()),
 	m_logger(*m_config["logging"].as_table()),
 	m_running(false),
-	m_registryManager(RegistryManager::getInstance())
+	m_registryManager(RegistryManager::getInstance()),
+	m_entityCounter(0)
 {
 #ifdef _WIN32
 	WSADATA wsaData;
@@ -236,4 +237,8 @@ toml::table& Watermelon::getConfig() {
 
 std::vector<Java::Pack>& Watermelon::getPacks() {
 	return m_packs;
+}
+
+uint32_t Watermelon::increaseEntityCounter() {
+	return ++m_entityCounter;
 }

@@ -185,7 +185,6 @@ namespace Java {
         }
 
         void writeRegistry(const Registry* registry, bool skipNbt, std::vector<char>& buffer) {
-            std::cout << "Sending registry '" << registry->name << "'" << std::endl;
             writeString(registry->name, buffer);
             writeVarInt((int32_t)registry->entries.size(), buffer);
             

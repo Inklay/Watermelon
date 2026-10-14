@@ -31,6 +31,7 @@ public:
 	void sendDataToClient(std::shared_ptr<Client> client, const std::vector<char>& data);
 	toml::table& getConfig();
 	std::vector<Java::Pack>& getPacks();
+	uint32_t increaseEntityCounter();
 
 private:
 	void log(const std::string& message, Logger::Level level);
@@ -49,5 +50,6 @@ private:
 	std::vector<Java::Pack> m_packs;
 	RegistryManager& m_registryManager;
 	Version m_version;
+	uint32_t m_entityCounter;
 	bool m_running;
 };
