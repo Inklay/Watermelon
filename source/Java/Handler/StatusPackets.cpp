@@ -24,8 +24,8 @@ namespace Java {
 					}}
 				};
 
-				Java::Packet::writeVarInt(client, Java::Packet::PacketId::Status::STATUS, buffer);
-				Java::Packet::writeString(client, data.dump(), buffer);
+				Java::Packet::writeVarInt(Java::Packet::PacketId::StatusClient::STATUS_RESPONSE, buffer);
+				Java::Packet::writeString(data.dump(), buffer);
 				return buffer;
 			}
 		};

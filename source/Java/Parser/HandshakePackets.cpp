@@ -30,7 +30,7 @@ namespace Java {
 
 			void parse(std::shared_ptr<Client> client, const Java::Packet::Header& header, Watermelon* server) {
 				switch (header.packetId) {
-					case Java::Packet::PacketId::Handshake::HANDSHAKE:
+					case Java::Packet::PacketId::HandshakeServer::HANDSHAKE:
 						return handshake(client, header, server);
 				}
 			}

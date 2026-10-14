@@ -12,6 +12,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(SOURCES
 	source/main.cpp
 	source/Logger.cpp
+    source/Player.cpp
 	source/Config.cpp
 	source/Watermelon.cpp
     source/Java/Packet.cpp
@@ -21,7 +22,7 @@ set(SOURCES
     source/Java/Handler/StatusPackets.cpp
     source/Java/Handler/LoginPackets.cpp
     source/Java/Parser/LoginPackets.cpp
-)
+ "source/Utils/UUID.cpp")
 
 add_executable(Watermelon ${SOURCES})
 

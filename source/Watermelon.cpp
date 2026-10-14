@@ -229,7 +229,7 @@ Logger& Watermelon::getLogger() {
 void Watermelon::sendDataToClient(std::shared_ptr<Client> client, const std::vector<char>& data) {
 	std::vector<char> fullPacket;
 
-	Java::Packet::writeVarInt(client, (int32_t)data.size(), fullPacket);
+	Java::Packet::writeVarInt((int32_t)data.size(), fullPacket);
 	fullPacket.insert(fullPacket.end(), data.begin(), data.end());
 	std::lock_guard<std::mutex> lock(m_clientsMutex);
 	send(client->socket, fullPacket.data(), (int)fullPacket.size(), 0);

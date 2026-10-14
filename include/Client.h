@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Player.h"
 #ifdef _WIN32
 #include <winsock2.h>
 #define Socket SOCKET
@@ -32,4 +33,6 @@ struct Client {
 	Type type;
 	Socket socket;
 	Status status;
+	Player player;
+	std::pair<uint64_t, uint64_t> sessionUUID = { -1, -1 };
 };
