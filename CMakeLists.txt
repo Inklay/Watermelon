@@ -29,7 +29,7 @@ set(SOURCES
     source/Java/Packet/Client/ConfigurationPackets.cpp
     source/Java/Packet/Client/PlayPackets.cpp
     source/Registry/RegistryManager.cpp
-)
+ "source/Utils/Buffer.cpp")
 
 add_executable(Watermelon ${SOURCES})
 

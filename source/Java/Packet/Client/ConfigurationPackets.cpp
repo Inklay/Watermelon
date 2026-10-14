@@ -35,7 +35,7 @@ namespace Java {
 						Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::ConfigurationClient::REGISTRY_DATA, buffer);
 
 						if (syncReg->name.starts_with("minecraft:") || client->hasPack(syncReg->name)) {
-							Java::Packet::writeRegistry(syncReg, false, buffer);
+							Java::Packet::writeRegistry(syncReg, true, buffer);
 						} else {
 							Java::Packet::writeRegistry(syncReg, false, buffer);
 						}

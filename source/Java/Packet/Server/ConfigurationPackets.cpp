@@ -24,8 +24,6 @@ namespace Java {
 
 				static void AcknowledgeFinishConfiguration(std::shared_ptr<::Client> client, const Java::Packet::Header& header, Watermelon* server) {
 					uint32_t offset = 0;
-					std::string username = Java::Packet::readString(client, offset);
-					std::pair<uint64_t, uint64_t> uuid = Java::Packet::readUUID(client, offset);
 
 					{
 						std::lock_guard<std::mutex> lock(server->getClientMutex());
@@ -33,7 +31,7 @@ namespace Java {
 					}
 
 					server->addPacketToQueue(client, [client, server]() {
-						Java::Packet::Client::Play::loginPacket(client, server);
+						Java::Packet::Client::Play::login(client, server);
 						Java::Packet::Client::Play::synchronizePlayerPosition(client, server);
 					});
 				}

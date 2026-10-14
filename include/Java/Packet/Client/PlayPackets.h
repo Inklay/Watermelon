@@ -8,7 +8,7 @@ namespace Java {
 		namespace Client {
 			namespace Play {
 				void synchronizePlayerPosition(std::shared_ptr<::Client> client, Watermelon* server);
-				void loginPacket(std::shared_ptr<::Client> client, Watermelon* server);
+				void login(std::shared_ptr<::Client> client, Watermelon* server);
 			};
 		};
 	};

@@ -154,18 +154,22 @@ namespace Java {
         }
 
         void writeVarInt(int32_t value, std::vector<char>& buffer) {
-			do {
-				uint8_t temp = value & 0x7F;
-				value >>= 7;
-				if (value != 0) {
-					temp |= 0x80;
-				}
-				buffer.push_back(static_cast<char>(temp));
-			} while (value != 0);
+            uint32_t unsignedValue = static_cast<uint32_t>(value);
+
+            do {
+                uint8_t temp = unsignedValue & 0x7F;
+                unsignedValue >>= 7;
+
+                if (unsignedValue != 0) {
+                    temp |= 0x80;
+                }
+
+                buffer.push_back(static_cast<char>(temp));
+            } while (unsignedValue != 0);
         }
 
         void writeBool(bool value, std::vector<char>& buffer) {
-            write8(value ? 0x01 : 0x02, buffer);
+            write8(value ? 0x01 : 0x00, buffer);
         }
 
         void writeU8(uint8_t value, std::vector<char>& buffer) {
