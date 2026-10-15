@@ -127,15 +127,22 @@ Client::PacketStatus Client::readPacket(std::vector<uint8_t>& packet) {
 }
 
 void Client::appendReceivedData(const uint8_t* data, size_t size) {
-	std::lock_guard<std::mutex> lock(m_mutex);
-	constexpr int32_t MAX_PACKS = 4000000;
+	constexpr int32_t MAX_BUFFER_SIZE = 4000000;
+	bool disconnect = false;
 
-	if (m_receiveBuffer.size() + size > MAX_PACKS) {
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		if (m_receiveBuffer.size() + size > MAX_BUFFER_SIZE) {
+			disconnect = true;
+		} else {
+			m_receiveBuffer.insert(m_receiveBuffer.end(), data, data + size);
+		}
+	}
+
+	if (disconnect) {
 		m_server->getLogger().log("Client exceded max buffer size", "Network", Logger::WARN);
 		m_server->disconnectClient(this);
 	}
-
-	m_receiveBuffer.insert(m_receiveBuffer.end(), data, data + size);
 }
 
 void Client::disconnect() {
