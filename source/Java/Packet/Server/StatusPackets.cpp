@@ -6,6 +6,15 @@ namespace Java {
 		namespace Server {
 			namespace Status {
 				static void status(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
+					uint32_t offset = 0;
+					
+					try {
+						Java::Packet::checkEmpty(packet, offset);
+					} catch (const std::runtime_error& e) {
+						server->getLogger().log("Can't decode packet ID " + std::to_string(packetId) + " : " + e.what(), "Network", Logger::WARN);
+						server->disconnectClient(client.get());
+					}
+
 					server->addOperationToQueue(client, [client, server]() {
 						return Java::Packet::Client::Status::statusPacket(client, server);
 					});
@@ -13,6 +22,7 @@ namespace Java {
 
 				static void ping(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
+
 					try {
 						int64_t ping = Java::Packet::readU64(packet, offset);
 						Java::Packet::checkEmpty(packet, offset);
