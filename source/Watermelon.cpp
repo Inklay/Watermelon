@@ -234,8 +234,7 @@ void Watermelon::sendDataToClient(std::shared_ptr<Client> client, const std::vec
 
 	Java::Packet::writeVarInt((int32_t)data.size(), fullPacket);
 	fullPacket.insert(fullPacket.end(), data.begin(), data.end());
-	std::lock_guard<std::mutex> lock(m_clientsMutex);
-	send(client->getSocket(), fullPacket.data(), (int)fullPacket.size(), 0);
+	client->sendData(fullPacket);
 }
 
 toml::table& Watermelon::getConfig() {

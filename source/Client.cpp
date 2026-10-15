@@ -149,3 +149,34 @@ void Client::disconnect() {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	m_disconnected = true;
 }
+
+void Client::sendData(const std::vector<char>& data) {
+	bool disconnect = false;
+
+	{
+		std::lock_guard<std::mutex> lock(m_sendingMutex);
+		size_t totalSent = 0;
+		size_t size = data.size();
+
+		while (totalSent < size) {
+			const size_t remaining = size - totalSent;
+			const int toSend = static_cast<int>((std::min)(remaining, static_cast<size_t>(INT_MAX)));
+			const int sent = send(m_socket, data.data() + totalSent, toSend, 0);
+
+			if (sent == -1) {
+				disconnect = true;
+				break;
+			}
+
+			if (sent == 0) {
+				return;
+			}
+
+			totalSent += static_cast<size_t>(sent);
+		}
+	}
+
+	if (disconnect) {
+		m_server->disconnectClient(this);
+	}
+}

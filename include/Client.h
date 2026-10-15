@@ -57,6 +57,7 @@ public:
 	PacketStatus readPacket(std::vector<uint8_t>& packet);
 	void appendReceivedData(const uint8_t* data, size_t size);
 	void disconnect();
+	void sendData(const std::vector<char>& data);
 
 private:
 	const Type m_type;
@@ -66,6 +67,7 @@ private:
 	std::pair<uint64_t, uint64_t> m_sessionUUID = { -1, -1 };
 	std::vector<Java::Pack> m_packs;
 	std::mutex m_mutex;
+	std::mutex m_sendingMutex;
 	std::vector<uint8_t> m_receiveBuffer;
 	Watermelon* m_server;
 	bool m_disconnected;
