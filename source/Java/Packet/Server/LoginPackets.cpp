@@ -10,6 +10,7 @@ namespace Java {
 					if (client->getPlayer() != nullptr) {
 						server->getLogger().log("Player was already logged in", "Network", Logger::WARN);
 						server->disconnectClient(client.get());
+						return;
 					}
 
 					uint32_t offset = 0;
@@ -38,6 +39,7 @@ namespace Java {
 					if (client->getPlayer() == nullptr) {
 						server->getLogger().log("Player never logged in", "Network", Logger::WARN);
 						server->disconnectClient(client.get());
+						return;
 					}
 					
 					uint32_t offset = 0;

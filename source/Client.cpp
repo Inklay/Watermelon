@@ -53,8 +53,21 @@ Client::Status Client::getStatus() {
 }
 
 void Client::createPlayer(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation) {
-	std::lock_guard<std::mutex> lock(m_mutex);
-	m_player = new Player(username, uuid, entityId, position, rotation);
+	bool disconnect = false;
+	
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		if (m_player != nullptr) {
+			disconnect = true;
+		} else {
+			m_player = new Player(username, uuid, entityId, position, rotation);
+		}
+	}
+
+	if (disconnect) {
+		m_server->getLogger().log("Player was already logged in", "Network", Logger::WARN);
+		m_server->disconnectClient(this);
+	}
 }
 
 Player* Client::getPlayer() {
