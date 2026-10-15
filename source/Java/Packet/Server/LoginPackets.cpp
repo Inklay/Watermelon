@@ -6,20 +6,25 @@ namespace Java {
 	namespace Packet {
 		namespace Server {
 			namespace Login {
-				static void loginStart(std::shared_ptr<::Client> client, const Java::Packet::Header& header, Watermelon* server) {
+				static void loginStart(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
-					std::string username = Java::Packet::readString(client, offset);
-					std::pair<uint64_t, uint64_t> uuid = Java::Packet::readUUID(client, offset);
 
-					server->addOperationToQueue(client, [client, server, username, uuid]() {
-						return Java::Packet::Client::Login::loginStartPacket(client, server, username, uuid);
-					});
+					try {
+						std::string username = Java::Packet::readString(packet, offset);
+						std::pair<uint64_t, uint64_t> uuid = Java::Packet::readUUID(packet, offset);
+						Java::Packet::checkEmpty(packet, offset);
+
+						server->addOperationToQueue(client, [client, server, username = std::move(username), uuid = std::move(uuid)]() {
+							return Java::Packet::Client::Login::loginStartPacket(client, server, username, uuid);
+						});
+					} catch (const std::runtime_error& e) {
+						server->getLogger().log("Can't decode packet ID " + std::to_string(packetId) + " : " + e.what(), "Network", Logger::WARN);
+						server->disconnectClient(client);
+					}
 				}
 
-				static void loginAknowledged(std::shared_ptr<::Client> client, const Java::Packet::Header& header, Watermelon* server) {
+				static void loginAknowledged(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
-					std::string username = Java::Packet::readString(client, offset);
-					std::pair<uint64_t, uint64_t> uuid = Java::Packet::readUUID(client, offset);
 
 					client->changeStatus(::Client::Status::CONFIGURATION);
 					server->addOperationToQueue(client, [client, server]() {
@@ -27,12 +32,15 @@ namespace Java {
 					});
 				}
 
-				void parse(std::shared_ptr<::Client> client, const Java::Packet::Header& header, Watermelon* server) {
-					switch (header.packetId) {
+				void parse(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
+					switch (packetId) {
 					case (int32_t)Java::Packet::PacketId::LoginServer::LOGIN_START:
-						return loginStart(client, header, server);
+						return loginStart(client, packetId, server, packet);
 					case (int32_t)Java::Packet::PacketId::LoginServer::LOGIN_ACKNOWLEDGED:
-						return loginAknowledged(client, header, server);
+						return loginAknowledged(client, packetId, server, packet);
+					default:
+						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::WARN);
+						server->disconnectClient(client);
 					}
 				}
 			};

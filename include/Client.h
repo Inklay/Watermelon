@@ -26,6 +26,12 @@ public:
 		PLAY
 	};
 
+	enum PacketStatus {
+		INCOMPLETE,
+		COMPLETE,
+		INVALID
+	};
+
 	int operator==(const Client& other) {
 		return m_socket == other.m_socket;
 	}
@@ -46,6 +52,8 @@ public:
 	void setPacks(const std::vector<Java::Pack> packs);
 	std::vector<Java::Pack>& getPacks();
 	void setSessionUUID(std::pair<uint64_t, uint64_t> sessionUUID);
+	PacketStatus readPacket(std::vector<uint8_t>& packet);
+	void appendReceivedData(const uint8_t* data, size_t size);
 
 private:
 	const Type m_type;
@@ -55,4 +63,5 @@ private:
 	std::pair<uint64_t, uint64_t> m_sessionUUID = { -1, -1 };
 	std::vector<Java::Pack> m_packs;
 	std::mutex m_mutex;
+	std::vector<uint8_t> m_receiveBuffer;
 };

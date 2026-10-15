@@ -207,21 +207,18 @@ namespace Java {
 			};
 		};
 
-		struct Header {
-			int32_t length;
-			int32_t packetId;
-		};
+		void checkEmpty(const std::vector<uint8_t>& packet, uint32_t& offset);
 
-		std::string readString(std::shared_ptr<::Client> client, uint32_t& offset);
-		int32_t readVarInt(std::shared_ptr<::Client> client, uint32_t& offset);
-		uint8_t readU8(std::shared_ptr<::Client> client, uint32_t& offset);
-		uint16_t readU16(std::shared_ptr<::Client> client, uint32_t& offset);
-		uint32_t readU32(std::shared_ptr<::Client> client, uint32_t& offset);
-		int64_t read64(std::shared_ptr<::Client> client, uint32_t& offset);
-		float readFloat(std::shared_ptr<::Client> client, uint32_t& offset);
-		double readDouble(std::shared_ptr<::Client> client, uint32_t& offset);
-		std::pair<uint64_t, uint64_t> readUUID(std::shared_ptr<::Client> client, uint32_t& offset);
-		std::vector<Pack> readPacks(std::shared_ptr<::Client> client, uint32_t& offset);
+		std::string readString(const std::vector<uint8_t>& packet, uint32_t& offset);
+		int32_t readVarInt(const std::vector<uint8_t>& packet, uint32_t& offset);
+		uint8_t readU8(const std::vector<uint8_t>& packet, uint32_t& offset);
+		uint16_t readU16(const std::vector<uint8_t>& packet, uint32_t& offset);
+		uint32_t readU32(const std::vector<uint8_t>& packet, uint32_t& offset);
+		uint64_t readU64(const std::vector<uint8_t>& packet, uint32_t& offset);
+		float readFloat(const std::vector<uint8_t>& packet, uint32_t& offset);
+		double readDouble(const std::vector<uint8_t>& packet, uint32_t& offset);
+		std::pair<uint64_t, uint64_t> readUUID(const std::vector<uint8_t>& packet, uint32_t& offset);
+		std::vector<Pack> readPacks(const std::vector<uint8_t>& packet, uint32_t& offset);
 
 		void writeString(const std::string& str, std::vector<char>& buffer);
 		void writeVarInt(int32_t value, std::vector<char>& buffer);

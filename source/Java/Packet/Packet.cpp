@@ -1,144 +1,145 @@
 #include "Java/Packet/Packet.h"
 #include <iostream>
+#include <stdexcept>
+
 namespace Java {
     namespace Packet {
-        std::string readString(std::shared_ptr<::Client> client, uint32_t& offset) {
-            int32_t length = readVarInt(client, offset);
+        void checkEmpty(const std::vector<uint8_t>& packet, uint32_t& offset) {
+            if (offset != packet.size()) {
+                throw std::runtime_error( "Unexpected trailing bytes");
+            }
+        }
 
-            if (length == -1) {
-                return "";
+        std::string readString(const std::vector<uint8_t>& packet, uint32_t& offset) {
+            int32_t length = readVarInt(packet, offset);
+
+            if (length < 0 || length > 2000000) {
+                throw std::runtime_error("Invalid string: invalid lenght");
             }
 
-            std::string result(length, '\0');
-            int bytesRead = recv(client->getSocket(), &result[0], length, 0);
-
-            if (bytesRead <= 0) {
-                return "";
+            if (offset > packet.size() || static_cast<size_t>(length) > packet.size() - offset) {
+                throw std::runtime_error("Invalid string: unexpected end of packet");
             }
 
+            std::string result(packet.begin() + offset, packet.begin() + offset + length);
+            offset += static_cast<uint32_t>(length);
             return result;
         }
 
-        int32_t readVarInt(std::shared_ptr<::Client> client, uint32_t& offset) {
-            char currentByte;
-            int32_t value = 0;
-            int shift = 0;
+        int32_t readVarInt(const std::vector<uint8_t>& packet, uint32_t& offset) {
+            uint32_t value = 0;
 
-            while (true) {
-                int bytes = recv(client->getSocket(), &currentByte, 1, 0);
-                if (bytes <= 0) {
-                    return -1;
+            for (int i = 0; i < 5; ++i) {
+                if (offset >= packet.size()) {
+                    throw std::runtime_error("Invalid VarInt: unexpected end of packet");
                 }
 
-                uint8_t uByte = static_cast<uint8_t>(currentByte);
-                value |= static_cast<uint32_t>(uByte & 0x7F) << shift;
+                const uint8_t byte = packet[offset++];
 
-                if ((uByte & 0x80) == 0) {
-                    break;
+                if (i == 4 && (byte & 0xF0) != 0) {
+                    throw std::runtime_error("Invalid VarInt: overflow");
                 }
 
-                shift += 7;
-                if (shift >= 35) {
-                    return -1;
+                value |= static_cast<uint32_t>(byte & 0x7F) << (7 * i);
+
+                if ((byte & 0x80) == 0) {
+                    return static_cast<int32_t>(value);
                 }
             }
 
-            return value;
+            throw std::runtime_error("Invalid VarInt: too long");
         }
 
-        uint8_t readU8(std::shared_ptr<::Client> client, uint32_t& offset) {
-            uint8_t value = 0;
-            int bytesRead = recv(client->getSocket(), reinterpret_cast<char*>(&value), sizeof(value), 0);
-
-            if (bytesRead <= 0) {
-                return 0;
+        uint8_t readU8(const std::vector<uint8_t>& packet, uint32_t& offset) {
+            if (offset >= packet.size()) {
+                throw std::runtime_error("Invalid u8: unexpected end of packet");
             }
 
-            return value;
+            return packet[offset++];
         }
 
-        uint16_t readU16(std::shared_ptr<::Client> client, uint32_t& offset) {
+        uint16_t readU16(const std::vector<uint8_t>& packet, uint32_t& offset) {
+            if (offset > packet.size() || packet.size() - offset < 2) {
+                throw std::runtime_error("Invalid u16: unexpected end of packet");
+            }
+
             uint16_t value = 0;
-            int bytesRead = recv(client->getSocket(), reinterpret_cast<char*>(&value), sizeof(value), 0);
 
-            if (bytesRead <= 0) {
-                return 0;
+            for (int i = 0; i < 2; ++i) {
+                value = (value << 8) | packet[offset++];
             }
 
-            return ntohs(value);
+            return value;
         }
 
-        uint32_t readU32(std::shared_ptr<::Client> client, uint32_t& offset) {
+        uint32_t readU32(const std::vector<uint8_t>& packet, uint32_t& offset) {
+            if (offset > packet.size() || packet.size() - offset < 4) {
+                throw std::runtime_error("Invalid u32: unexpected end of packet");
+            }
+
             uint32_t value = 0;
-            int bytesRead = recv(client->getSocket(), reinterpret_cast<char*>(&value), sizeof(value), 0);
 
-            if (bytesRead <= 0) {
-                return 0;
+            for (int i = 0; i < 4; ++i) {
+                value = (value << 8) | packet[offset++];
             }
 
-            return ntohl(value);
+            return value;
         }
 
-        int64_t read64(std::shared_ptr<::Client> client, uint32_t& offset) {
-            int64_t value = 0;
-            int bytesRead = recv(client->getSocket(), reinterpret_cast<char*>(&value), sizeof(value), 0);
-
-            if (bytesRead <= 0) {
-                return 0;
+        uint64_t readU64(const std::vector<uint8_t>& packet, uint32_t& offset) {
+            if (offset > packet.size() || packet.size() - offset < 8) {
+                throw std::runtime_error("Invalid u64: unexpected end of packet");
             }
 
-            return ntohll(value);
-        }
-
-        float readFloat(std::shared_ptr<::Client> client, uint32_t& offset) {
-            uint32_t value = 0;
-            int bytesRead = recv(client->getSocket(), reinterpret_cast<char*>(&value), sizeof(value), 0);
-
-            if (bytesRead <= 0) {
-                return 0;
-            }
-
-            return ntohf(value);
-        }
-
-        double readDouble(std::shared_ptr<::Client> client, uint32_t& offset) {
             uint64_t value = 0;
-            int bytesRead = recv(client->getSocket(), reinterpret_cast<char*>(&value), sizeof(value), 0);
 
-            if (bytesRead <= 0) {
-                return 0;
+            for (int i = 0; i < 8; ++i) {
+                value = (value << 8) | packet[offset++];
             }
 
-            return ntohd(value);
+            return value;
         }
 
-        std::pair<uint64_t, uint64_t> readUUID(std::shared_ptr<Client> client, uint32_t& offset) {
-            uint64_t a, b = 0;
-            int bytesRead = recv(client->getSocket(), reinterpret_cast<char*>(&a), sizeof(a), 0);
+        float readFloat(const std::vector<uint8_t>& packet, uint32_t& offset) {
+            uint32_t bits = readU32(packet, offset);
+            float value;
 
-            if (bytesRead <= 0) {
-                return { 0, 0 };
-            }
+            std::memcpy(&value, &bits, sizeof(value));
 
-            bytesRead = recv(client->getSocket(), reinterpret_cast<char*>(&b), sizeof(b), 0);
-
-            if (bytesRead <= 0) {
-                return { 0, 0 };
-            }
-
-            return std::make_pair(ntohll(a), ntohll(b));
+            return value;
         }
 
-        std::vector<Pack> readPacks(std::shared_ptr<Client> client, uint32_t& offset) {
-            int32_t size = readVarInt(client, offset);
+        double readDouble(const std::vector<uint8_t>& packet, uint32_t& offset) {
+            uint64_t bits = readU64(packet, offset);
+            double value;
+
+            std::memcpy(&value, &bits, sizeof(value));
+
+            return value;
+        }
+
+        std::pair<uint64_t, uint64_t> readUUID(const std::vector<uint8_t>& packet, uint32_t& offset) {
+            uint64_t a = readU64(packet, offset);
+            uint64_t b = readU64(packet, offset);
+
+            return std::make_pair(a, b);
+        }
+
+        std::vector<Pack> readPacks(const std::vector<uint8_t>& packet, uint32_t& offset) {
+            int32_t size = readVarInt(packet, offset);
+
+            if (size < 0) {
+                throw std::runtime_error("Invalid packs: invalid size");
+            }
+
             std::vector<Pack> packs;
             std::string nameSpace, id, version;
             packs.reserve(size);
 
             for (int i = 0; i < size; i++) {
-                nameSpace = readString(client, offset);
-                id = readString(client, offset);
-                version = readString(client, offset);
+                nameSpace = readString(packet, offset);
+                id = readString(packet, offset);
+                version = readString(packet, offset);
 
                 packs.emplace_back(nameSpace, id, version);
             }

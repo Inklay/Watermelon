@@ -3,7 +3,7 @@
 #include "Config.h"
 #include "Watermelon.h"
 #include "Java/Packet/Packet.h"
-#include "Java/Packet/Server/Parser.h"
+#include "Java/Packet/Server/Handler.h"
 
 #ifdef _WIN32
 #include <ws2tcpip.h>
@@ -138,6 +138,7 @@ void Watermelon::networkLoop() {
 
 		for (const auto& client : clientsToCheck) {
 			FD_SET(client->getSocket(), &readFDs);
+
 			if (client->getSocket() > maxFD) {
 				maxFD = client->getSocket();
 			}
@@ -146,31 +147,42 @@ void Watermelon::networkLoop() {
 		struct timeval timeout { 0, 500000 };
 		int activity = select(static_cast<int>(maxFD + 1), &readFDs, nullptr, nullptr, &timeout);
 
-		if (activity == 0) {
+		if (activity <= 0) {
 			continue;
 		}
 
-		for (const auto& client : clientsToCheck) {
-			if (FD_ISSET(client->getSocket(), &readFDs)) {
+		for (auto& client : clientsToCheck) {
+			if (!FD_ISSET(client->getSocket(), &readFDs)) {
+				continue;
+			}
+
+			char received[8192];
+			int count = static_cast<int>(recv(client->getSocket(), received, sizeof(received), 0));
+
+			if (count <= 0) {
+				disconnectClient(client);
+				continue;
+			}
+
+			client->appendReceivedData(reinterpret_cast<const uint8_t*>(received), (size_t)count);
+
+			while (true) {
+				std::vector<uint8_t> packet;
+				const auto result = client->readPacket(packet);
+
+				if (result == Client::PacketStatus::INCOMPLETE) {
+					break;
+				}
+
+				if (result == Client::PacketStatus::INVALID) {
+					disconnectClient(client);
+					break;
+				}
+
 				if (client->getType() == Client::Type::JAVA) {
-					Java::Packet::Header header = Java::Packet::Server::Parser::parseHeader(client);
-
-					if (header.length == -1) {
-						bool timedOut = false;
-
-						{
-							std::lock_guard<std::mutex> lock(m_clientsMutex);
-							auto it = std::find(m_clients.begin(), m_clients.end(), client);
-							if (it != m_clients.end()) {
-								m_clients.erase(it);
-							}
-						}
-
-						log("TCP connection closed", Logger::DEBUG);
-						continue;
-					}
-					
-					Java::Packet::Server::Parser::parsePacket(client, header, this);
+					Java::Packet::Server::Handler::handlePacket(client, this, packet);
+				} else {
+					break;
 				}
 			}
 		}
@@ -236,4 +248,14 @@ std::vector<Java::Pack>& Watermelon::getPacks() {
 
 uint32_t Watermelon::increaseEntityCounter() {
 	return ++m_entityCounter;
+}
+
+void Watermelon::disconnectClient(std::shared_ptr<Client> client) {
+	std::lock_guard<std::mutex> lock(m_clientsMutex);
+	auto it = std::find(m_clients.begin(), m_clients.end(), client);
+
+	if (it != m_clients.end()) {
+		log("TCP connection closed", Logger::DEBUG);
+		m_clients.erase(it);
+	}
 }

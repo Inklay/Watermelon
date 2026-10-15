@@ -10,7 +10,7 @@ namespace Java {
 					std::vector<char> buffer;
 					std::pair<uint64_t, uint64_t> sessionUUID = Utils::UUID::generateSessionUUID();
 
-					server->getLogger().log("UUID of player " + username + " is " + Utils::UUID::formatUUID(uuid), "Watermelon", Logger::INFO);
+					server->getLogger().log("UUID of player " + username + " is " + Utils::UUID::formatUUID(uuid), "Network", Logger::INFO);
 					client->setSessionUUID(sessionUUID);
 					client->createPlayer(username, uuid, server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 });
 

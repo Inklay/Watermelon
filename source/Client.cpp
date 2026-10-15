@@ -73,3 +73,52 @@ void Client::setSessionUUID(std::pair<uint64_t, uint64_t> sessionUUID) {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	m_sessionUUID = sessionUUID;
 }
+
+Client::PacketStatus Client::readPacket(std::vector<uint8_t>& packet) {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	uint32_t length = 0;
+	size_t prefixLength = 0;
+
+	for (int i = 0; i < 3; ++i) {
+		if (prefixLength >= m_receiveBuffer.size()) {
+			return Client::PacketStatus::INCOMPLETE;
+		}
+
+		const uint8_t byte = m_receiveBuffer[prefixLength++];
+		length |= uint32_t(byte & 0x7F) << (7 * i);
+
+		if ((byte & 0x80) == 0) {
+			break;
+		}
+
+		if (i == 2) {
+			return Client::PacketStatus::INVALID;
+		}
+	}
+
+	constexpr uint32_t MAX_PACKET_SIZE = 0x1FFFFF;
+
+	if (length == 0 || length > MAX_PACKET_SIZE) {
+		return Client::PacketStatus::INVALID;
+	}
+
+	if (m_receiveBuffer.size() - prefixLength < length) {
+		return Client::PacketStatus::INCOMPLETE;
+	}
+
+	packet.assign(
+		m_receiveBuffer.begin() + prefixLength,
+		m_receiveBuffer.begin() + prefixLength + length
+	);
+
+	m_receiveBuffer.erase(
+		m_receiveBuffer.begin(),
+		m_receiveBuffer.begin() + prefixLength + length
+	);
+
+	return Client::PacketStatus::COMPLETE;
+}
+
+void Client::appendReceivedData(const uint8_t* data, size_t size) {
+	m_receiveBuffer.insert(m_receiveBuffer.end(), data, data + size);
+}

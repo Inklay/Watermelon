@@ -17,8 +17,11 @@ set(SOURCES
     source/Client.cpp
 	source/Watermelon.cpp
     source/Utils/UUID.cpp
+    source/Utils/Buffer.cpp
+    source/Entity/Entity.cpp
+    source/Player/Player.cpp
     source/Java/Packet/Packet.cpp
-    source/Java/Packet/Server/Parser.cpp
+    "source/Java/Packet/Server/Handler.cpp"
     source/Java/Packet/Server/HandshakePackets.cpp
     source/Java/Packet/Server/StatusPackets.cpp
     source/Java/Packet/Server/LoginPackets.cpp
@@ -29,7 +32,7 @@ set(SOURCES
     source/Java/Packet/Client/ConfigurationPackets.cpp
     source/Java/Packet/Client/PlayPackets.cpp
     source/Registry/RegistryManager.cpp
- "source/Utils/Buffer.cpp" "source/Entity/Entity.cpp" "source/Player/Player.cpp")
+)
 
 add_executable(Watermelon ${SOURCES})
 

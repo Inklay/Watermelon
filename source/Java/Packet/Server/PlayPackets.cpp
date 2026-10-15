@@ -5,36 +5,46 @@ namespace Java {
 	namespace Packet {
 		namespace Server {
 			namespace Play {
-				static void setPlayerPositionAndRotation(std::shared_ptr<::Client> client, const Java::Packet::Header& header, Watermelon* server) {
+				static void setPlayerPositionAndRotation(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 				}
 
-				static void confirmTeleportation(std::shared_ptr<::Client> client, const Java::Packet::Header& header, Watermelon* server) {
+				static void confirmTeleportation(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
-					int32_t teleportId = Java::Packet::readVarInt(client, offset);
-					Java::Packet::readDouble(client, offset); // x
-					Java::Packet::readDouble(client, offset); // y
-					Java::Packet::readDouble(client, offset); // z
-					Java::Packet::readFloat(client, offset); // yaw
-					Java::Packet::readFloat(client, offset); // pitch
 
-					server->addOperationToQueue(client, [client, server, teleportId]() {
-						Player* player = client->getPlayer();
+					try {
+						int32_t teleportId = Java::Packet::readVarInt(packet, offset);
+						Java::Packet::readDouble(packet, offset); // x
+						Java::Packet::readDouble(packet, offset); // y
+						Java::Packet::readDouble(packet, offset); // z
+						Java::Packet::readFloat(packet, offset); // yaw
+						Java::Packet::readFloat(packet, offset); // pitch
+						Java::Packet::checkEmpty(packet, offset);
 
-						if (!player->finishTeleporting(teleportId)) {
-							server->getLogger().log("Failed to teleport player " + player->getUsername(), "Java Network", Logger::WARN);
-							Java::Packet::Client::Play::synchronizePlayerPosition(client, server);
-						}
-					});
+						server->addOperationToQueue(client, [client, server, teleportId]() {
+							Player* player = client->getPlayer();
+
+							if (!player->finishTeleporting(teleportId)) {
+								server->getLogger().log("Failed to teleport player " + player->getUsername(), "Network", Logger::WARN);
+								Java::Packet::Client::Play::synchronizePlayerPosition(client, server);
+							}
+						});
+					} catch (const std::runtime_error& e) {
+						server->getLogger().log("Can't decode packet ID " + std::to_string(packetId) + " : " + e.what(), "Network", Logger::WARN);
+						server->disconnectClient(client);
+					}
 				}
 
-				void parse(std::shared_ptr<::Client> client, const Java::Packet::Header& header, Watermelon* server) {
-					switch (header.packetId) {
+				void parse(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
+					switch (packetId) {
 					case (int32_t)Java::Packet::PacketId::PlayServer::CONFIRM_TELEPORTATION:
-						return confirmTeleportation(client, header, server);
+						return confirmTeleportation(client, packetId, server, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::SET_PLAYER_POSITION_AND_ROTATION:
-						return setPlayerPositionAndRotation(client, header, server);
+						return setPlayerPositionAndRotation(client, packetId, server, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::CLIENT_TICK_END:
 						return;
+					default:
+						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::WARN);
+						server->disconnectClient(client);
 					}
 				}
 			};
