@@ -26,14 +26,12 @@ namespace Java {
 						case Java::Packet::Intent::TRANSFER:
 							if (protocolVersion != server->getVersion().protocol) {
 								server->getLogger().log("Client tried to connect with wrong protocol version " + std::to_string(protocolVersion), "Network", Logger::WARN);
-								server->addOperationToQueue(client, [client, server]() {
-									json reason = {
+								json reason = {
 										{ "translate", "multiplayer.disconnect.incompatible" },
 										{ "with", json::array({ server->getVersion().name }) }
-									};
+								};
 
-									Java::Packet::Client::Login::disconnect(client, server, reason.dump());
-								});
+								Java::Packet::Client::Login::disconnect(client, server, reason.dump());
 								return;
 							}
 							client->changeStatus(::Client::Status::LOGIN);

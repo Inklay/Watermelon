@@ -12,6 +12,11 @@
 #endif
 
 Watermelon::Watermelon() :
+#ifdef _WIN32
+	m_serverSocket(INVALID_SOCKET),
+#else
+	m_serverSocket(-1),
+#endif
 	m_version({ "26.3", 777 }),
 	m_config(loadConfig()),
 	m_logger(*m_config["logging"].as_table()),
@@ -57,8 +62,23 @@ bool Watermelon::start() {
 	}
 
 	m_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+#ifdef _WIN32
+	if (m_serverSocket == INVALID_SOCKET) {
+#else
+	if (m_serverSocket == -1) {
+#endif
+		log("Can't create the server socket", Logger::ERR);
+		return false;
+	}
+
 	const std::string configuredAddress = m_config["networking"]["java"]["address"].value_or("0.0.0.0:25565");
-	const int port = configuredAddress.find(':') != std::string::npos ? std::stoi(configuredAddress.substr(configuredAddress.find(':') + 1)) : 25565;
+	int port = 0;
+	try {
+		port = configuredAddress.find(':') != std::string::npos ? std::stoi(configuredAddress.substr(configuredAddress.find(':') + 1)) : 25565;
+	} catch (...) {
+		log("Invalid port number: " + configuredAddress.substr(configuredAddress.find(':') + 1), Logger::ERR);
+		return false;
+	}
 	const std::string address = configuredAddress.find(':') != std::string::npos ? configuredAddress.substr(0, configuredAddress.find(':')) : "0.0.0.0";
 	sockaddr_in serverAddress;
 	serverAddress.sin_family = AF_INET;
@@ -190,7 +210,13 @@ void Watermelon::networkLoop() {
 				}
 
 				if (client->getType() == Client::Type::JAVA) {
-					Java::Packet::Server::Handler::handlePacket(client, this, packet);
+					try {
+						Java::Packet::Server::Handler::handlePacket(client, this, packet);
+					} catch (const std::exception& e) {
+						log(std::string("Exception while handling a packet: ") + e.what(), Logger::ERR);
+						disconnectClient(client.get());
+						break;
+					}
 				} else {
 					break;
 				}
@@ -210,7 +236,17 @@ void Watermelon::run() {
 
 		while (!queuedPackets.empty()) {
 			auto& [client, operation] = queuedPackets.front();
-			operation();
+
+			try {
+				operation();
+			} catch (const std::exception& e) {
+				log(std::string("Exception while handling a client operation: ") + e.what(), Logger::ERR);
+				disconnectClient(client.get());
+			} catch (...) {
+				log("Unknown exception while handling a client operation", Logger::ERR);
+				disconnectClient(client.get());
+			}
+
 			queuedPackets.pop();
 		}
 
