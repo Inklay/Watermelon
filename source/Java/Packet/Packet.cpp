@@ -127,8 +127,9 @@ namespace Java {
 
         std::vector<Pack> readPacks(const std::vector<uint8_t>& packet, uint32_t& offset) {
             int32_t size = readVarInt(packet, offset);
+            constexpr int32_t MAX_PACKS = 1024;
 
-            if (size < 0) {
+            if (size < 0 || size > MAX_PACKS) {
                 throw std::runtime_error("Invalid packs: invalid size");
             }
 
