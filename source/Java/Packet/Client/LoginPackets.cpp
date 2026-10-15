@@ -10,11 +10,11 @@ namespace Java {
 					std::vector<char> buffer;
 					std::pair<uint64_t, uint64_t> sessionUUID = Utils::UUID::generateSessionUUID();
 
-					server->getLogger().log("UUID of player " + username + " is " + Utils::UUID::formatUUID(uuid), "Network", Logger::INFO);
 					client->setSessionUUID(sessionUUID);
 					if (!client->createPlayer(username, uuid, server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 })) {
 						return;
 					}
+					server->getLogger().log("UUID of player " + username + " is " + Utils::UUID::formatUUID(uuid), "Network", Logger::INFO);
 
 					if (server->getConfig()["networking"]["java"]["online_mode"].value_or(true)) {
 						// encryption packet
