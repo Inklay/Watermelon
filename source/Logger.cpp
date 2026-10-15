@@ -44,6 +44,7 @@ void Logger::log(const std::string& message, const std::string& caller, Level le
 
 	log << std::format("[{:%H:%M:%S}]", local) << " [" << caller << "/" << m_levelTexts[level] << "]: " << message << std::endl;
 
+	std::lock_guard<std::mutex> lock(m_mutex);
 	std::cout << log.str();
 
 	if (m_stream.is_open()) {
