@@ -27,7 +27,7 @@ namespace Java {
 						}
 					} catch (const std::runtime_error& e) {
 						server->getLogger().log("Can't decode packet ID " + std::to_string(packetId) + " : " + e.what(), "Network", Logger::WARN);
-						server->disconnectClient(client);
+						server->disconnectClient(client.get());
 					}
 				}
 
@@ -37,7 +37,7 @@ namespace Java {
 						return handshake(client, packetId, server, packet);
 					default:
 						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::WARN);
-						server->disconnectClient(client);
+						server->disconnectClient(client.get());
 					}
 				}
 			};

@@ -112,7 +112,7 @@ void Watermelon::tcpListenLoop() {
 
 		{
 			std::lock_guard<std::mutex> lock(m_clientsMutex);
-			m_clients.push_back(std::make_unique<Client>(Client::Type::JAVA, clientSocket));
+			m_clients.push_back(std::make_shared<Client>(Client::Type::JAVA, clientSocket, this));
 		}
 	}
 	log("Stopping TCP listen thread", Logger::DEBUG);
@@ -160,7 +160,7 @@ void Watermelon::networkLoop() {
 			int count = static_cast<int>(recv(client->getSocket(), received, sizeof(received), 0));
 
 			if (count <= 0) {
-				disconnectClient(client);
+				disconnectClient(client.get());
 				continue;
 			}
 
@@ -175,7 +175,7 @@ void Watermelon::networkLoop() {
 				}
 
 				if (result == Client::PacketStatus::INVALID) {
-					disconnectClient(client);
+					disconnectClient(client.get());
 					break;
 				}
 
@@ -250,12 +250,24 @@ uint32_t Watermelon::increaseEntityCounter() {
 	return ++m_entityCounter;
 }
 
-void Watermelon::disconnectClient(std::shared_ptr<Client> client) {
-	std::lock_guard<std::mutex> lock(m_clientsMutex);
-	auto it = std::find(m_clients.begin(), m_clients.end(), client);
+void Watermelon::disconnectClient(Client* client) {
+	std::shared_ptr<Client> ptr;
+	{
+		std::lock_guard<std::mutex> lock(m_clientsMutex);
+		auto it = std::find_if(m_clients.begin(), m_clients.end(),
+			[client](const std::shared_ptr<Client>& p) {
+				return p.get() == client;
+			}
+		);
 
-	if (it != m_clients.end()) {
+		if (it != m_clients.end()) {
+			ptr = *it;
+			m_clients.erase(it);
+		}
+	}
+
+	if (ptr) {
+		ptr->disconnect();
 		log("TCP connection closed", Logger::DEBUG);
-		m_clients.erase(it);
 	}
 }

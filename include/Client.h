@@ -11,6 +11,8 @@
 #define Socket int
 #endif
 
+class Watermelon;
+
 class Client {
 public:
 	enum Type {
@@ -40,7 +42,7 @@ public:
 		return m_socket == other.m_socket;
 	}
 
-	Client(Type type, Socket socket);
+	Client(Type type, Socket socket, Watermelon* server);
 	~Client();
 	Socket getSocket() const;
 	Type getType() const;
@@ -50,10 +52,11 @@ public:
 	void createPlayer(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation);
 	Player* getPlayer();
 	void setPacks(const std::vector<Java::Pack> packs);
-	std::vector<Java::Pack>& getPacks();
+	std::vector<Java::Pack> getPacks();
 	void setSessionUUID(std::pair<uint64_t, uint64_t> sessionUUID);
 	PacketStatus readPacket(std::vector<uint8_t>& packet);
 	void appendReceivedData(const uint8_t* data, size_t size);
+	void disconnect();
 
 private:
 	const Type m_type;
@@ -64,4 +67,6 @@ private:
 	std::vector<Java::Pack> m_packs;
 	std::mutex m_mutex;
 	std::vector<uint8_t> m_receiveBuffer;
+	Watermelon* m_server;
+	bool m_disconnected;
 };

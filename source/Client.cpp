@@ -1,11 +1,13 @@
 #include "Client.h"
 #include "Watermelon.h"
 
-Client::Client(Type type, Socket socket) :
+Client::Client(Type type, Socket socket, Watermelon* server) :
 	m_type(type),
 	m_status(Status::HANDSHAKING),
 	m_socket(socket),
-	m_player(nullptr)
+	m_player(nullptr),
+	m_server(server),
+	m_disconnected(false)
 {
 }
 
@@ -64,7 +66,7 @@ void Client::setPacks(const std::vector<Java::Pack> packs) {
 	m_packs = packs;
 }
 
-std::vector<Java::Pack>& Client::getPacks() {
+std::vector<Java::Pack> Client::getPacks() {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	return m_packs;
 }
@@ -76,6 +78,11 @@ void Client::setSessionUUID(std::pair<uint64_t, uint64_t> sessionUUID) {
 
 Client::PacketStatus Client::readPacket(std::vector<uint8_t>& packet) {
 	std::lock_guard<std::mutex> lock(m_mutex);
+
+	if (m_disconnected) {
+		return Client::PacketStatus::INVALID;
+	}
+
 	uint32_t length = 0;
 	size_t prefixLength = 0;
 
@@ -120,5 +127,18 @@ Client::PacketStatus Client::readPacket(std::vector<uint8_t>& packet) {
 }
 
 void Client::appendReceivedData(const uint8_t* data, size_t size) {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	constexpr int32_t MAX_PACKS = 4000000;
+
+	if (m_receiveBuffer.size() + size > MAX_PACKS) {
+		m_server->getLogger().log("Client exceded max buffer size", "Network", Logger::WARN);
+		m_server->disconnectClient(this);
+	}
+
 	m_receiveBuffer.insert(m_receiveBuffer.end(), data, data + size);
+}
+
+void Client::disconnect() {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	m_disconnected = true;
 }

@@ -32,7 +32,7 @@ public:
 	toml::table& getConfig();
 	std::vector<Java::Pack>& getPacks();
 	uint32_t increaseEntityCounter();
-	void disconnectClient(std::shared_ptr<Client> client);
+	void disconnectClient(Client* client);
 
 private:
 	void log(const std::string& message, Logger::Level level);

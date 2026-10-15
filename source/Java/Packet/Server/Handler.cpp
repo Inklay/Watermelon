@@ -18,7 +18,7 @@ namespace Java {
 						packetId = Java::Packet::readVarInt(packet, offset);
 					} catch (const std::runtime_error& e) {
 						server->getLogger().log(std::string("Can't get packet id : ") + e.what(), "Network", Logger::WARN);
-						server->disconnectClient(client);
+						server->disconnectClient(client.get());
 						return;
 					}
 
