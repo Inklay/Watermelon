@@ -21,7 +21,7 @@ namespace Java {
 						Java::Packet::checkEmpty(packet, offset);
 
 						server->addOperationToQueue(client, [client, server, username = std::move(username), uuid = std::move(uuid)]() {
-							return Java::Packet::Client::Login::loginStartPacket(client, server, username, uuid);
+							return Java::Packet::Client::Login::loginStart(client, server, username, uuid);
 						});
 					} catch (const std::runtime_error& e) {
 						server->getLogger().log("Can't decode packet ID " + std::to_string(packetId) + " : " + e.what(), "Network", Logger::WARN);
