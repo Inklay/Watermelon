@@ -22,6 +22,7 @@ namespace Java {
 					} catch(const std::runtime_error& e) {
 						server->getLogger().log("Can't decode packet ID " + std::to_string(packetId) + " : " + e.what(), "Network", Logger::WARN);
 						server->disconnectClient(client.get());
+						return;
 					}
 				}
 
@@ -33,6 +34,7 @@ namespace Java {
 					} catch (const std::runtime_error& e) {
 						server->getLogger().log("Can't decode packet ID " + std::to_string(packetId) + " : " + e.what(), "Network", Logger::WARN);
 						server->disconnectClient(client.get());
+						return;
 					}
 
 					client->changeStatus(::Client::Status::PLAY);

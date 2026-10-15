@@ -7,10 +7,20 @@ namespace Java {
 		namespace Server {
 			namespace Login {
 				static void loginStart(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
+					if (client->getPlayer() != nullptr) {
+						server->getLogger().log("Player was already logged in", "Network", Logger::WARN);
+						server->disconnectClient(client.get());
+					}
+
 					uint32_t offset = 0;
 
 					try {
 						std::string username = Java::Packet::readString(packet, offset);
+
+						if (username.length() > 16) {
+							throw std::runtime_error("Username too long");
+						}
+
 						std::pair<uint64_t, uint64_t> uuid = Java::Packet::readUUID(packet, offset);
 						Java::Packet::checkEmpty(packet, offset);
 
@@ -20,10 +30,16 @@ namespace Java {
 					} catch (const std::runtime_error& e) {
 						server->getLogger().log("Can't decode packet ID " + std::to_string(packetId) + " : " + e.what(), "Network", Logger::WARN);
 						server->disconnectClient(client.get());
+						return;
 					}
 				}
 
 				static void loginAknowledged(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
+					if (client->getPlayer() == nullptr) {
+						server->getLogger().log("Player never logged in", "Network", Logger::WARN);
+						server->disconnectClient(client.get());
+					}
+					
 					uint32_t offset = 0;
 
 					try {
@@ -31,6 +47,7 @@ namespace Java {
 					} catch (const std::runtime_error& e) {
 						server->getLogger().log("Can't decode packet ID " + std::to_string(packetId) + " : " + e.what(), "Network", Logger::WARN);
 						server->disconnectClient(client.get());
+						return;
 					}
 
 					client->changeStatus(::Client::Status::CONFIGURATION);

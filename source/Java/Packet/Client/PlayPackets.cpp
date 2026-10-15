@@ -34,7 +34,7 @@ namespace Java {
 					const Registry* dimensionReg = RegistryManager::getInstance().getRegistry("minecraft:dimension_type");
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::LOGIN, buffer);
-					Java::Packet::write32(server->increaseEntityCounter(), buffer);
+					Java::Packet::write32(client->getPlayer()->getEntityId(), buffer);
 					Java::Packet::writeBool(false, buffer); // FIXME is hardcore
 					Java::Packet::writeVarInt((int32_t)dimensionReg->entries.size(), buffer);
 

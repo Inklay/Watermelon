@@ -281,6 +281,4 @@ void Watermelon::disconnectClient(Client* client) {
 		ptr->disconnect();
 		log("TCP connection closed", Logger::DEBUG);
 	}
-
-	m_running.store(false);
 }

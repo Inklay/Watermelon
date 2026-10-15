@@ -18,10 +18,10 @@ namespace Java {
 		};
 
 		enum Gamemode {
-			SURVIVAL = 1,
-			CREATIVE = 2,
-			ADVENTURE = 3,
-			SPECTATOR = 4
+			SURVIVAL = 0,
+			CREATIVE = 1,
+			ADVENTURE = 2,
+			SPECTATOR = 3
 		};
 
 		namespace PacketId {
