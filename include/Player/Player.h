@@ -9,6 +9,7 @@ public:
 	const std::string& getUsername();
 	int32_t teleport(Entity::Position position, Entity::Rotation rotation);
 	bool finishTeleporting(int32_t teleportId);
+	static bool isUsernameValid(const std::string& username);
 
 private:
 	std::string m_username;

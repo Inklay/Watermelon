@@ -33,3 +33,22 @@ bool Player::finishTeleporting(int32_t teleportId) {
 	m_teleporting = false;
 	return true;
 }
+
+bool Player::isUsernameValid(const std::string& username) {
+	if (username.empty() || username.size() > 16) {
+		return false;
+	}
+
+	for (const char c : username) {
+		const bool ok = (c >= 'a' && c <= 'z')
+			|| (c >= 'A' && c <= 'Z')
+			|| (c >= '0' && c <= '9')
+			|| c == '_';
+
+		if (!ok) {
+			return false;
+		}
+	}
+
+	return true;
+}

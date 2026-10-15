@@ -12,7 +12,9 @@ namespace Java {
 
 					server->getLogger().log("UUID of player " + username + " is " + Utils::UUID::formatUUID(uuid), "Network", Logger::INFO);
 					client->setSessionUUID(sessionUUID);
-					client->createPlayer(username, uuid, server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 });
+					if (!client->createPlayer(username, uuid, server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 })) {
+						return;
+					}
 
 					if (server->getConfig()["networking"]["java"]["online_mode"].value_or(true)) {
 						// encryption packet

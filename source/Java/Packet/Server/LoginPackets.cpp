@@ -17,11 +17,6 @@ namespace Java {
 
 					try {
 						std::string username = Java::Packet::readString(packet, offset);
-
-						if (username.length() > 16) {
-							throw std::runtime_error("Username too long");
-						}
-
 						std::pair<uint64_t, uint64_t> uuid = Java::Packet::readUUID(packet, offset);
 						Java::Packet::checkEmpty(packet, offset);
 
