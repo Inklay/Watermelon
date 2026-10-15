@@ -23,8 +23,10 @@ namespace Java {
 				}
 
 				void parsePacket(std::shared_ptr<::Client> client, const Java::Packet::Header& header, Watermelon* server) {
-					server->getLogger().log("Received packet with ID: " + std::to_string(header.packetId) + " and client status: " + std::to_string(client->status), "Java Parser", Logger::DEBUG);
-					switch (client->status) {
+					if (client->getStatus() != ::Client::Status::PLAY || header.packetId != (int32_t)Java::Packet::PacketId::PlayServer::CLIENT_TICK_END) {
+						server->getLogger().log("Received packet with ID: " + std::to_string(header.packetId) + " and client status: " + std::to_string(client->getStatus()), "Java Parser", Logger::DEBUG);
+					}
+					switch (client->getStatus()) {
 					case Client::Status::HANDSHAKING:
 						return Java::Packet::Server::Handshake::parse(client, header, server);
 					case Client::Status::STATUS:

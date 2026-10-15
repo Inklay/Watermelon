@@ -1,7 +1,8 @@
 #pragma once
 
 #include <vector>
-#include "Player.h"
+#include <mutex>
+#include "Player/Player.h"
 #include "Java/Pack.h"
 #ifdef _WIN32
 #include <winsock2.h>
@@ -25,22 +26,33 @@ public:
 		PLAY
 	};
 
-	bool hasPack(const std::string& name);
-
 	int operator==(const Client& other) {
-		return socket == other.socket;
+		return m_socket == other.m_socket;
 	}
 
 	int operator==(const Client&& other) {
-		return socket == other.socket;
+		return m_socket == other.m_socket;
 	}
 
-	Type type;
-	Socket socket;
-	Status status;
-	Player player;
-	std::pair<uint64_t, uint64_t> sessionUUID = { -1, -1 };
-	std::vector<Java::Pack> packs;
-	int32_t teleportIdCounter = 0;
-	bool teleporting = false;
+	Client(Type type, Socket socket);
+	~Client();
+	Socket getSocket() const;
+	Type getType() const;
+	bool hasPack(const std::string& name);
+	void changeStatus(Status status);
+	Status getStatus();
+	void createPlayer(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation);
+	Player* getPlayer();
+	void setPacks(const std::vector<Java::Pack> packs);
+	std::vector<Java::Pack>& getPacks();
+	void setSessionUUID(std::pair<uint64_t, uint64_t> sessionUUID);
+
+private:
+	const Type m_type;
+	Status m_status;
+	Socket m_socket;
+	Player* m_player;
+	std::pair<uint64_t, uint64_t> m_sessionUUID = { -1, -1 };
+	std::vector<Java::Pack> m_packs;
+	std::mutex m_mutex;
 };

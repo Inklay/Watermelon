@@ -10,7 +10,7 @@ namespace Java {
             }
 
             std::string result(length, '\0');
-            int bytesRead = recv(client->socket, &result[0], length, 0);
+            int bytesRead = recv(client->getSocket(), &result[0], length, 0);
 
             if (bytesRead <= 0) {
                 return "";
@@ -25,7 +25,7 @@ namespace Java {
             int shift = 0;
 
             while (true) {
-                int bytes = recv(client->socket, &currentByte, 1, 0);
+                int bytes = recv(client->getSocket(), &currentByte, 1, 0);
                 if (bytes <= 0) {
                     return -1;
                 }
@@ -48,7 +48,7 @@ namespace Java {
 
         uint8_t readU8(std::shared_ptr<::Client> client, uint32_t& offset) {
             uint8_t value = 0;
-            int bytesRead = recv(client->socket, reinterpret_cast<char*>(&value), sizeof(value), 0);
+            int bytesRead = recv(client->getSocket(), reinterpret_cast<char*>(&value), sizeof(value), 0);
 
             if (bytesRead <= 0) {
                 return 0;
@@ -59,7 +59,7 @@ namespace Java {
 
         uint16_t readU16(std::shared_ptr<::Client> client, uint32_t& offset) {
             uint16_t value = 0;
-            int bytesRead = recv(client->socket, reinterpret_cast<char*>(&value), sizeof(value), 0);
+            int bytesRead = recv(client->getSocket(), reinterpret_cast<char*>(&value), sizeof(value), 0);
 
             if (bytesRead <= 0) {
                 return 0;
@@ -70,7 +70,7 @@ namespace Java {
 
         uint32_t readU32(std::shared_ptr<::Client> client, uint32_t& offset) {
             uint32_t value = 0;
-            int bytesRead = recv(client->socket, reinterpret_cast<char*>(&value), sizeof(value), 0);
+            int bytesRead = recv(client->getSocket(), reinterpret_cast<char*>(&value), sizeof(value), 0);
 
             if (bytesRead <= 0) {
                 return 0;
@@ -81,7 +81,7 @@ namespace Java {
 
         int64_t read64(std::shared_ptr<::Client> client, uint32_t& offset) {
             int64_t value = 0;
-            int bytesRead = recv(client->socket, reinterpret_cast<char*>(&value), sizeof(value), 0);
+            int bytesRead = recv(client->getSocket(), reinterpret_cast<char*>(&value), sizeof(value), 0);
 
             if (bytesRead <= 0) {
                 return 0;
@@ -92,7 +92,7 @@ namespace Java {
 
         float readFloat(std::shared_ptr<::Client> client, uint32_t& offset) {
             uint32_t value = 0;
-            int bytesRead = recv(client->socket, reinterpret_cast<char*>(&value), sizeof(value), 0);
+            int bytesRead = recv(client->getSocket(), reinterpret_cast<char*>(&value), sizeof(value), 0);
 
             if (bytesRead <= 0) {
                 return 0;
@@ -103,7 +103,7 @@ namespace Java {
 
         double readDouble(std::shared_ptr<::Client> client, uint32_t& offset) {
             uint64_t value = 0;
-            int bytesRead = recv(client->socket, reinterpret_cast<char*>(&value), sizeof(value), 0);
+            int bytesRead = recv(client->getSocket(), reinterpret_cast<char*>(&value), sizeof(value), 0);
 
             if (bytesRead <= 0) {
                 return 0;
@@ -114,13 +114,13 @@ namespace Java {
 
         std::pair<uint64_t, uint64_t> readUUID(std::shared_ptr<Client> client, uint32_t& offset) {
             uint64_t a, b = 0;
-            int bytesRead = recv(client->socket, reinterpret_cast<char*>(&a), sizeof(a), 0);
+            int bytesRead = recv(client->getSocket(), reinterpret_cast<char*>(&a), sizeof(a), 0);
 
             if (bytesRead <= 0) {
                 return { 0, 0 };
             }
 
-            bytesRead = recv(client->socket, reinterpret_cast<char*>(&b), sizeof(b), 0);
+            bytesRead = recv(client->getSocket(), reinterpret_cast<char*>(&b), sizeof(b), 0);
 
             if (bytesRead <= 0) {
                 return { 0, 0 };

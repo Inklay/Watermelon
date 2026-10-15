@@ -15,17 +15,14 @@ namespace Java {
 					uint16_t serverPort = Java::Packet::readU16(client, offset);
 					Java::Packet::Intent intent = static_cast<Java::Packet::Intent>(Java::Packet::readVarInt(client, offset));
 
-					{
-						std::lock_guard<std::mutex> lock(server->getClientMutex());
-						switch (intent) {
-						case Java::Packet::Intent::STATUS:
-							client->status = ::Client::Status::STATUS;
-							break;
-						case Java::Packet::Intent::LOGIN:
-						case Java::Packet::Intent::TRANSFER:
-							client->status = ::Client::Status::LOGIN;
-							break;
-						}
+					switch (intent) {
+					case Java::Packet::Intent::STATUS:
+						client->changeStatus(::Client::Status::STATUS);
+						break;
+					case Java::Packet::Intent::LOGIN:
+					case Java::Packet::Intent::TRANSFER:
+						client->changeStatus(::Client::Status::LOGIN);
+						break;
 					}
 				}
 

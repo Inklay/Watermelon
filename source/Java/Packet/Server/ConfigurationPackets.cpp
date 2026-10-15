@@ -10,12 +10,8 @@ namespace Java {
 					uint32_t offset = 0;
 					std::vector<Java::Pack> packs = Java::Packet::readPacks(client, offset);
 
-					{
-						std::lock_guard<std::mutex> lock(server->getClientMutex());
-						client->packs = packs;
-					}
-
-					server->addPacketToQueue(client, [client, server]() {
+					server->addOperationToQueue(client, [client, server, packs]() {
+						client->setPacks(packs);
 						Java::Packet::Client::Configuration::registryData(client, server);
 						Java::Packet::Client::Configuration::updateTags(client, server);
 						Java::Packet::Client::Configuration::finishConfiguration(client, server);
@@ -25,12 +21,8 @@ namespace Java {
 				static void AcknowledgeFinishConfiguration(std::shared_ptr<::Client> client, const Java::Packet::Header& header, Watermelon* server) {
 					uint32_t offset = 0;
 
-					{
-						std::lock_guard<std::mutex> lock(server->getClientMutex());
-						client->status = ::Client::Status::PLAY;
-					}
-
-					server->addPacketToQueue(client, [client, server]() {
+					client->changeStatus(::Client::Status::PLAY);
+					server->addOperationToQueue(client, [client, server]() {
 						Java::Packet::Client::Play::login(client, server);
 						Java::Packet::Client::Play::synchronizePlayerPosition(client, server);
 					});

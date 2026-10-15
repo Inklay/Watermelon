@@ -25,7 +25,7 @@ public:
 	bool start();
 	void run();
 	std::mutex& getClientMutex();
-	void addPacketToQueue(std::shared_ptr<Client> client, std::function<void()> packetHandler);
+	void addOperationToQueue(std::shared_ptr<Client> client, std::function<void()> packetHandler);
 	Version& getVersion();
 	Logger& getLogger();
 	void sendDataToClient(std::shared_ptr<Client> client, const std::vector<char>& data);

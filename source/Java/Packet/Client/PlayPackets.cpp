@@ -7,24 +7,11 @@ namespace Java {
 		namespace Client {
 			namespace Play {
 				void synchronizePlayerPosition(std::shared_ptr<::Client> client, Watermelon* server) {
-					bool wasTeleporting = false;
-
-					{
-						std::lock_guard<std::mutex> lock(server->getClientMutex());
-						wasTeleporting = client->teleporting;
-					}
-
-					if (wasTeleporting) {
-						return;
-					}
-
 					std::vector<char> buffer;
-					int32_t teleportId = 0;
+					int32_t teleportId = client->getPlayer()->teleport({ 0, 0, 0 }, { 0, 0 });
 
-					{
-						std::lock_guard<std::mutex> lock(server->getClientMutex());
-						teleportId = client->teleportIdCounter;
-						client->teleporting = true;
+					if (teleportId == -1) {
+						return;
 					}
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::SYNCHRONIZE_PLAYER_POSITION, buffer);

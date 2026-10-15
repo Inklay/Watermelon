@@ -6,9 +6,9 @@ namespace Java {
 		namespace Server {
 			namespace Status {
 				static void status(std::shared_ptr<::Client> client, const Java::Packet::Header& header, Watermelon* server) {
-					server->addPacketToQueue(client, [client, server]() {
+					server->addOperationToQueue(client, [client, server]() {
 						return Java::Packet::Client::Status::statusPacket(client, server);
-						});
+					});
 				}
 
 				static void ping(std::shared_ptr<::Client> client, const Java::Packet::Header& header, Watermelon* server) {

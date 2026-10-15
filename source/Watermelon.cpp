@@ -112,7 +112,7 @@ void Watermelon::tcpListenLoop() {
 
 		{
 			std::lock_guard<std::mutex> lock(m_clientsMutex);
-			m_clients.push_back(std::make_unique<Client>(Client::Type::JAVA, clientSocket, Client::Status::HANDSHAKING));
+			m_clients.push_back(std::make_unique<Client>(Client::Type::JAVA, clientSocket));
 		}
 	}
 	log("Stopping TCP listen thread", Logger::DEBUG);
@@ -137,9 +137,9 @@ void Watermelon::networkLoop() {
 		SOCKET maxFD = 0;
 
 		for (const auto& client : clientsToCheck) {
-			FD_SET(client->socket, &readFDs);
-			if (client->socket > maxFD) {
-				maxFD = client->socket;
+			FD_SET(client->getSocket(), &readFDs);
+			if (client->getSocket() > maxFD) {
+				maxFD = client->getSocket();
 			}
 		}
 
@@ -151,8 +151,8 @@ void Watermelon::networkLoop() {
 		}
 
 		for (const auto& client : clientsToCheck) {
-			if (FD_ISSET(client->socket, &readFDs)) {
-				if (client->type == Client::Type::JAVA) {
+			if (FD_ISSET(client->getSocket(), &readFDs)) {
+				if (client->getType() == Client::Type::JAVA) {
 					Java::Packet::Header header = Java::Packet::Server::Parser::parseHeader(client);
 
 					if (header.length == -1) {
@@ -160,11 +160,6 @@ void Watermelon::networkLoop() {
 
 						{
 							std::lock_guard<std::mutex> lock(m_clientsMutex);
-#ifdef _WIN32
-							closesocket(client->socket);
-#else
-							close(client->socket);
-#endif
 							auto it = std::find(m_clients.begin(), m_clients.end(), client);
 							if (it != m_clients.end()) {
 								m_clients.erase(it);
@@ -192,8 +187,8 @@ void Watermelon::run() {
 		}
 
 		while (!queuedPackets.empty()) {
-			auto& [client, packetHandler] = queuedPackets.front();
-			packetHandler();
+			auto& [client, operation] = queuedPackets.front();
+			operation();
 			queuedPackets.pop();
 		}
 
@@ -209,7 +204,7 @@ std::mutex& Watermelon::getClientMutex() {
 	return m_clientsMutex;
 }
 
-void Watermelon::addPacketToQueue(std::shared_ptr<Client> client, std::function<void()> packetHandler) {
+void Watermelon::addOperationToQueue(std::shared_ptr<Client> client, std::function<void()> packetHandler) {
 	std::lock_guard<std::mutex> lock(m_packetQueueMutex);
 	m_packetQueue.push(std::make_pair(client, packetHandler));
 }
@@ -228,7 +223,7 @@ void Watermelon::sendDataToClient(std::shared_ptr<Client> client, const std::vec
 	Java::Packet::writeVarInt((int32_t)data.size(), fullPacket);
 	fullPacket.insert(fullPacket.end(), data.begin(), data.end());
 	std::lock_guard<std::mutex> lock(m_clientsMutex);
-	send(client->socket, fullPacket.data(), (int)fullPacket.size(), 0);
+	send(client->getSocket(), fullPacket.data(), (int)fullPacket.size(), 0);
 }
 
 toml::table& Watermelon::getConfig() {

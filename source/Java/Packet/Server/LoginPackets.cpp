@@ -11,9 +11,9 @@ namespace Java {
 					std::string username = Java::Packet::readString(client, offset);
 					std::pair<uint64_t, uint64_t> uuid = Java::Packet::readUUID(client, offset);
 
-					server->addPacketToQueue(client, [client, server, username, uuid]() {
+					server->addOperationToQueue(client, [client, server, username, uuid]() {
 						return Java::Packet::Client::Login::loginStartPacket(client, server, username, uuid);
-						});
+					});
 				}
 
 				static void loginAknowledged(std::shared_ptr<::Client> client, const Java::Packet::Header& header, Watermelon* server) {
@@ -21,14 +21,10 @@ namespace Java {
 					std::string username = Java::Packet::readString(client, offset);
 					std::pair<uint64_t, uint64_t> uuid = Java::Packet::readUUID(client, offset);
 
-					{
-						std::lock_guard<std::mutex> lock(server->getClientMutex());
-						client->status = ::Client::Status::CONFIGURATION;
-					}
-
-					server->addPacketToQueue(client, [client, server]() {
-						return Java::Packet::Client::Configuration::knownPacks(client, server);
-						});
+					client->changeStatus(::Client::Status::CONFIGURATION);
+					server->addOperationToQueue(client, [client, server]() {
+						Java::Packet::Client::Configuration::knownPacks(client, server);
+					});
 				}
 
 				void parse(std::shared_ptr<::Client> client, const Java::Packet::Header& header, Watermelon* server) {

@@ -12,7 +12,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(SOURCES
 	source/main.cpp
 	source/Logger.cpp
-    source/Player.cpp
+    
 	source/Config.cpp
     source/Client.cpp
 	source/Watermelon.cpp
@@ -29,7 +29,7 @@ set(SOURCES
     source/Java/Packet/Client/ConfigurationPackets.cpp
     source/Java/Packet/Client/PlayPackets.cpp
     source/Registry/RegistryManager.cpp
- "source/Utils/Buffer.cpp")
+ "source/Utils/Buffer.cpp" "source/Entity/Entity.cpp" "source/Player/Player.cpp")
 
 add_executable(Watermelon ${SOURCES})
 
