@@ -52,5 +52,5 @@ private:
 	RegistryManager& m_registryManager;
 	Version m_version;
 	uint32_t m_entityCounter;
-	bool m_running;
+	std::atomic<bool> m_running { false };
 };

@@ -15,7 +15,6 @@ Watermelon::Watermelon() :
 	m_version({ "26.3", 777 }),
 	m_config(loadConfig()),
 	m_logger(*m_config["logging"].as_table()),
-	m_running(false),
 	m_registryManager(RegistryManager::getInstance()),
 	m_entityCounter(0)
 {
@@ -31,7 +30,15 @@ Watermelon::Watermelon() :
 }
 
 Watermelon::~Watermelon() {
-	m_running = false;
+	m_running.store(false);
+
+	if (m_tcpListenThread.joinable()) {
+		m_tcpListenThread.join();
+	}
+	if (m_networkThread.joinable()) {
+		m_networkThread.join();
+	}
+
 #ifdef _WIN32
 	if (m_serverSocket != INVALID_SOCKET) {
 		closesocket(m_serverSocket);
@@ -42,22 +49,14 @@ Watermelon::~Watermelon() {
 		close(m_serverSocket);
 	}
 #endif
-
-	if (m_tcpListenThread.joinable()) {
-		m_tcpListenThread.join();
-	}
-	if (m_networkThread.joinable()) {
-		m_networkThread.join();
-	}
 }
 
 bool Watermelon::start() {
-	m_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-
 	if (!m_config["networking"]["java"]["enabled"].value_or(true)) {
 		return false;
 	}
 
+	m_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 	const std::string configuredAddress = m_config["networking"]["java"]["address"].value_or("0.0.0.0:25565");
 	const int port = configuredAddress.find(':') != std::string::npos ? std::stoi(configuredAddress.substr(configuredAddress.find(':') + 1)) : 25565;
 	const std::string address = configuredAddress.find(':') != std::string::npos ? configuredAddress.substr(0, configuredAddress.find(':')) : "0.0.0.0";
@@ -83,7 +82,7 @@ bool Watermelon::start() {
 
 	listen(m_serverSocket, 5);
 	log("Listening on port TCP/" + std::to_string(port), Logger::INFO);
-	m_running = true;
+	m_running.store(true);
 	m_tcpListenThread = std::thread(&Watermelon::tcpListenLoop, this);
 	m_networkThread = std::thread(&Watermelon::networkLoop, this);
 
@@ -91,13 +90,24 @@ bool Watermelon::start() {
 }
 
 void Watermelon::tcpListenLoop() {
-	while (m_running) {
+	while (m_running.load()) {
+		fd_set readFDs;
+		FD_ZERO(&readFDs);
+		FD_SET(m_serverSocket, &readFDs);
+
+		struct timeval timeout { 0, 500000 };
+		int activity = select(static_cast<int>(m_serverSocket + 1), &readFDs, nullptr, nullptr, &timeout);
+
+		if (activity == 0) {
+			continue;
+		}
+
 		sockaddr_in clientAddress;
  		int clientLength = sizeof(clientAddress);
 		SOCKET clientSocket = accept(m_serverSocket, (struct sockaddr*)&clientAddress, &clientLength);
 
 		if (clientSocket == -1) {
-			if (!m_running) {
+			if (!m_running.load()) {
 				break;
 			}
 #ifdef _WIN32
@@ -115,11 +125,11 @@ void Watermelon::tcpListenLoop() {
 			m_clients.push_back(std::make_shared<Client>(Client::Type::JAVA, clientSocket, this));
 		}
 	}
-	log("Stopping TCP listen thread", Logger::DEBUG);
+	m_logger.log("Stopping TCP listen thread", "TCP listen", Logger::INFO);
 }
 
 void Watermelon::networkLoop() {
-	while (m_running) {
+	while (m_running.load()) {
 		std::vector<std::shared_ptr<Client>> clientsToCheck;
 
 		{
@@ -187,11 +197,11 @@ void Watermelon::networkLoop() {
 			}
 		}
 	}
-	log("Stopping network thread", Logger::DEBUG);
+	m_logger.log("Stopping network thread", "Network", Logger::INFO);
 }
 
 void Watermelon::run() {
-	while (m_running) {
+	while (m_running.load()) {
 		std::queue<std::pair<std::shared_ptr<Client>, std::function<void()>>> queuedPackets;
 		{
 			std::lock_guard<std::mutex> lock(m_packetQueueMutex);
@@ -206,6 +216,8 @@ void Watermelon::run() {
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	}
+
+	log("Stopping main thread", Logger::INFO);
 }
 
 void Watermelon::log(const std::string& message, Logger::Level level) {
@@ -269,4 +281,6 @@ void Watermelon::disconnectClient(Client* client) {
 		ptr->disconnect();
 		log("TCP connection closed", Logger::DEBUG);
 	}
+
+	m_running.store(false);
 }
