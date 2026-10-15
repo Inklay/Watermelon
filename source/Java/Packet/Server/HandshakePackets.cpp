@@ -9,6 +9,13 @@ namespace Java {
 					
 					try {
 						int32_t protocolVersion = Java::Packet::readVarInt(packet, offset);
+
+						if (protocolVersion != server->getVersion().protocol) {
+							server->getLogger().log("Client tried to connect with wrong protocol version " + std::to_string(protocolVersion), "Network", Logger::WARN);
+							server->disconnectClient(client.get());
+							return;
+						}
+
 						std::string serverAddress = Java::Packet::readString(packet, offset);
 						uint16_t serverPort = Java::Packet::readU16(packet, offset);
 						Java::Packet::Intent intent = static_cast<Java::Packet::Intent>(Java::Packet::readVarInt(packet, offset));
