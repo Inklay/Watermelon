@@ -12,6 +12,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <csignal>
+#include <netinet/tcp.h>
 #endif
 
 Watermelon::Watermelon() :
@@ -33,6 +35,8 @@ Watermelon::Watermelon() :
 	if (wsaResult != 0) {
 		log("WSA Straptup failed : " + std::to_string(wsaResult), Logger::ERR);
 	}
+#else
+	signal(SIGPIPE, SIG_IGN);
 #endif
 
 	m_packs.emplace_back("minecraft", "core", m_version.name);
@@ -89,11 +93,16 @@ bool Watermelon::start() {
 		return false;
 	}
 
+#ifndef _WIN32
+	int yes = 1;
+	setsockopt(m_serverSocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+#endif
+
 	const std::string configuredAddress = m_config["networking"]["java"]["address"].value_or("0.0.0.0:25565");
 	int port = 0;
 	try {
 		port = configuredAddress.find(':') != std::string::npos ? std::stoi(configuredAddress.substr(configuredAddress.find(':') + 1)) : 25565;
-		if (port < 0 || port > SHRT_MAX) {
+		if (port < 1 || port > 65535) {
 			throw std::runtime_error("Invalid port number");
 		}
 	} catch (...) {
@@ -107,7 +116,7 @@ bool Watermelon::start() {
 	
 	if (address == "0.0.0.0") {
 		serverAddress.sin_addr.s_addr = INADDR_ANY;
-	} else if (inet_pton(AF_INET, address.c_str(), &serverAddress.sin_addr)){
+	} else if (inet_pton(AF_INET, address.c_str(), &serverAddress.sin_addr) != 1){
 		log("Invalid listening address: " + address, Logger::ERR);
 		return false;
 	}
@@ -163,6 +172,9 @@ void Watermelon::tcpListenLoop() {
 #endif
 			continue;
 		}
+
+		int yes = 1;
+		setsockopt(clientSocket, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char*>(&yes), sizeof(yes));
 
 		log("New TCP connection", Logger::DEBUG);
 
