@@ -96,6 +96,7 @@ Player* Client::getPlayer() {
 }
 
 bool Client::hasPlayer() {
+	std::lock_guard<std::mutex> lock(m_mutex);
 	return m_player != nullptr;
 }
 
