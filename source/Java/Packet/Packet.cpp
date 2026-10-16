@@ -1,22 +1,9 @@
 #include "Java/Packet/Packet.h"
 #include <iostream>
 #include <stdexcept>
+#include "Utils/Byte.h"
 #ifndef _WIN32
 #include <arpa/inet.h>
-#define htonll htobe64
-
-uint64_t htond(double value) {
-    uint64_t storage;
-    memcpy(&storage, &value, sizeof(double));
-    return htonll(storage);
-}
-
-uint32_t htonf(float value) {
-    uint32_t storage;
-    memcpy(&storage, &value, sizeof(float));
-    return htonl(storage);
-}
-
 #endif
 
 namespace Java {
@@ -200,27 +187,27 @@ namespace Java {
         }
 
         void write16(int16_t value, std::vector<char>& buffer) {
-            int16_t networkValue = htons(value);
+            int16_t networkValue = Byte::toBigEndian(value);
             buffer.insert(buffer.end(), reinterpret_cast<const char*>(&networkValue), reinterpret_cast<const char*>(&networkValue) + sizeof(networkValue));
         }
 
         void write32(int32_t value, std::vector<char>& buffer) {
-            int32_t networkValue = htonl(value);
+            int32_t networkValue = Byte::toBigEndian(value);
             buffer.insert(buffer.end(), reinterpret_cast<const char*>(&networkValue), reinterpret_cast<const char*>(&networkValue) + sizeof(networkValue));
         }
 
         void write64(int64_t value, std::vector<char>& buffer) {
-            int64_t networkValue = htonll(value);
+            int64_t networkValue = Byte::toBigEndian(value);
             buffer.insert(buffer.end(), reinterpret_cast<const char*>(&networkValue), reinterpret_cast<const char*>(&networkValue) + sizeof(networkValue));
         }
 
         void writeFloat(float value, std::vector<char>& buffer) {
-            uint32_t networkValue = htonf(value);
+            uint32_t networkValue = Byte::toBigEndian(std::bit_cast<uint32_t>(value));
             buffer.insert(buffer.end(), reinterpret_cast<const char*>(&networkValue), reinterpret_cast<const char*>(&networkValue) + sizeof(networkValue));
         }
 
         void writeDouble(double value, std::vector<char>& buffer) {
-            uint64_t networkValue = htond(value);
+            uint64_t networkValue = Byte::toBigEndian(std::bit_cast<uint64_t>(value));
             buffer.insert(buffer.end(), reinterpret_cast<const char*>(&networkValue), reinterpret_cast<const char*>(&networkValue) + sizeof(networkValue));
         }
 

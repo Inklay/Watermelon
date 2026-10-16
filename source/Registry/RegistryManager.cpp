@@ -1,4 +1,4 @@
-#include "Registry/Registrymanager.h"
+#include "Registry/RegistryManager.h"
 #include "Registry/BuiltIn.h"
 #include "Registry/Synchronised.h"
 #include "Tag/Tags.h"

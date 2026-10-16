@@ -39,7 +39,7 @@ namespace Java {
 					switch (packetId) {
 					case (int32_t)Java::Packet::PacketId::PlayServer::CONFIRM_TELEPORTATION:
 						return confirmTeleportation(client, packetId, server, packet);
-					//case (int32_t)Java::Packet::PacketId::PlayServer::SET_PLAYER_POSITION_AND_ROTATION:
+					case (int32_t)Java::Packet::PacketId::PlayServer::SET_PLAYER_POSITION_AND_ROTATION:
 					//	return setPlayerPositionAndRotation(client, packetId, server, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::CLIENT_TICK_END:
 						return;
