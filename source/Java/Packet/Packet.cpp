@@ -2,9 +2,6 @@
 #include <iostream>
 #include <stdexcept>
 #include "Utils/Byte.h"
-#ifndef _WIN32
-#include <arpa/inet.h>
-#endif
 
 namespace Java {
     namespace Packet {

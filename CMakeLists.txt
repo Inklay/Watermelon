@@ -41,6 +41,7 @@ add_executable(Watermelon ${SOURCES})
 # ---------------------------------------------------------------------------
 target_include_directories(Watermelon PRIVATE
     ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_BINARY_DIR}/stubs
 )
 
 # ---------------------------------------------------------------------------
@@ -80,3 +81,42 @@ target_compile_definitions(Watermelon PRIVATE
 set_target_properties(Watermelon PROPERTIES
     INTERPROCEDURAL_OPTIMIZATION_RELEASE ON
 )
+
+# ---------------------------------------------------------------------------
+# Stub generated header file if needed
+# ---------------------------------------------------------------------------
+
+function(stubRegistries header prefix)
+    if(NOT EXISTS "${CMAKE_SOURCE_DIR}/include/Registry/${header}")
+        file(WRITE "${CMAKE_BINARY_DIR}/stubs/Registry/${header}"
+"#pragma once
+#include <array>
+#include <cstddef>
+#include \"Registry/Registry.h\"
+
+namespace Registries {
+	inline const std::array<const Registry*, 0> ${prefix}_REGISTRIES = {};
+	inline const std::size_t ${prefix}_REGISTRIES_COUNT = 0;
+}
+")
+        message(WARNING "include/Registry/${header} is missing: using an empty stub, clients won't be able to join. Run the scripts in codegen/ (see README).")
+    endif()
+endfunction()
+
+stubRegistries(BuiltIn.h BUILT_IN)
+stubRegistries(Synchronised.h SYNCHRONIZED)
+
+if(NOT EXISTS "${CMAKE_SOURCE_DIR}/include/Tag/Tags.h")
+    file(WRITE "${CMAKE_BINARY_DIR}/stubs/Tag/Tags.h"
+"#pragma once
+
+#include <array>
+#include \"Tag/RegistryTag.h\"
+
+namespace Tags {
+	inline const std::array<const RegistryTag*, 0> REGISTRY_TAGS = {};
+	inline const std::size_t REGISTRY_TAGS_COUNT = 0;
+}
+")
+    message(WARNING "include/Tag/Tags.h is missing: using an empty stub, clients won't be able to join. Run the scripts in codegen/ (see README).")
+endif()

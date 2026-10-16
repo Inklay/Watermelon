@@ -78,6 +78,7 @@ data/
 # generated code
 include/Registry/BuiltIn.h
 include/Registry/Synchronised.h
+include/Tag/Tags.h
 protocol_mapping.json
 
 watermelon.toml

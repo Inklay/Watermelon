@@ -1,6 +1,7 @@
 #include "Utils/Buffer.h"
 #include <iostream>
 #include <iomanip>
+#include <cstdint>
 
 namespace Utils {
 	namespace Buffer {
