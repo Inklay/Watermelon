@@ -85,8 +85,13 @@ bool Client::createPlayer(const std::string& username, std::pair<uint64_t, uint6
 	return true;
 }
 
-Player* Client::getPlayer() {
+Player* Client::getPlayer(bool throwIfNull) {
 	std::lock_guard<std::mutex> lock(m_mutex);
+
+	if (throwIfNull && m_player == nullptr) {
+		throw std::runtime_error("Accessing data of a non existant player");
+	}
+
 	return m_player;
 }
 

@@ -5,9 +5,8 @@ namespace Java {
 	namespace Packet {
 		namespace Server {
 			namespace Play {
-				static void setPlayerPositionAndRotation(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
+				static void setPlayerPositionAndRotation(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
-					int32_t teleportId = Java::Packet::readVarInt(packet, offset);
 					double x = Java::Packet::readDouble(packet, offset);
 					double y = Java::Packet::readDouble(packet, offset);
 					double z = Java::Packet::readDouble(packet, offset);
@@ -19,12 +18,14 @@ namespace Java {
 					server->addOperationToQueue(client, [client, server, x, y, z, yaw, pitch]() {
 						Player* player = client->getPlayer();
 						
-						player->setPosition({ x, y, z });
-						player->setRotation({ yaw, pitch });
+						if (!player->isTeleporting()) {
+							player->setPosition({ x, y, z });
+							player->setRotation({ yaw, pitch });
+						}
 					});
 				}
 
-				static void confirmTeleportation(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
+				static void confirmTeleportation(std::shared_ptr<::Client> client,Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 					int32_t teleportId = Java::Packet::readVarInt(packet, offset);
 					Java::Packet::readDouble(packet, offset); // x
@@ -47,14 +48,14 @@ namespace Java {
 				void parse(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					switch (packetId) {
 					case (int32_t)Java::Packet::PacketId::PlayServer::CONFIRM_TELEPORTATION:
-						return confirmTeleportation(client, packetId, server, packet);
+						return confirmTeleportation(client, server, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::SET_PLAYER_POSITION_AND_ROTATION:
-						return setPlayerPositionAndRotation(client, packetId, server, packet);
+						return setPlayerPositionAndRotation(client, server, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::CLIENT_TICK_END:
 						return;
 					default:
 						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::WARN);
-						//server->disconnectClient(client.get());
+						server->disconnectClient(client.get());
 					}
 				}
 			};

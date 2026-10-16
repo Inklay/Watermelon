@@ -108,7 +108,7 @@ cmake --build build/windows-release
 Run the server from the directory where you want its files to be created:
 
 ```bash
-./out/build/linux-debug/Watermelon
+./build/linux-release/Watermelon
 ```
 
 On the first launch it creates `watermelon.toml` with the default configuration, and writes its logs to `latest.log`.

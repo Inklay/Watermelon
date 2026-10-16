@@ -6,7 +6,7 @@ namespace Java {
 	namespace Packet {
 		namespace Server {
 			namespace Configuration {
-				static void knownPacks(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
+				static void knownPacks(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 					std::vector<Java::Pack> packs = Java::Packet::readPacks(packet, offset);
 					Java::Packet::checkEmpty(packet, offset);
@@ -19,7 +19,7 @@ namespace Java {
 					});
 				}
 
-				static void AcknowledgeFinishConfiguration(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
+				static void AcknowledgeFinishConfiguration(std::shared_ptr<::Client> client,  Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 					Java::Packet::checkEmpty(packet, offset);
 
@@ -30,8 +30,8 @@ namespace Java {
 
 						Java::Packet::Client::Play::login(client, server);
 						Java::Packet::Client::Play::synchronizePlayerPosition(client, server);
-						Java::Packet::Client::Play::playerInfoUpdate(client, server, actions, { player });
-						Java::Packet::Client::Play::gameEvent(client, server, START_WAITING_FOR_CHUNKS);
+						Java::Packet::Client::Play::playerInfoUpdate(server, actions, { player });
+						Java::Packet::Client::Play::gameEvent(client, server, Java::Packet::GameEvent::START_WAITING_FOR_CHUNKS);
 						server->getLogger().log(player->getUsername() + " joined the game", "Watermelon", Logger::INFO);
 						Java::Packet::Client::Play::setCenterChunk(client, server);
 						Java::Packet::Client::Play::chunkDataAndUpdateLight(client, server, 0, 0);
@@ -41,9 +41,9 @@ namespace Java {
 				void parse(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					switch (packetId) {
 						case (int)Java::Packet::PacketId::ConfigurationServer::KNOWN_PACKS:
-							return knownPacks(client, packetId, server, packet);
+							return knownPacks(client, server, packet);
 						case (int)Java::Packet::PacketId::ConfigurationServer::ACKNOWLEDGE_FINISH_CONFIGURATION:
-							return AcknowledgeFinishConfiguration(client, packetId, server, packet);
+							return AcknowledgeFinishConfiguration(client, server, packet);
 					}
 				}
 			};

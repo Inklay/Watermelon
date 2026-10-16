@@ -5,7 +5,7 @@ namespace Java {
 	namespace Packet {
 		namespace Server {
 			namespace Status {
-				static void status(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
+				static void status(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 					Java::Packet::checkEmpty(packet, offset);
 
@@ -14,7 +14,7 @@ namespace Java {
 					});
 				}
 
-				static void ping(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
+				static void ping(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 					int64_t ping = Java::Packet::readU64(packet, offset);
 					Java::Packet::checkEmpty(packet, offset);
@@ -28,9 +28,9 @@ namespace Java {
 				void parse(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					switch (packetId) {
 					case (int32_t)Java::Packet::PacketId::StatusServer::STATUS_REQUEST:
-						return status(client, packetId, server, packet);
+						return status(client, server, packet);
 					case (int32_t)Java::Packet::PacketId::StatusServer::PING:
-						return ping(client, packetId, server, packet);
+						return ping(client, server, packet);
 					default:
 						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::WARN);
 						server->disconnectClient(client.get());

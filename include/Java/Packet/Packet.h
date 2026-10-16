@@ -23,8 +23,8 @@ namespace Java {
 			TRANSFER 
 		};
 
-		enum GameEvent {
-			NO_RESWPAN = 0,
+		enum class GameEvent {
+			NO_RESPAWN = 0,
 			BEGIN_RAIN,
 			END_RAIN,
 			CHANGE_GAME_MODE,
@@ -36,7 +36,7 @@ namespace Java {
 			PLAY_PUFFERFISH_STING_SOUND,
 			PLAY_ELDER_GUARDIAN_JUMPSCARE,
 			TOGGLE_IMMEDIATE_RESPAWN,
-			TOOGLE_LIMITED_CRAFTING,
+			TOGGLE_LIMITED_CRAFTING,
 			START_WAITING_FOR_CHUNKS
 		};
 

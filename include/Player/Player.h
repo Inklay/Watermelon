@@ -32,6 +32,8 @@ public:
 	Gamemode getGamemode();
 	void setGamemode(Gamemode gamemode);
 	Position getPosition();
+	bool hasChatSignature();
+	bool isTeleporting();
 
 private:
 	std::string m_username;

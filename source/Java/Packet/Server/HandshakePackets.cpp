@@ -8,7 +8,7 @@ namespace Java {
 	namespace Packet {
 		namespace Server {
 			namespace Handshake {
-				static void handshake(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
+				static void handshake(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 					int32_t protocolVersion = Java::Packet::readVarInt(packet, offset);
 					Java::Packet::readString(packet, offset); // server address
@@ -42,7 +42,7 @@ namespace Java {
 				void parse(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					switch (packetId) {
 					case (int32_t)Java::Packet::PacketId::HandshakeServer::HANDSHAKE:
-						return handshake(client, packetId, server, packet);
+						return handshake(client, server, packet);
 					default:
 						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::WARN);
 						server->disconnectClient(client.get());

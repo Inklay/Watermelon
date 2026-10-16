@@ -6,8 +6,8 @@ namespace Java {
 	namespace Packet {
 		namespace Server {
 			namespace Login {
-				static void loginStart(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
-					if (client->getPlayer() != nullptr) {
+				static void loginStart(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
+					if (client->getPlayer(false) != nullptr) {
 						server->getLogger().log("Player was already logged in", "Network", Logger::WARN);
 						server->disconnectClient(client.get());
 						return;
@@ -23,12 +23,8 @@ namespace Java {
 					});
 				}
 
-				static void loginAknowledged(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
-					if (client->getPlayer() == nullptr) {
-						server->getLogger().log("Player never logged in", "Network", Logger::WARN);
-						server->disconnectClient(client.get());
-						return;
-					}
+				static void loginAknowledged(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
+					client->getPlayer();
 					
 					uint32_t offset = 0;
 					Java::Packet::checkEmpty(packet, offset);
@@ -42,9 +38,9 @@ namespace Java {
 				void parse(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					switch (packetId) {
 					case (int32_t)Java::Packet::PacketId::LoginServer::LOGIN_START:
-						return loginStart(client, packetId, server, packet);
+						return loginStart(client, server, packet);
 					case (int32_t)Java::Packet::PacketId::LoginServer::LOGIN_ACKNOWLEDGED:
-						return loginAknowledged(client, packetId, server, packet);
+						return loginAknowledged(client, server, packet);
 					default:
 						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::WARN);
 						server->disconnectClient(client.get());

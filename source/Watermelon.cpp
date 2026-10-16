@@ -40,11 +40,11 @@ Watermelon::Watermelon() :
 
 	m_packs.emplace_back("minecraft", "core", m_version.name);
 
-	if (m_config["default_gamemode"].value_or("Survival") == "Creative") {
+	if (m_config["default_gamemode"].value_or<std::string>("Survival") == "Creative") {
 		m_defaultGamemode = Player::Gamemode::CREATIVE;
-	} else if (m_config["default_gamemode"].value_or("Survival") == "Spectator") {
+	} else if (m_config["default_gamemode"].value_or<std::string>("Survival") == "Spectator") {
 		m_defaultGamemode = Player::Gamemode::SPECTATOR;
-	} else if (m_config["default_gamemode"].value_or("Survival") == "Adventure") {
+	} else if (m_config["default_gamemode"].value_or<std::string>("Survival") == "Adventure") {
 		m_defaultGamemode = Player::Gamemode::ADVENTURE;
 	} else {
 		m_defaultGamemode = Player::Gamemode::SURVIVAL;
@@ -304,10 +304,10 @@ void Watermelon::log(const std::string& message, Logger::Level level) {
 
 std::vector<const Player*> Watermelon::getPlayers() {
 	std::vector<const Player*> players;
-	std::lock_guard<std::mutex> lock(m_packetQueueMutex);
+	std::lock_guard<std::mutex> lock(m_clientsMutex);
 
 	for (const auto& client : m_clients) {
-		const Player* player = client->getPlayer();
+		const Player* player = client->getPlayer(false);
 
 		if (player != nullptr) {
 			players.emplace_back(player);
@@ -318,7 +318,7 @@ std::vector<const Player*> Watermelon::getPlayers() {
 }
 
 std::vector<std::shared_ptr<Client>> Watermelon::getClients() {
-	std::lock_guard<std::mutex> lock(m_packetQueueMutex);
+	std::lock_guard<std::mutex> lock(m_clientsMutex);
 	return m_clients;
 }
 

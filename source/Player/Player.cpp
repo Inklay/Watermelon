@@ -69,3 +69,11 @@ void Player::setGamemode(Player::Gamemode gamemode) {
 Player::Position Player::getPosition() {
 	return m_position;
 }
+
+bool Player::hasChatSignature() {
+	return false; // FIXME add real chat signature
+}
+
+bool Player::isTeleporting() {
+	return m_teleporting;
+}

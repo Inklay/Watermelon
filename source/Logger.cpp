@@ -2,6 +2,7 @@
 #include <chrono>
 #include <iostream>
 #include <format>
+#include <thread>
 #include "Logger.h"
 
 Logger::Logger(toml::table& config) :

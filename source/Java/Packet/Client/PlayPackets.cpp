@@ -6,7 +6,7 @@ namespace Java {
 	namespace Packet {
 		namespace Client {
 			namespace Play {
-				void playerInfoUpdate(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<Player::InfoAction>& actions, const std::vector<Player*> players) {
+				void playerInfoUpdate(Watermelon* server, const std::vector<Player::InfoAction>& actions, const std::vector<Player*> players) {
 					std::vector<char> buffer;
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::PLAYER_INFO_UPDATE, buffer);
@@ -28,10 +28,15 @@ namespace Java {
 						}
 
 						if (actionBitMap & (uint8_t)Player::InfoAction::INITIALIZE_CHAT) {
-							Java::Packet::writeBool(false, buffer); // FIXME chat session id
-							Java::Packet::writeBool(false, buffer); // FIXME public key expiry time
-							Java::Packet::writeBool(false, buffer); // FIXME encoded public key
-							Java::Packet::writeBool(false, buffer); // FIXME public key signature
+							if (player->hasChatSignature()) {
+								Java::Packet::writeBool(true, buffer);
+								Java::Packet::writeBool(false, buffer); // FIXME chat session id
+								Java::Packet::writeBool(false, buffer); // FIXME public key expiry time
+								Java::Packet::writeBool(false, buffer); // FIXME encoded public key
+								Java::Packet::writeBool(false, buffer); // FIXME public key signature
+							} else {
+								Java::Packet::writeBool(false, buffer);
+							}
 						}
 
 						if (actionBitMap & (uint8_t)Player::InfoAction::UPDATE_GAME_MODE) {
@@ -60,7 +65,9 @@ namespace Java {
 					}
 
 					for (auto& client : server->getClients()) {
-						server->sendDataToClient(client, buffer);
+						if (client->getStatus() == ::Client::Status::PLAY) {
+							server->sendDataToClient(client, buffer);
+						}
 					}
 				}
 
@@ -91,7 +98,7 @@ namespace Java {
 					std::vector<char> buffer;
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::GAME_EVENT, buffer);
-					Java::Packet::writeU8(event, buffer);
+					Java::Packet::writeU8((int8_t)event, buffer);
 					Java::Packet::writeFloat(data, buffer);
 
 					server->sendDataToClient(client, buffer);
@@ -157,7 +164,7 @@ namespace Java {
 					Player* player = client->getPlayer();
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::LOGIN, buffer);
-					Java::Packet::write32(client->getPlayer()->getEntityId(), buffer);
+					Java::Packet::write32(player->getEntityId(), buffer);
 					Java::Packet::writeBool(server->getConfig()["hardcore"].value_or(false), buffer);
 					Java::Packet::writeVarInt((int32_t)dimensionReg->entries.size(), buffer);
 
