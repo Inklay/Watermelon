@@ -50,7 +50,8 @@ public:
 	void changeStatus(Status status);
 	Status getStatus();
 	bool createPlayer(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation);
-	Player* getPlayer(bool throwIfNull = true);
+	Player* getPlayer();
+	bool hasPlayer();
 	void setPacks(const std::vector<Java::Pack> packs);
 	std::vector<Java::Pack> getPacks();
 	void setSessionUUID(std::pair<uint64_t, uint64_t> sessionUUID);

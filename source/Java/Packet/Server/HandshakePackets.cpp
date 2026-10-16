@@ -35,7 +35,7 @@ namespace Java {
 						client->changeStatus(::Client::Status::LOGIN);
 						break;
 					default:
-						throw std::runtime_error("Invalid intent");
+						throw parseError("Invalid intent");
 					}
 				}
 

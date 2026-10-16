@@ -61,6 +61,6 @@ private:
 	std::string m_faviconBase64;
 	uint32_t m_entityCounter;
 	std::atomic<bool> m_running { false };
-	int m_playerCount;
+	std::atomic<int> m_playerCount { 0 };
 	Player::Gamemode m_defaultGamemode;
 };

@@ -5,8 +5,6 @@
 #include "Java/Packet/Packet.h"
 #include "Java/Packet/Server/Handler.h"
 #include "Utils/Base64.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include "Utils/stb_image.h"
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #else
@@ -27,7 +25,6 @@ Watermelon::Watermelon() :
 	m_logger(*m_config["logging"].as_table()),
 	m_registryManager(RegistryManager::getInstance()),
 	m_entityCounter(0),
-	m_playerCount(0),
 	m_defaultGamemode(Player::Gamemode::CREATIVE)
 {
 #ifdef _WIN32
@@ -257,7 +254,14 @@ void Watermelon::networkLoop() {
 
 void Watermelon::run() {
 	using Clock = std::chrono::steady_clock;
-	const auto tickDuration = std::chrono::milliseconds(1000 / m_config["tps"].value_or(20));
+	int configTps = m_config["tps"].value_or(20);
+
+	if (configTps <= 0) {
+		configTps = 20;
+		log("Configured TPS must be greater than 0, using default value", Logger::WARN);
+	}
+
+	const auto tickDuration = std::chrono::milliseconds(1000 / configTps);
 
 	std::chrono::steady_clock::time_point nextTick = Clock::now();
 
@@ -307,10 +311,8 @@ std::vector<const Player*> Watermelon::getPlayers() {
 	std::lock_guard<std::mutex> lock(m_clientsMutex);
 
 	for (const auto& client : m_clients) {
-		const Player* player = client->getPlayer(false);
-
-		if (player != nullptr) {
-			players.emplace_back(player);
+		if (client->hasPlayer()) {
+			players.emplace_back(client->getPlayer());
 		}
 	}
 
@@ -366,7 +368,7 @@ void Watermelon::disconnectClient(Client* client) {
 		);
 
 		if (it != m_clients.end()) {
-			if (it->get()->getPlayer() != nullptr) {
+			if (it->get()->hasPlayer()) {
 				m_playerCount--;
 			}
 			ptr = *it;
@@ -413,20 +415,20 @@ void Watermelon::readFavicon() {
 
 	file.seekg(0);
 	std::vector<uint8_t> data(static_cast<size_t>(fileSize));
+	static constexpr uint8_t PNG_MAGIC[8] = { 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n' };
 
 	if (!file.read(reinterpret_cast<char*>(data.data()), static_cast<std::streamsize>(data.size()))) {
 		log("Failed to read favicon: " + path, Logger::WARN);
 		return;
 	}
 
-	int width = 0;
-	int height = 0;
-	int channels = 0;
-
-	if (!stbi_info_from_memory(data.data(), static_cast<int>(data.size()), &width, &height, &channels)) {
-		log("Invalid favicon image: " + path, Logger::WARN);
+	if (data.size() < 24 || !std::equal(std::begin(PNG_MAGIC), std::end(PNG_MAGIC), data.begin())) {
+		log("Favicon: " + path + " is not a valid PNG file", Logger::WARN);
 		return;
 	}
+
+	const uint32_t width = (data[16] << 24) | (data[17] << 16) | (data[18] << 8) | data[19];
+	const uint32_t height = (data[20] << 24) | (data[21] << 16) | (data[22] << 8) | data[23];
 
 	if (width != 64 || height != 64) {
 		log("Favicon must be exactly 64x64 pixels: " + path, Logger::WARN);

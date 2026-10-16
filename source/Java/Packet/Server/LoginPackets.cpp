@@ -7,7 +7,7 @@ namespace Java {
 		namespace Server {
 			namespace Login {
 				static void loginStart(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
-					if (client->getPlayer(false) != nullptr) {
+					if (client->hasPlayer()) {
 						server->getLogger().log("Player was already logged in", "Network", Logger::WARN);
 						server->disconnectClient(client.get());
 						return;

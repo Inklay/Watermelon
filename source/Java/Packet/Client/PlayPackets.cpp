@@ -109,8 +109,8 @@ namespace Java {
 					Player* player = client->getPlayer();
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::SET_CENTER_CHUNK, buffer);
-					Java::Packet::writeVarInt((int32_t)(player->getPosition().x / 16), buffer);
-					Java::Packet::writeVarInt((int32_t)(player->getPosition().z / 16), buffer);
+					Java::Packet::writeVarInt((int32_t)(std::floor(player->getPosition().x / 16)), buffer);
+					Java::Packet::writeVarInt((int32_t)(std::floor(player->getPosition().z / 16)), buffer);
 
 					server->sendDataToClient(client, buffer);
 				}
