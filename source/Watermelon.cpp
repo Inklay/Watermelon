@@ -130,7 +130,11 @@ void Watermelon::tcpListenLoop() {
 		}
 
 		sockaddr_in clientAddress;
+#ifdef _WIN32
+ 		int clientLength = sizeof(clientAddress);
+#else
  		unsigned int clientLength = sizeof(clientAddress);
+#endif
 		Socket clientSocket = accept(m_serverSocket, (struct sockaddr*)&clientAddress, &clientLength);
 
 		if (clientSocket == -1) {
