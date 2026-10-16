@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cstdint>
+#include "Java/Packet/Packet.h"
 
 namespace Utils {
 	namespace Buffer {
@@ -16,6 +17,14 @@ namespace Utils {
 			}
 
 			std::cout << std::dec << std::endl;
+		}
+
+		void printWithSize(std::vector<char>& buffer) {
+			std::vector<char> fullPacket;
+
+			Java::Packet::writeVarInt((int32_t)buffer.size(), fullPacket);
+			fullPacket.insert(fullPacket.end(), buffer.begin(), buffer.end());
+			printBuffer(fullPacket);
 		}
 	}
 }

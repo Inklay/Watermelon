@@ -31,6 +31,7 @@ public:
 	std::pair<uint64_t, uint64_t> getUUID();
 	Gamemode getGamemode();
 	void setGamemode(Gamemode gamemode);
+	Position getPosition();
 
 private:
 	std::string m_username;

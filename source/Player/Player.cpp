@@ -65,3 +65,7 @@ Player::Gamemode Player::getGamemode() {
 void Player::setGamemode(Player::Gamemode gamemode) {
 	m_gamemode = gamemode;
 }
+
+Player::Position Player::getPosition() {
+	return m_position;
+}

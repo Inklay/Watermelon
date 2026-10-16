@@ -1,7 +1,7 @@
 #include "Java/Packet/Packet.h"
 #include "Registry/RegistryManager.h"
 #include "Java/Packet/Client/StatusPackets.h"
-
+#include "Utils/Buffer.h"
 namespace Java {
 	namespace Packet {
 		namespace Client {
@@ -99,11 +99,55 @@ namespace Java {
 
 				void setCenterChunk(std::shared_ptr<::Client> client, Watermelon* server) {
 					std::vector<char> buffer;
+					Player* player = client->getPlayer();
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::SET_CENTER_CHUNK, buffer);
-					Java::Packet::writeVarInt(0, buffer); // FIXME x
-					Java::Packet::writeVarInt(0, buffer); // FIXME y
+					Java::Packet::writeVarInt((int32_t)(player->getPosition().x / 16), buffer);
+					Java::Packet::writeVarInt((int32_t)(player->getPosition().z / 16), buffer);
 
+					server->sendDataToClient(client, buffer);
+				}
+
+				void chunkDataAndUpdateLight(std::shared_ptr<::Client> client, Watermelon* server, int x, int z) {
+					const int dimensionHeight = 384; // FIXME needs to read height from register
+					const int sectionNumber = dimensionHeight / 16;
+					const int heightmapArrayCount = 37;
+					std::vector<char> buffer;
+					std::vector<char> sectionBuffer;
+
+					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::CHUNK_DATA_AND_UPDATE_LIGHT, buffer);
+					Java::Packet::write32(x, buffer);
+					Java::Packet::write32(z, buffer);
+					Java::Packet::writeVarInt(1, buffer); // FIXME heightmaps count
+					Java::Packet::writeVarInt(HeightMapType::WORLD_SURFACE, buffer); // FIXME heightmaps type
+					Java::Packet::writeVarInt(heightmapArrayCount, buffer);
+
+					for (int i = 0; i < heightmapArrayCount; i++) {
+						Java::Packet::write64(0, buffer); // FIXME heightmap data (9 bits per column so 7 columns per int64)
+					}
+
+					for (int sectionY = 0; sectionY < sectionNumber; ++sectionY) {
+						Java::Packet::write16(0, sectionBuffer); // FIXME block count
+						Java::Packet::write16(0, sectionBuffer); // FIXME fluid count
+						Java::Packet::writeU8(0, sectionBuffer); // FIXME block palette formats
+						Java::Packet::writeVarInt(0, sectionBuffer); // FIXME block palette
+						Java::Packet::writeU8(0, sectionBuffer); // FIXME biome palette formats
+						Java::Packet::writeVarInt(0, sectionBuffer); // FIXME biome palette
+					}
+
+					Java::Packet::writeVarInt((int)sectionBuffer.size(), buffer);
+					buffer.insert(buffer.end(), sectionBuffer.begin(), sectionBuffer.end());
+					Java::Packet::writeVarInt(0, buffer); // FIXME block entities count
+
+					Java::Packet::writeVarInt(0, buffer); // FIXME sky light mask lenght
+					Java::Packet::writeVarInt(0, buffer); // FIXME block light mask lenght
+					Java::Packet::writeVarInt(8, buffer); // FIXME empty sky light mask lenght
+					Java::Packet::write64(0x3FFFFFF, buffer); // FIXME sky light mask
+					Java::Packet::writeVarInt(8, buffer); // FIXME empty block light mask lenght
+					Java::Packet::write64(0x3FFFFFF, buffer); // FIXME empty block light mask
+					Java::Packet::writeVarInt(0, buffer); // FIXME sky light arrays
+					Java::Packet::writeVarInt(0, buffer); // FIXME block light arrays
+					Utils::Buffer::printWithSize(buffer);
 					server->sendDataToClient(client, buffer);
 				}
 

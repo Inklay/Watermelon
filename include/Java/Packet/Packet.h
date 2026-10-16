@@ -40,6 +40,12 @@ namespace Java {
 			START_WAITING_FOR_CHUNKS
 		};
 
+		enum HeightMapType {
+			WORLD_SURFACE = 1,
+			MOTION_BLOCKING = 4,
+			MOTION_BLOCKING_NO_LEAVES = 5,
+		};
+
 		namespace PacketId {
 			enum class HandshakeServer {
 				HANDSHAKE = 0x00
