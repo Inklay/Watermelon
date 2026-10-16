@@ -13,8 +13,8 @@ namespace Java {
 					
 					try {
 						int32_t protocolVersion = Java::Packet::readVarInt(packet, offset);
-						std::string serverAddress = Java::Packet::readString(packet, offset);
-						uint16_t serverPort = Java::Packet::readU16(packet, offset);
+						Java::Packet::readString(packet, offset); // server address
+						Java::Packet::readU16(packet, offset); // server port
 						Java::Packet::Intent intent = static_cast<Java::Packet::Intent>(Java::Packet::readVarInt(packet, offset));
 						Java::Packet::checkEmpty(packet, offset);
 

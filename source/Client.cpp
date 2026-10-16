@@ -1,5 +1,9 @@
 #include "Client.h"
 #include "Watermelon.h"
+#ifndef _WIN32
+#include <unistd.h>
+#include <sys/socket.h>
+#endif
 
 Client::Client(Type type, Socket socket, Watermelon* server) :
 	m_type(type),

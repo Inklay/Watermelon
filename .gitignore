@@ -79,3 +79,5 @@ data/
 include/Registry/BuiltIn.h
 include/Registry/Synchronised.h
 protocol_mapping.json
+
+watermelon.toml

@@ -1,6 +1,23 @@
 #include "Java/Packet/Packet.h"
 #include <iostream>
 #include <stdexcept>
+#ifndef _WIN32
+#include <arpa/inet.h>
+#define htonll htobe64
+
+uint64_t htond(double value) {
+    uint64_t storage;
+    memcpy(&storage, &value, sizeof(double));
+    return htonll(storage);
+}
+
+uint32_t htonf(float value) {
+    uint32_t storage;
+    memcpy(&storage, &value, sizeof(float));
+    return htonl(storage);
+}
+
+#endif
 
 namespace Java {
     namespace Packet {

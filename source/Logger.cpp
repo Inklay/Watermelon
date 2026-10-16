@@ -18,7 +18,7 @@ Logger::~Logger() {
 }
 
 void Logger::log(const std::string& message, const std::string& caller, Level level) {
-	if (!m_config["enabled"].value_or(true) || m_config["level"].value_or("info") == "off") {
+	if (!m_config["enabled"].value_or(true) || m_config["level"].value_or<std::string>("info") == "off") {
 		return;
 	}
 

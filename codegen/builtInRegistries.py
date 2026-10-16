@@ -41,7 +41,7 @@ def main():
 
             for entryName, entryInfo in sorted_entries:
                 protoId = entryInfo.get("protocol_id", 0)
-                out.write(f'            {{ {protoId}, "{entryName}" }},\n')
+                out.write(f'            {{ {protoId}, "{entryName}", {{}} }},\n')
             out.write("        }\n")
             out.write("    };\n\n")
 

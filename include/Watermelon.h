@@ -41,6 +41,7 @@ private:
 
 	Socket m_serverSocket;
 	toml::table m_config;
+	Version m_version;
 	Logger m_logger;
 	std::thread m_tcpListenThread;
 	std::thread m_networkThread;
@@ -50,7 +51,6 @@ private:
 	std::queue<std::pair<std::shared_ptr<Client>, std::function<void()>>> m_packetQueue;
 	std::vector<Java::Pack> m_packs;
 	RegistryManager& m_registryManager;
-	Version m_version;
 	uint32_t m_entityCounter;
 	std::atomic<bool> m_running { false };
 };

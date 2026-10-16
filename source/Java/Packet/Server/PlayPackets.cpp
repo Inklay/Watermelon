@@ -5,8 +5,8 @@ namespace Java {
 	namespace Packet {
 		namespace Server {
 			namespace Play {
-				static void setPlayerPositionAndRotation(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
-				}
+				//static void setPlayerPositionAndRotation(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
+				//}
 
 				static void confirmTeleportation(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
@@ -39,8 +39,8 @@ namespace Java {
 					switch (packetId) {
 					case (int32_t)Java::Packet::PacketId::PlayServer::CONFIRM_TELEPORTATION:
 						return confirmTeleportation(client, packetId, server, packet);
-					case (int32_t)Java::Packet::PacketId::PlayServer::SET_PLAYER_POSITION_AND_ROTATION:
-						return setPlayerPositionAndRotation(client, packetId, server, packet);
+					//case (int32_t)Java::Packet::PacketId::PlayServer::SET_PLAYER_POSITION_AND_ROTATION:
+					//	return setPlayerPositionAndRotation(client, packetId, server, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::CLIENT_TICK_END:
 						return;
 					default:

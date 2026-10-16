@@ -8,7 +8,10 @@
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #else
+#include <unistd.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #endif
 
 Watermelon::Watermelon() :
@@ -17,8 +20,8 @@ Watermelon::Watermelon() :
 #else
 	m_serverSocket(-1),
 #endif
-	m_version({ "26.3", 777 }),
 	m_config(loadConfig()),
+	m_version({ "26.3", 777 }),
 	m_logger(*m_config["logging"].as_table()),
 	m_registryManager(RegistryManager::getInstance()),
 	m_entityCounter(0)
@@ -96,9 +99,9 @@ bool Watermelon::start() {
 
 	if (bind(m_serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
 #ifdef _WIN32
-		log("Bind error:" + std::to_string(WSAGetLastError()), Logger::DEBUG);
+		log("Bind error:	" + std::to_string(WSAGetLastError()), Logger::DEBUG);
 #else
-		log("Bind error:" + strerror(errno), Logger::DEBUG);
+		log(std::string("Bind error: ") + strerror(errno), Logger::DEBUG);
 #endif
 		log("Can't listen to port " + std::to_string(port) + ", maybe it's already being used?", Logger::ERR);
 		return false;
@@ -127,17 +130,17 @@ void Watermelon::tcpListenLoop() {
 		}
 
 		sockaddr_in clientAddress;
- 		int clientLength = sizeof(clientAddress);
-		SOCKET clientSocket = accept(m_serverSocket, (struct sockaddr*)&clientAddress, &clientLength);
+ 		unsigned int clientLength = sizeof(clientAddress);
+		Socket clientSocket = accept(m_serverSocket, (struct sockaddr*)&clientAddress, &clientLength);
 
 		if (clientSocket == -1) {
 			if (!m_running.load()) {
 				break;
 			}
 #ifdef _WIN32
-			log("Accept error:" + std::to_string(WSAGetLastError()), Logger::DEBUG);
+			log("Accept error: " + std::to_string(WSAGetLastError()), Logger::DEBUG);
 #else
-			log("Accept error:" + strerror(errno), Logger::DEBUG);
+			log(std::string("Accept error : ") + strerror(errno), Logger::DEBUG);
 #endif
 			continue;
 		}
@@ -168,7 +171,7 @@ void Watermelon::networkLoop() {
 
 		fd_set readFDs;
 		FD_ZERO(&readFDs);
-		SOCKET maxFD = 0;
+		Socket maxFD = 0;
 
 		for (const auto& client : clientsToCheck) {
 			FD_SET(client->getSocket(), &readFDs);
