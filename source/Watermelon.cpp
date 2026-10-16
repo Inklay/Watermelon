@@ -271,8 +271,24 @@ void Watermelon::log(const std::string& message, Logger::Level level) {
 	m_logger.log(message, "Watermelon", level);
 }
 
-std::mutex& Watermelon::getClientMutex() {
-	return m_clientsMutex;
+std::vector<const Player*> Watermelon::getPlayers() {
+	std::vector<const Player*> players;
+	std::lock_guard<std::mutex> lock(m_packetQueueMutex);
+
+	for (const auto& client : m_clients) {
+		const Player* player = client->getPlayer();
+
+		if (player != nullptr) {
+			players.emplace_back(player);
+		}
+	}
+
+	return players;
+}
+
+std::vector<std::shared_ptr<Client>> Watermelon::getClients() {
+	std::lock_guard<std::mutex> lock(m_packetQueueMutex);
+	return m_clients;
 }
 
 void Watermelon::addOperationToQueue(std::shared_ptr<Client> client, std::function<void()> packetHandler) {

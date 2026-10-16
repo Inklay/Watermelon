@@ -24,7 +24,8 @@ public:
 	~Watermelon();
 	bool start();
 	void run();
-	std::mutex& getClientMutex();
+	std::vector<const Player*> getPlayers();
+	std::vector<std::shared_ptr<Client>> getClients();
 	void addOperationToQueue(std::shared_ptr<Client> client, std::function<void()> packetHandler);
 	Version& getVersion();
 	Logger& getLogger();

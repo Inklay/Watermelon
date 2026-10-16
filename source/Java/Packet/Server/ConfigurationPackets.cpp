@@ -25,8 +25,12 @@ namespace Java {
 
 					client->changeStatus(::Client::Status::PLAY);
 					server->addOperationToQueue(client, [client, server]() {
+						std::vector<Player::InfoAction> actions = { Player::InfoAction::ADD_PLAYER, Player::InfoAction::UPDATE_LISTED, Player::InfoAction::UPDATE_GAME_MODE, Player::InfoAction::UPDATE_LATENCY };
+						Player* player = client->getPlayer();
+
 						Java::Packet::Client::Play::login(client, server);
 						Java::Packet::Client::Play::synchronizePlayerPosition(client, server);
+						Java::Packet::Client::Play::playerInfoUpdate(client, server, actions, { player });
 					});
 				}
 

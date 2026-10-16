@@ -23,13 +23,6 @@ namespace Java {
 			TRANSFER = 3
 		};
 
-		enum Gamemode {
-			SURVIVAL = 0,
-			CREATIVE = 1,
-			ADVENTURE = 2,
-			SPECTATOR = 3
-		};
-
 		namespace PacketId {
 			enum class HandshakeServer {
 				HANDSHAKE = 0x00

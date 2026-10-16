@@ -6,6 +6,64 @@ namespace Java {
 	namespace Packet {
 		namespace Client {
 			namespace Play {
+				void playerInfoUpdate(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<Player::InfoAction>& actions, const std::vector<Player*> players) {
+					std::vector<char> buffer;
+
+					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::PLAYER_INFO_UPDATE, buffer);
+
+					uint8_t actionBitMap = 0;
+					for (const Player::InfoAction action : actions) {
+						actionBitMap |= (uint8_t)action;
+					}
+
+					Java::Packet::writeU8(actionBitMap, buffer);
+					Java::Packet::writeVarInt((int32_t)players.size(), buffer);
+
+					for (Player* player: players) {
+						Java::Packet::writeUUID(player->getUUID(), buffer);
+
+						if (actionBitMap & (uint8_t)Player::InfoAction::ADD_PLAYER) {
+							Java::Packet::writeString(player->getUsername(), buffer);
+							Java::Packet::writeVarInt(0, buffer); // FIXME Game profile
+						}
+
+						if (actionBitMap & (uint8_t)Player::InfoAction::INITIALIZE_CHAT) {
+							Java::Packet::writeBool(false, buffer); // FIXME chat session id
+							Java::Packet::writeBool(false, buffer); // FIXME public key expiry time
+							Java::Packet::writeBool(false, buffer); // FIXME encoded public key
+							Java::Packet::writeBool(false, buffer); // FIXME public key signature
+						}
+
+						if (actionBitMap & (uint8_t)Player::InfoAction::UPDATE_GAME_MODE) {
+							Java::Packet::writeVarInt(player->getGamemode(), buffer);
+						}
+
+						if (actionBitMap & (uint8_t)Player::InfoAction::UPDATE_LISTED) {
+							Java::Packet::writeBool(true, buffer); // FIXME listed
+						}
+
+						if (actionBitMap & (uint8_t)Player::InfoAction::UPDATE_LATENCY) {
+							Java::Packet::writeVarInt(0, buffer); // FIXME ping
+						}
+
+						if (actionBitMap & (uint8_t)Player::InfoAction::UPDATE_DISPLAY_NAME) {
+							Java::Packet::writeBool(false, buffer); // FIXME display name
+						}
+
+						if (actionBitMap & (uint8_t)Player::InfoAction::UPDATE_LIST_PRIORITY) {
+							Java::Packet::writeVarInt(0, buffer); // FIXME list priority
+						}
+
+						if (actionBitMap & (uint8_t)Player::InfoAction::UPDATE_HAT) {
+							Java::Packet::writeBool(true, buffer); // FIXME visible
+						}
+					}
+
+					for (auto& client : server->getClients()) {
+						server->sendDataToClient(client, buffer);
+					}
+				}
+
 				void synchronizePlayerPosition(std::shared_ptr<::Client> client, Watermelon* server) {
 					std::vector<char> buffer;
 					int32_t teleportId = client->getPlayer()->teleport({ 0, 0, 0 }, { 0, 0 });
@@ -32,6 +90,7 @@ namespace Java {
 				void login(std::shared_ptr<::Client> client, Watermelon* server) {
 					std::vector<char> buffer;
 					const Registry* dimensionReg = RegistryManager::getInstance().getRegistry("minecraft:dimension_type");
+					Player* player = client->getPlayer();
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::LOGIN, buffer);
 					Java::Packet::write32(client->getPlayer()->getEntityId(), buffer);
@@ -51,7 +110,7 @@ namespace Java {
 					Java::Packet::writeVarInt(dimensionReg->entries.at(0).protocolId, buffer); // FIXME dimension type
 					Java::Packet::writeString(dimensionReg->entries.at(0).textId, buffer); // FIXME dimension name
 					Java::Packet::write64(0, buffer); // FIXME hashed seed
-					Java::Packet::writeVarInt(Java::Packet::Gamemode::CREATIVE, buffer); // FIXME game mode
+					Java::Packet::writeVarInt(player->getGamemode(), buffer);
 					Java::Packet::writeVarInt(0, buffer); // FIXME previous game mode
 					Java::Packet::writeBool(false, buffer); // FIXME is debug
 					Java::Packet::writeBool(false, buffer); // FIXME is flat
