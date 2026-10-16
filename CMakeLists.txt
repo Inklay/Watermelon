@@ -21,7 +21,7 @@ set(SOURCES
     source/Entity/Entity.cpp
     source/Player/Player.cpp
     source/Java/Packet/Packet.cpp
-    "source/Java/Packet/Server/Handler.cpp"
+    source/Java/Packet/Server/Handler.cpp
     source/Java/Packet/Server/HandshakePackets.cpp
     source/Java/Packet/Server/StatusPackets.cpp
     source/Java/Packet/Server/LoginPackets.cpp
