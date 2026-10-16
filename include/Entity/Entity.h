@@ -21,6 +21,8 @@ public:
 
 	Entity(int32_t entityId, Position position, Rotation rotation, Type type);
 	int32_t getEntityId();
+	void setPosition(Position position);
+	void setRotation(Rotation rotation);
 
 protected:
 	int32_t m_entityId;

@@ -14,20 +14,13 @@ namespace Java {
 					}
 
 					uint32_t offset = 0;
+					std::string username = Java::Packet::readString(packet, offset);
+					std::pair<uint64_t, uint64_t> uuid = Java::Packet::readUUID(packet, offset);
+					Java::Packet::checkEmpty(packet, offset);
 
-					try {
-						std::string username = Java::Packet::readString(packet, offset);
-						std::pair<uint64_t, uint64_t> uuid = Java::Packet::readUUID(packet, offset);
-						Java::Packet::checkEmpty(packet, offset);
-
-						server->addOperationToQueue(client, [client, server, username = std::move(username), uuid = std::move(uuid)]() {
-							return Java::Packet::Client::Login::loginStart(client, server, username, uuid);
-						});
-					} catch (const std::runtime_error& e) {
-						server->getLogger().log("Can't decode packet ID " + std::to_string(packetId) + " : " + e.what(), "Network", Logger::WARN);
-						server->disconnectClient(client.get());
-						return;
-					}
+					server->addOperationToQueue(client, [client, server, username = std::move(username), uuid = std::move(uuid)]() {
+						return Java::Packet::Client::Login::loginStart(client, server, username, uuid);
+					});
 				}
 
 				static void loginAknowledged(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
@@ -38,14 +31,7 @@ namespace Java {
 					}
 					
 					uint32_t offset = 0;
-
-					try {
-						Java::Packet::checkEmpty(packet, offset);
-					} catch (const std::runtime_error& e) {
-						server->getLogger().log("Can't decode packet ID " + std::to_string(packetId) + " : " + e.what(), "Network", Logger::WARN);
-						server->disconnectClient(client.get());
-						return;
-					}
+					Java::Packet::checkEmpty(packet, offset);
 
 					client->changeStatus(::Client::Status::CONFIGURATION);
 					server->addOperationToQueue(client, [client, server]() {

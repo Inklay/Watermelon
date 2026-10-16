@@ -3,6 +3,7 @@
 #include <mutex>
 #include <memory>
 #include <vector>
+#include <stdexcept>
 #include "Client.h"
 #include "Logger.h"
 #include "Java/Pack.h"
@@ -11,6 +12,11 @@
 
 namespace Java {
 	namespace Packet {
+
+		struct parseError : public std::runtime_error {
+			parseError(const std::string& what) : std::runtime_error(what) {}
+		};
+
 		enum Intent {
 			STATUS = 1,
 			LOGIN = 2,

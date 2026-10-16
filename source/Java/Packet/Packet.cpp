@@ -1,13 +1,12 @@
 #include "Java/Packet/Packet.h"
 #include <iostream>
-#include <stdexcept>
 #include "Utils/Byte.h"
 
 namespace Java {
     namespace Packet {
         void checkEmpty(const std::vector<uint8_t>& packet, uint32_t& offset) {
             if (offset != packet.size()) {
-                throw std::runtime_error( "Unexpected trailing bytes");
+                throw parseError( "Unexpected trailing bytes");
             }
         }
 
@@ -15,11 +14,11 @@ namespace Java {
             int32_t length = readVarInt(packet, offset);
 
             if (length < 0 || length > 2000000) {
-                throw std::runtime_error("Invalid string: invalid lenght");
+                throw parseError("Invalid string: invalid lenght");
             }
 
             if (offset > packet.size() || static_cast<size_t>(length) > packet.size() - offset) {
-                throw std::runtime_error("Invalid string: unexpected end of packet");
+                throw parseError("Invalid string: unexpected end of packet");
             }
 
             std::string result(packet.begin() + offset, packet.begin() + offset + length);
@@ -32,13 +31,13 @@ namespace Java {
 
             for (int i = 0; i < 5; ++i) {
                 if (offset >= packet.size()) {
-                    throw std::runtime_error("Invalid VarInt: unexpected end of packet");
+                    throw parseError("Invalid VarInt: unexpected end of packet");
                 }
 
                 const uint8_t byte = packet[offset++];
 
                 if (i == 4 && (byte & 0xF0) != 0) {
-                    throw std::runtime_error("Invalid VarInt: overflow");
+                    throw parseError("Invalid VarInt: overflow");
                 }
 
                 value |= static_cast<uint32_t>(byte & 0x7F) << (7 * i);
@@ -48,12 +47,12 @@ namespace Java {
                 }
             }
 
-            throw std::runtime_error("Invalid VarInt: too long");
+            throw parseError("Invalid VarInt: too long");
         }
 
         uint8_t readU8(const std::vector<uint8_t>& packet, uint32_t& offset) {
             if (offset >= packet.size()) {
-                throw std::runtime_error("Invalid u8: unexpected end of packet");
+                throw parseError("Invalid u8: unexpected end of packet");
             }
 
             return packet[offset++];
@@ -61,7 +60,7 @@ namespace Java {
 
         uint16_t readU16(const std::vector<uint8_t>& packet, uint32_t& offset) {
             if (offset > packet.size() || packet.size() - offset < 2) {
-                throw std::runtime_error("Invalid u16: unexpected end of packet");
+                throw parseError("Invalid u16: unexpected end of packet");
             }
 
             uint16_t value = 0;
@@ -75,7 +74,7 @@ namespace Java {
 
         uint32_t readU32(const std::vector<uint8_t>& packet, uint32_t& offset) {
             if (offset > packet.size() || packet.size() - offset < 4) {
-                throw std::runtime_error("Invalid u32: unexpected end of packet");
+                throw parseError("Invalid u32: unexpected end of packet");
             }
 
             uint32_t value = 0;
@@ -89,7 +88,7 @@ namespace Java {
 
         uint64_t readU64(const std::vector<uint8_t>& packet, uint32_t& offset) {
             if (offset > packet.size() || packet.size() - offset < 8) {
-                throw std::runtime_error("Invalid u64: unexpected end of packet");
+                throw parseError("Invalid u64: unexpected end of packet");
             }
 
             uint64_t value = 0;
@@ -131,7 +130,7 @@ namespace Java {
             constexpr int32_t MAX_PACKS = 1024;
 
             if (size < 0 || size > MAX_PACKS) {
-                throw std::runtime_error("Invalid packs: invalid size");
+                throw parseError("Invalid packs: invalid size");
             }
 
             std::vector<Pack> packs;

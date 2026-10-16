@@ -28,17 +28,23 @@ namespace Java {
 						server->getLogger().log("Received java packet with ID: " + std::to_string(packetId) + " and client status: " + std::to_string(client->getStatus()), "Network", Logger::DEBUG);
 					}
 
-					switch (client->getStatus()) {
-					case Client::Status::HANDSHAKING:
-						return Java::Packet::Server::Handshake::parse(client, packetId, server, packet);
-					case Client::Status::STATUS:
-						return Java::Packet::Server::Status::parse(client, packetId, server, packet);
-					case Client::Status::LOGIN:
-						return Java::Packet::Server::Login::parse(client, packetId, server, packet);
-					case Client::Status::CONFIGURATION:
-						return Java::Packet::Server::Configuration::parse(client, packetId, server, packet);
-					case Client::Status::PLAY:
-						return Java::Packet::Server::Play::parse(client, packetId, server, packet);
+					try {
+						switch (client->getStatus()) {
+						case Client::Status::HANDSHAKING:
+							return Java::Packet::Server::Handshake::parse(client, packetId, server, packet);
+						case Client::Status::STATUS:
+							return Java::Packet::Server::Status::parse(client, packetId, server, packet);
+						case Client::Status::LOGIN:
+							return Java::Packet::Server::Login::parse(client, packetId, server, packet);
+						case Client::Status::CONFIGURATION:
+							return Java::Packet::Server::Configuration::parse(client, packetId, server, packet);
+						case Client::Status::PLAY:
+							return Java::Packet::Server::Play::parse(client, packetId, server, packet);
+						}
+					} catch (const Java::Packet::parseError& e) {
+						server->getLogger().log("Can't decode packet ID " + std::to_string(packetId) + " : " + e.what(), "Network", Logger::WARN);
+						server->disconnectClient(client.get());
+						return;
 					}
 				}
 			};

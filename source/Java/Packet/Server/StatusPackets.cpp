@@ -7,14 +7,7 @@ namespace Java {
 			namespace Status {
 				static void status(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
-					
-					try {
-						Java::Packet::checkEmpty(packet, offset);
-					} catch (const std::runtime_error& e) {
-						server->getLogger().log("Can't decode packet ID " + std::to_string(packetId) + " : " + e.what(), "Network", Logger::WARN);
-						server->disconnectClient(client.get());
-						return;
-					}
+					Java::Packet::checkEmpty(packet, offset);
 
 					server->addOperationToQueue(client, [client, server]() {
 						return Java::Packet::Client::Status::statusPacket(client, server);
@@ -23,20 +16,13 @@ namespace Java {
 
 				static void ping(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
+					int64_t ping = Java::Packet::readU64(packet, offset);
+					Java::Packet::checkEmpty(packet, offset);
 
-					try {
-						int64_t ping = Java::Packet::readU64(packet, offset);
-						Java::Packet::checkEmpty(packet, offset);
-
-						std::vector<char> buffer;
-						Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::StatusClient::PONG, buffer);
-						Java::Packet::write64(ping, buffer);
-						server->sendDataToClient(client, buffer);
-					} catch (const std::runtime_error& e) {
-						server->getLogger().log("Can't decode packet ID " + std::to_string(packetId) + " : " + e.what(), "Network", Logger::WARN);
-						server->disconnectClient(client.get());
-						return;
-					}
+					std::vector<char> buffer;
+					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::StatusClient::PONG, buffer);
+					Java::Packet::write64(ping, buffer);
+					server->sendDataToClient(client, buffer);
 				}
 
 				void parse(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {

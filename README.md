@@ -115,7 +115,7 @@ Windows (from a Visual Studio developer prompt, or directly from Visual Studio):
 
 ```bash
 cmake --preset windows-release
-cmake --build out/build/windows-release
+cmake --build build/windows-release
 ```
 
 ## Running
