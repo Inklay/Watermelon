@@ -12,7 +12,7 @@ toml::table loadConfig() {
 			level = "info"
 			threads = false
 			thread_ids = false
-			target = false
+			target = true
 			color = true
 			timestamp = true
 			timestamp_format = "[hour]:[minute]:[second]"

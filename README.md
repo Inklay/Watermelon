@@ -16,7 +16,7 @@ Configuration:
 - Enabling the java server
 - Java server address and port
 - Some java server properties like view and simulation distance, max player count and motd
-- Some logger properties like the file where to write logs and the minimum level to log
+- Full logger configuration
 
 Networking:
 - The TCP stack to communicate with Minecraft clients
@@ -30,7 +30,7 @@ Networking:
 I'm currently working on finishing every feature that work but are not perfect yet
 
 Configuration:
-- Add more config fields for the java server and the logger
+- Add more config fields for the java server
 
 Status:
 - Send real player data on the status screen (player count and some online player data)

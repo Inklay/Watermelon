@@ -1,7 +1,7 @@
 #include "Java/Packet/Packet.h"
 #include "Registry/RegistryManager.h"
 #include "Java/Packet/Client/StatusPackets.h"
-#include "Utils/Buffer.h"
+
 namespace Java {
 	namespace Packet {
 		namespace Client {
@@ -147,7 +147,7 @@ namespace Java {
 					Java::Packet::write64(0x3FFFFFF, buffer); // FIXME empty block light mask
 					Java::Packet::writeVarInt(0, buffer); // FIXME sky light arrays
 					Java::Packet::writeVarInt(0, buffer); // FIXME block light arrays
-					Utils::Buffer::printWithSize(buffer);
+
 					server->sendDataToClient(client, buffer);
 				}
 
