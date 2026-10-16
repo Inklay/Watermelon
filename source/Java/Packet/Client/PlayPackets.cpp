@@ -87,6 +87,16 @@ namespace Java {
 					server->sendDataToClient(client, buffer);
 				}
 
+				void gameEvent(std::shared_ptr<::Client> client, Watermelon* server, GameEvent event, float data) {
+					std::vector<char> buffer;
+
+					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::GAME_EVENT, buffer);
+					Java::Packet::writeU8(event, buffer);
+					Java::Packet::writeFloat(data, buffer);
+
+					server->sendDataToClient(client, buffer);
+				}
+
 				void login(std::shared_ptr<::Client> client, Watermelon* server) {
 					std::vector<char> buffer;
 					const Registry* dimensionReg = RegistryManager::getInstance().getRegistry("minecraft:dimension_type");

@@ -2,6 +2,7 @@
 
 #include "Client.h"
 #include "Watermelon.h"
+#include "Java/Packet/Packet.h"
 
 namespace Java {
 	namespace Packet {
@@ -9,6 +10,7 @@ namespace Java {
 			namespace Play {
 				void synchronizePlayerPosition(std::shared_ptr<::Client> client, Watermelon* server);
 				void login(std::shared_ptr<::Client> client, Watermelon* server);
+				void gameEvent(std::shared_ptr<::Client> client, Watermelon* server, GameEvent event, float data = 0.0f);
 				void playerInfoUpdate(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<Player::InfoAction>& actions, const std::vector<Player*> players);
 			};
 		};
