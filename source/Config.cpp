@@ -27,7 +27,7 @@ toml::table loadConfig() {
 			[logging]
 			enabled = true
 			level = "info"
-			threads = false
+			threads = true
 			thread_ids = false
 			target = true
 			color = true

@@ -10,9 +10,9 @@ Logger::Logger(toml::table& config) :
 	m_timestampFormat(config["timestamp_format"].value_or<std::string>("[hour]:[minute]:[second]")),
 	m_enabled(config["enabled"].value_or(true)),
 	m_color(config["color"].value_or(true)),
-	m_timestamp(config["color"].value_or(true)),
-	m_thread(config["color"].value_or(true)),
-	m_threadId(config["color"].value_or(true))
+	m_timestamp(config["timestamp"].value_or(true)),
+	m_thread(config["m_thread"].value_or(true)),
+	m_threadId(config["thread_ids"].value_or(false))
 {
 	if (m_stream.bad()) {
 		log("Can't create log file '" + config["file"].value_or<std::string>("latest.log") + "'", "Watermelon", ERR);

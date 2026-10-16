@@ -22,7 +22,7 @@ public:
 private:
 	std::ofstream m_stream;
 	std::mutex m_mutex;
-	const std::string m_levelTexts[4] = { "DEBUG", "INFO", "WARN", "ERROR" };
+	const std::string m_levelTexts[5] = { "", "DEBUG", "INFO", "WARN", "ERROR" };
 	Level m_minLevel;
 	std::string m_timestampFormat;
 	bool m_enabled;
