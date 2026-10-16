@@ -97,6 +97,16 @@ namespace Java {
 					server->sendDataToClient(client, buffer);
 				}
 
+				void setCenterChunk(std::shared_ptr<::Client> client, Watermelon* server) {
+					std::vector<char> buffer;
+
+					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::SET_CENTER_CHUNK, buffer);
+					Java::Packet::writeVarInt(0, buffer); // FIXME x
+					Java::Packet::writeVarInt(0, buffer); // FIXME y
+
+					server->sendDataToClient(client, buffer);
+				}
+
 				void login(std::shared_ptr<::Client> client, Watermelon* server) {
 					std::vector<char> buffer;
 					const Registry* dimensionReg = RegistryManager::getInstance().getRegistry("minecraft:dimension_type");
