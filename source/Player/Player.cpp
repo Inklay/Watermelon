@@ -6,7 +6,7 @@ Player::Player(const std::string& username, std::pair<uint64_t, uint64_t> uuid, 
 	m_uuid(uuid),
 	m_teleportIdCounter(0),
 	m_teleporting(false),
-	m_gamemode(CREATIVE)
+	m_gamemode(CREATIVE) // FIXME must be survival once it is implemented
 {
 }
 

@@ -4,7 +4,9 @@
 #include "Watermelon.h"
 #include "Java/Packet/Packet.h"
 #include "Java/Packet/Server/Handler.h"
-
+#include "Utils/Base64.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "Utils/stb_image.h"
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #else
@@ -24,7 +26,9 @@ Watermelon::Watermelon() :
 	m_version({ "26.3", 777 }),
 	m_logger(*m_config["logging"].as_table()),
 	m_registryManager(RegistryManager::getInstance()),
-	m_entityCounter(0)
+	m_entityCounter(0),
+	m_playerCount(0),
+	m_defaultGamemode(Player::Gamemode::CREATIVE)
 {
 #ifdef _WIN32
 	WSADATA wsaData;
@@ -35,6 +39,20 @@ Watermelon::Watermelon() :
 #endif
 
 	m_packs.emplace_back("minecraft", "core", m_version.name);
+
+	if (m_config["default_gamemode"].value_or("Survival") == "Creative") {
+		m_defaultGamemode = Player::Gamemode::CREATIVE;
+	} else if (m_config["default_gamemode"].value_or("Survival") == "Spectator") {
+		m_defaultGamemode = Player::Gamemode::SPECTATOR;
+	} else if (m_config["default_gamemode"].value_or("Survival") == "Adventure") {
+		m_defaultGamemode = Player::Gamemode::ADVENTURE;
+	} else {
+		m_defaultGamemode = Player::Gamemode::SURVIVAL;
+	}
+
+	if (m_config["use_favicon"].value_or(true)) {
+		readFavicon();
+	}
 }
 
 Watermelon::~Watermelon() {
@@ -238,6 +256,12 @@ void Watermelon::networkLoop() {
 }
 
 void Watermelon::run() {
+	using Clock = std::chrono::steady_clock;
+	const auto tickDuration = std::chrono::milliseconds(1000 / m_config["tps"].value_or(20));
+
+	std::chrono::steady_clock::time_point nextTick = Clock::now();
+
+
 	while (m_running.load()) {
 		std::queue<std::pair<std::shared_ptr<Client>, std::function<void()>>> queuedPackets;
 		{
@@ -261,7 +285,14 @@ void Watermelon::run() {
 			queuedPackets.pop();
 		}
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+		nextTick += tickDuration;
+		const std::chrono::steady_clock::time_point now = Clock::now();
+
+		if (now < nextTick) {
+			std::this_thread::sleep_until(nextTick);
+		} else {
+			nextTick = now;
+		}
 	}
 
 	log("Stopping main thread", Logger::INFO);
@@ -335,6 +366,9 @@ void Watermelon::disconnectClient(Client* client) {
 		);
 
 		if (it != m_clients.end()) {
+			if (it->get()->getPlayer() != nullptr) {
+				m_playerCount--;
+			}
 			ptr = *it;
 			m_clients.erase(it);
 		}
@@ -344,4 +378,64 @@ void Watermelon::disconnectClient(Client* client) {
 		ptr->disconnect();
 		log("TCP connection closed", Logger::DEBUG);
 	}
+}
+
+int Watermelon::getPlayerCount() {
+	return m_playerCount;
+}
+
+void Watermelon::increasePlayerCount() {
+	m_playerCount++;
+}
+
+Player::Gamemode Watermelon::getDefaultGamemode() {
+	return m_defaultGamemode;
+}
+
+void Watermelon::readFavicon() {
+	constexpr size_t MAX_FILE_SIZE = 1000000;
+	const std::string path = m_config["favicon_path"].value_or("icon.png");
+	std::ifstream file(path, std::ios::binary);
+
+	if (!file) {
+		log("Can't open favicon file " + path, Logger::WARN);
+		return;
+	}
+
+	file.seekg(0, std::ios::end);
+	const auto fileSize = file.tellg();
+
+	if (fileSize <= 0 ||
+		static_cast<uint64_t>(fileSize) > MAX_FILE_SIZE) {
+		log("Favicon file is empty or too large: " + path, Logger::WARN);
+		return;
+	}
+
+	file.seekg(0);
+	std::vector<uint8_t> data(static_cast<size_t>(fileSize));
+
+	if (!file.read(reinterpret_cast<char*>(data.data()), static_cast<std::streamsize>(data.size()))) {
+		log("Failed to read favicon: " + path, Logger::WARN);
+		return;
+	}
+
+	int width = 0;
+	int height = 0;
+	int channels = 0;
+
+	if (!stbi_info_from_memory(data.data(), static_cast<int>(data.size()), &width, &height, &channels)) {
+		log("Invalid favicon image: " + path, Logger::WARN);
+		return;
+	}
+
+	if (width != 64 || height != 64) {
+		log("Favicon must be exactly 64x64 pixels: " + path, Logger::WARN);
+		return;
+	}
+
+	m_faviconBase64 = ("data:image/png;base64," + Utils::Base64::encode(data));
+}
+
+const std::string& Watermelon::getFaviconData() {
+	return m_faviconBase64;
 }

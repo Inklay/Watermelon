@@ -81,6 +81,7 @@ bool Client::createPlayer(const std::string& username, std::pair<uint64_t, uint6
 		return false;
 	}
 
+	m_server->increasePlayerCount();
 	return true;
 }
 

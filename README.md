@@ -13,28 +13,19 @@ Target version: Minecraft Java Edition **26.3** (protocol 777).
 You can ping and join a server in an empty world but if you do any action as a player you'll be disconnected because the server can't handle a lot of play state packet yet
 
 Configuration:
-- Enabling the java server
-- Java server address and port
-- Some java server properties like view and simulation distance, max player count and motd
+- Full java networking configuration (encryption, keep_alive and distances are not testable because the rest of the server isn't done yet)
 - Full logger configuration
 
 Networking:
 - The TCP stack to communicate with Minecraft clients
 - Parsing and serializing of java packets
-- Basic server status/ping
+- Full support of "status" state packet (i.e. ping, favicon, motd, version...)
 - Basic login and configuration sequence
 - basic chunk and light data
 
 ## What's next?
 
 I'm currently working on finishing every feature that work but are not perfect yet
-
-Configuration:
-- Add more config fields for the java server
-
-Status:
-- Send real player data on the status screen (player count and some online player data)
-- Send the favicon on the status screen
 
 Networking:
 - Add compression

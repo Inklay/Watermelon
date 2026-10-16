@@ -158,7 +158,7 @@ namespace Java {
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::LOGIN, buffer);
 					Java::Packet::write32(client->getPlayer()->getEntityId(), buffer);
-					Java::Packet::writeBool(false, buffer); // FIXME is hardcore
+					Java::Packet::writeBool(server->getConfig()["hardcore"].value_or(false), buffer);
 					Java::Packet::writeVarInt((int32_t)dimensionReg->entries.size(), buffer);
 
 					for (const Registry::Entry& entry : dimensionReg->entries) {
@@ -174,7 +174,13 @@ namespace Java {
 					Java::Packet::writeVarInt(dimensionReg->entries.at(0).protocolId, buffer); // FIXME dimension type
 					Java::Packet::writeString(dimensionReg->entries.at(0).textId, buffer); // FIXME dimension name
 					Java::Packet::write64(0, buffer); // FIXME hashed seed
-					Java::Packet::writeVarInt(player->getGamemode(), buffer);
+
+					if (server->getConfig()["force_gamemode"].value_or(false)) {
+						Java::Packet::writeVarInt(server->getDefaultGamemode(), buffer);
+					} else {
+						Java::Packet::writeVarInt(player->getGamemode(), buffer);
+					}
+
 					Java::Packet::writeVarInt(0, buffer); // FIXME previous game mode
 					Java::Packet::writeBool(false, buffer); // FIXME is debug
 					Java::Packet::writeBool(false, buffer); // FIXME is flat

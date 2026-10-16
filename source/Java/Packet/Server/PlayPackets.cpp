@@ -54,7 +54,7 @@ namespace Java {
 						return;
 					default:
 						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::WARN);
-						server->disconnectClient(client.get());
+						//server->disconnectClient(client.get());
 					}
 				}
 			};

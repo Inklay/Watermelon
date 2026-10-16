@@ -17,13 +17,18 @@ namespace Java {
 						}},
 						{"players", {
 							{"max", server->getConfig()["networking"]["java"]["max_players"].value_or(10)},
-							{"online", 0},
+							{"online", server->getPlayerCount()},
 							{"sample", json::array()}
 						}},
 						{"description", {
 							{"text", server->getConfig()["networking"]["java"]["motd"].value_or("A (hopefully) blazingly fast Watermelon server!")}
 						}}
 					};
+
+					const std::string faviconData = server->getFaviconData();
+					if (!faviconData.empty()) {
+						data["favicon"] = faviconData;
+					}
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::StatusClient::STATUS_RESPONSE, buffer);
 					Java::Packet::writeString(data.dump(), buffer);
