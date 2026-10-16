@@ -10,7 +10,7 @@ Target version: Minecraft Java Edition **26.3** (protocol 777).
 
 ## What's working right now?
 
-Only a few bits are working right now: the architecture of the project is still being worked on, and features take time to be implemented because almost nothing is already built.
+You can ping and join a server in an empty world but if you do any action as a player you'll be disconnected because the server can't handle a lot of play state packet yet
 
 Configuration:
 - Enabling the java server
@@ -23,17 +23,11 @@ Networking:
 - Parsing and serializing of java packets
 - Basic server status/ping
 - Basic login and configuration sequence
+- basic chunk and light data
 
 ## What's next?
 
-I'm still adding the bare minimum to be able to join a world, so the main features to implement are:
-
-Networking:
-- Send basic player info
-- Send basic chunk and light data
-- Send empty inventory
-
-When this is done I'll go back and add the finishing touches to the already working features to make them complete.
+I'm currently working on finishing every feature that work but are not perfect yet
 
 Configuration:
 - Add more config fields for the java server and the logger
