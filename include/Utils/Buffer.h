@@ -4,7 +4,7 @@
 
 namespace Utils {
 	namespace Buffer {
-		void printBuffer(std::vector<char>& buffer);
-		void printWithSize(std::vector<char>& buffer);
+		void printBuffer(std::vector<uint8_t>& buffer);
+		void printWithSize(std::vector<uint8_t>& buffer);
 	}
 }

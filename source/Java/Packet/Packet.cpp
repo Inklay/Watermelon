@@ -148,14 +148,32 @@ namespace Java {
             return packs;
         }
 
-        void writeString(const std::string& str, std::vector<char>& buffer) {
+        std::vector<uint8_t> readByteArray(const std::vector<uint8_t>& packet, uint32_t& offset) {
+            int32_t size = readVarInt(packet, offset);
+            constexpr int32_t MAX_ARRAY_SIZE = 8192;
+
+            if (size < 0 || size > MAX_ARRAY_SIZE) {
+                throw parseError("Invalid byte array: invalid size");
+            }
+
+            std::vector<uint8_t> data;
+            data.reserve(size);
+
+            for (int i = 0; i < size; i++) {
+                data.emplace_back(readU8(packet, offset));
+            }
+
+            return data;
+        }
+
+        void writeString(const std::string& str, std::vector<uint8_t>& buffer) {
             writeVarInt((int)str.size(), buffer);
             for (char c : str) {
                 buffer.push_back(c);
             }
         }
 
-        void writeVarInt(int32_t value, std::vector<char>& buffer) {
+        void writeVarInt(int32_t value, std::vector<uint8_t>& buffer) {
             uint32_t unsignedValue = static_cast<uint32_t>(value);
 
             do {
@@ -166,53 +184,53 @@ namespace Java {
                     temp |= 0x80;
                 }
 
-                buffer.push_back(static_cast<char>(temp));
+                buffer.push_back(static_cast<uint8_t>(temp));
             } while (unsignedValue != 0);
         }
 
-        void writeBool(bool value, std::vector<char>& buffer) {
+        void writeBool(bool value, std::vector<uint8_t>& buffer) {
             write8(value ? 0x01 : 0x00, buffer);
         }
 
-        void writeU8(uint8_t value, std::vector<char>& buffer) {
-            buffer.insert(buffer.end(), reinterpret_cast<const char*>(&value), reinterpret_cast<const char*>(&value) + sizeof(value));
+        void writeU8(uint8_t value, std::vector<uint8_t>& buffer) {
+            buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(&value), reinterpret_cast<const uint8_t*>(&value) + sizeof(value));
         }
 
-        void write8(int8_t value, std::vector<char>& buffer) {
-            buffer.insert(buffer.end(), reinterpret_cast<const char*>(&value), reinterpret_cast<const char*>(&value) + sizeof(value));
+        void write8(int8_t value, std::vector<uint8_t>& buffer) {
+            buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(&value), reinterpret_cast<const uint8_t*>(&value) + sizeof(value));
         }
 
-        void write16(int16_t value, std::vector<char>& buffer) {
+        void write16(int16_t value, std::vector<uint8_t>& buffer) {
             int16_t networkValue = Byte::toBigEndian(value);
-            buffer.insert(buffer.end(), reinterpret_cast<const char*>(&networkValue), reinterpret_cast<const char*>(&networkValue) + sizeof(networkValue));
+            buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(&networkValue), reinterpret_cast<const uint8_t*>(&networkValue) + sizeof(networkValue));
         }
 
-        void write32(int32_t value, std::vector<char>& buffer) {
+        void write32(int32_t value, std::vector<uint8_t>& buffer) {
             int32_t networkValue = Byte::toBigEndian(value);
-            buffer.insert(buffer.end(), reinterpret_cast<const char*>(&networkValue), reinterpret_cast<const char*>(&networkValue) + sizeof(networkValue));
+            buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(&networkValue), reinterpret_cast<const uint8_t*>(&networkValue) + sizeof(networkValue));
         }
 
-        void write64(int64_t value, std::vector<char>& buffer) {
+        void write64(int64_t value, std::vector<uint8_t>& buffer) {
             int64_t networkValue = Byte::toBigEndian(value);
-            buffer.insert(buffer.end(), reinterpret_cast<const char*>(&networkValue), reinterpret_cast<const char*>(&networkValue) + sizeof(networkValue));
+            buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(&networkValue), reinterpret_cast<const uint8_t*>(&networkValue) + sizeof(networkValue));
         }
 
-        void writeFloat(float value, std::vector<char>& buffer) {
+        void writeFloat(float value, std::vector<uint8_t>& buffer) {
             uint32_t networkValue = Byte::toBigEndian(std::bit_cast<uint32_t>(value));
-            buffer.insert(buffer.end(), reinterpret_cast<const char*>(&networkValue), reinterpret_cast<const char*>(&networkValue) + sizeof(networkValue));
+            buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(&networkValue), reinterpret_cast<const uint8_t*>(&networkValue) + sizeof(networkValue));
         }
 
-        void writeDouble(double value, std::vector<char>& buffer) {
+        void writeDouble(double value, std::vector<uint8_t>& buffer) {
             uint64_t networkValue = Byte::toBigEndian(std::bit_cast<uint64_t>(value));
-            buffer.insert(buffer.end(), reinterpret_cast<const char*>(&networkValue), reinterpret_cast<const char*>(&networkValue) + sizeof(networkValue));
+            buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(&networkValue), reinterpret_cast<const uint8_t*>(&networkValue) + sizeof(networkValue));
         }
 
-        void writeUUID(std::pair<uint64_t, uint64_t> uuid, std::vector<char>& buffer) {
+        void writeUUID(std::pair<uint64_t, uint64_t> uuid, std::vector<uint8_t>& buffer) {
             write64(uuid.first, buffer);
             write64(uuid.second, buffer);
         }
 
-        void writePacks(std::vector<Pack>& packs, std::vector<char>& buffer) {
+        void writePacks(std::vector<Pack>& packs, std::vector<uint8_t>& buffer) {
             writeVarInt((int32_t)packs.size(), buffer);
 
             for (const Pack& i : packs) {
@@ -222,7 +240,7 @@ namespace Java {
             }
         }
 
-        void writeRegistry(const Registry* registry, bool skipNbt, std::vector<char>& buffer) {
+        void writeRegistry(const Registry* registry, bool skipNbt, std::vector<uint8_t>& buffer) {
             writeString(registry->name, buffer);
             writeVarInt((int32_t)registry->entries.size(), buffer);
             
@@ -237,13 +255,13 @@ namespace Java {
             }
         }
 
-        void writeNBT(const std::vector<uint8_t>& data, std::vector<char>& buffer) {
+        void writeNBT(const std::vector<uint8_t>& data, std::vector<uint8_t>& buffer) {
             for (const uint8_t byte : data) {
                 writeU8(byte, buffer);
             }
         }
 
-        void writeTags(const std::vector<RegistryTag>& tags, std::vector<char>& buffer) {
+        void writeTags(const std::vector<RegistryTag>& tags, std::vector<uint8_t>& buffer) {
 			writeVarInt((int32_t)tags.size(), buffer);
 
 			for (const RegistryTag& registryTag : tags) {

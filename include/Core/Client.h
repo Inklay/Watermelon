@@ -4,6 +4,7 @@
 #include <mutex>
 #include "Player/Player.h"
 #include "Java/Pack.h"
+#include "Crypto/CFB8.h"
 #ifdef _WIN32
 #include <winsock2.h>
 #define Socket SOCKET
@@ -56,9 +57,13 @@ public:
 	std::vector<Java::Pack> getPacks();
 	void setSessionUUID(std::pair<uint64_t, uint64_t> sessionUUID);
 	PacketStatus readPacket(std::vector<uint8_t>& packet);
-	void appendReceivedData(const uint8_t* data, size_t size);
+	void appendReceivedData();
 	void disconnect();
-	void sendData(const std::vector<char>& data);
+	void sendData(std::vector<uint8_t>& data);
+	void startEncryption(std::vector<uint8_t> secret);
+	bool isEncrypted();
+	const std::vector<uint8_t>& generateEncryptionToken();
+	bool checkToken(const std::vector<uint8_t>& token);
 
 private:
 	const Type m_type;
@@ -72,4 +77,7 @@ private:
 	std::vector<uint8_t> m_receiveBuffer;
 	Watermelon* m_server;
 	bool m_disconnected;
+	bool m_encrypted;
+	std::vector<uint8_t> m_encryptionToken;
+	Crypto::CFB8::Cipher m_cipher;
 };

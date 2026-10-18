@@ -1,5 +1,6 @@
-#include "Client.h"
-#include "Watermelon.h"
+#include "Core/Client.h"
+#include "Core/Watermelon.h"
+#include "Crypto/Crypto.h"
 #ifndef _WIN32
 #include <unistd.h>
 #include <sys/socket.h>
@@ -11,7 +12,8 @@ Client::Client(Type type, Socket socket, Watermelon* server) :
 	m_socket(socket),
 	m_player(nullptr),
 	m_server(server),
-	m_disconnected(false)
+	m_disconnected(false),
+	m_encrypted(false)
 {
 }
 
@@ -165,16 +167,29 @@ Client::PacketStatus Client::readPacket(std::vector<uint8_t>& packet) {
 	return Client::PacketStatus::COMPLETE;
 }
 
-void Client::appendReceivedData(const uint8_t* data, size_t size) {
+void Client::appendReceivedData() {
 	constexpr int32_t MAX_BUFFER_SIZE = 4000000;
 	bool disconnect = false;
+	char received[8192];
+	int count = static_cast<int>(recv(m_socket, received, sizeof(received), 0));
+
+	if (count <= 0) {
+		m_server->disconnectClient(this);
+		return;
+	}
+
+	std::vector<uint8_t> incoming(reinterpret_cast<const uint8_t*>(received), reinterpret_cast<const uint8_t*>(received) + count);
+
+	if (m_encrypted) {
+		incoming = m_cipher.decrypt(incoming);
+	}
 
 	{
 		std::lock_guard<std::mutex> lock(m_mutex);
-		if (m_receiveBuffer.size() + size > MAX_BUFFER_SIZE) {
+		if (m_receiveBuffer.size() + count > MAX_BUFFER_SIZE) {
 			disconnect = true;
 		} else {
-			m_receiveBuffer.insert(m_receiveBuffer.end(), data, data + size);
+			m_receiveBuffer.insert(m_receiveBuffer.end(), incoming.begin(), incoming.end());
 		}
 	}
 
@@ -189,7 +204,7 @@ void Client::disconnect() {
 	m_disconnected = true;
 }
 
-void Client::sendData(const std::vector<char>& data) {
+void Client::sendData(std::vector<uint8_t>& data) {
 	bool disconnect = false;
 
 	{
@@ -197,10 +212,14 @@ void Client::sendData(const std::vector<char>& data) {
 		size_t totalSent = 0;
 		size_t size = data.size();
 
+		if (m_encrypted) {
+			data = m_cipher.encrypt(data);
+		}
+
 		while (totalSent < size) {
 			const size_t remaining = size - totalSent;
 			const int toSend = static_cast<int>((std::min)(remaining, static_cast<size_t>(INT_MAX)));
-			const int sent = send(m_socket, data.data() + totalSent, toSend, 0);
+			const int sent = send(m_socket, reinterpret_cast<const char*>(data.data()) + totalSent, toSend, 0);
 
 			if (sent == -1) {
 				disconnect = true;
@@ -218,4 +237,37 @@ void Client::sendData(const std::vector<char>& data) {
 	if (disconnect) {
 		m_server->disconnectClient(this);
 	}
+}
+
+bool Client::isEncrypted() {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	return m_encrypted;
+}
+
+void Client::startEncryption(std::vector<uint8_t> secret) {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	m_cipher.init(secret);
+	m_encrypted =  true;
+}
+
+const std::vector<uint8_t>& Client::generateEncryptionToken() {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	m_encryptionToken = Crypto::generateRandomBytes(8);
+	return m_encryptionToken;
+}
+
+bool Client::checkToken(const std::vector<uint8_t>& token) {
+	std::lock_guard<std::mutex> lock(m_mutex);
+
+	if (token.size() != m_encryptionToken.size()) {
+		return false;
+	}
+
+	for (int i = 0; i < m_encryptionToken.size(); i++) {
+		if (m_encryptionToken.at(i) != token.at(i)) {
+			return false;
+		}
+	}
+
+	return true;
 }

@@ -7,7 +7,7 @@ namespace Java {
 		namespace Client {
 			namespace Configuration {
 				void knownPacks(std::shared_ptr<::Client> client, Watermelon* server) {
-					std::vector<char> buffer;
+					std::vector<uint8_t> buffer;
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::ConfigurationClient::KNOWN_PACKS, buffer);
 					Java::Packet::writePacks(server->getPacks(), buffer);
@@ -15,14 +15,14 @@ namespace Java {
 				}
 
 				void finishConfiguration(std::shared_ptr<::Client> client, Watermelon* server) {
-					std::vector<char> buffer;
+					std::vector<uint8_t> buffer;
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::ConfigurationClient::FINISH_CONFIGURATION, buffer);
 					server->sendDataToClient(client, buffer);
 				}
 
 				void updateTags(std::shared_ptr<::Client> client, Watermelon* server) {
-					std::vector<char> buffer;
+					std::vector<uint8_t> buffer;
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::ConfigurationClient::UPDATE_TAGS, buffer);
 					Java::Packet::writeTags(RegistryManager::getInstance().getRegistryTags(), buffer);
 					server->sendDataToClient(client, buffer);
@@ -30,7 +30,7 @@ namespace Java {
 
 				void registryData(std::shared_ptr<::Client> client, Watermelon* server) {
 					for (const Registry* syncReg : RegistryManager::getInstance().getSynchronizedRegistries()) {
-						std::vector<char> buffer;
+						std::vector<uint8_t> buffer;
 
 						Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::ConfigurationClient::REGISTRY_DATA, buffer);
 
@@ -42,6 +42,14 @@ namespace Java {
 
 						server->sendDataToClient(client, buffer);
 					}
+				}
+
+				void pluginMessage(std::shared_ptr<::Client> client, Watermelon* server, const std::string& channel, const std::string& data) {
+					std::vector<uint8_t> buffer;
+					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::ConfigurationClient::PLUGIN_MESSAGE, buffer);
+					Java::Packet::writeString(channel, buffer);
+					Java::Packet::writeString(data, buffer);
+					server->sendDataToClient(client, buffer);
 				}
 			};
 		};

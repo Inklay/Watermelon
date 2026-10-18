@@ -38,12 +38,37 @@ namespace Java {
 					});
 				}
 
+				static void pluginMessage(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
+					uint32_t offset = 0;
+					const std::string identifier = Java::Packet::readString(packet, offset);
+					
+					if (identifier == "minecraft:brand") {
+						Java::Packet::readString(packet, offset); // Client's brand
+						Java::Packet::checkEmpty(packet, offset);
+
+						server->addOperationToQueue(client, [client, server, identifier]() {
+							Java::Packet::Client::Configuration::pluginMessage(client, server, identifier, "Watermelon");
+						});
+
+						return;
+					}
+
+					throw parseError("Unknown channel");
+				}
+
 				void parse(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					switch (packetId) {
 						case (int)Java::Packet::PacketId::ConfigurationServer::KNOWN_PACKS:
 							return knownPacks(client, server, packet);
 						case (int)Java::Packet::PacketId::ConfigurationServer::ACKNOWLEDGE_FINISH_CONFIGURATION:
 							return AcknowledgeFinishConfiguration(client, server, packet);
+						//case (int)Java::Packet::PacketId::ConfigurationServer::CLIENT_INFORMATION:
+						//	return knownPacks(client, server, packet);
+						case (int)Java::Packet::PacketId::ConfigurationServer::PLUGIN_MESSAGE:
+							return pluginMessage(client, server, packet);
+						default:
+							server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::ERR);
+							server->disconnectClient(client.get());
 					}
 				}
 			};

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Client.h"
-#include "Watermelon.h"
+#include "Core/Client.h"
+#include "Core/Watermelon.h"
 
 namespace Java {
 	namespace Packet {

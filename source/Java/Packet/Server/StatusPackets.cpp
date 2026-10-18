@@ -19,7 +19,7 @@ namespace Java {
 					int64_t ping = Java::Packet::readU64(packet, offset);
 					Java::Packet::checkEmpty(packet, offset);
 
-					std::vector<char> buffer;
+					std::vector<uint8_t> buffer;
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::StatusClient::PONG, buffer);
 					Java::Packet::write64(ping, buffer);
 					server->sendDataToClient(client, buffer);
@@ -32,7 +32,7 @@ namespace Java {
 					case (int32_t)Java::Packet::PacketId::StatusServer::PING:
 						return ping(client, server, packet);
 					default:
-						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::WARN);
+						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::ERR);
 						server->disconnectClient(client.get());
 					}
 				}

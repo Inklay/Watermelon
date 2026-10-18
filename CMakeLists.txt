@@ -11,11 +11,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # ---------------------------------------------------------------------------
 set(SOURCES
 	source/main.cpp
-	source/Logger.cpp
-    
-	source/Config.cpp
-    source/Client.cpp
-	source/Watermelon.cpp
+	source/Core/Logger.cpp
+    source/Core/Keys.cpp
+	source/Core/Config.cpp
+    source/Core/Client.cpp
+	source/Core/Watermelon.cpp
     source/Utils/UUID.cpp
     source/Utils/Buffer.cpp
     source/Utils/Base64.cpp
@@ -33,6 +33,9 @@ set(SOURCES
     source/Java/Packet/Client/ConfigurationPackets.cpp
     source/Java/Packet/Client/PlayPackets.cpp
     source/Registry/RegistryManager.cpp
+    source/Crypto/RSA.cpp
+    source/Crypto/CFB8.cpp
+    source/Crypto/Crypto.cpp
 )
 
 add_executable(Watermelon ${SOURCES})
@@ -51,6 +54,9 @@ target_include_directories(Watermelon PRIVATE
 if(WIN32)
     target_link_libraries(${PROJECT_NAME} PRIVATE ws2_32)
 endif()
+
+find_package(OpenSSL 3.0 REQUIRED)
+target_link_libraries(Watermelon PRIVATE OpenSSL::Crypto)
 
 # ---------------------------------------------------------------------------
 # Compiler options

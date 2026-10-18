@@ -44,7 +44,7 @@ namespace Java {
 					case (int32_t)Java::Packet::PacketId::HandshakeServer::HANDSHAKE:
 						return handshake(client, server, packet);
 					default:
-						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::WARN);
+						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::ERR);
 						server->disconnectClient(client.get());
 					}
 				}

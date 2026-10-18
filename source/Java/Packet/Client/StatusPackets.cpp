@@ -9,7 +9,7 @@ namespace Java {
 		namespace Client {
 			namespace Status {
 				void statusPacket(std::shared_ptr<::Client> client, Watermelon* server) {
-					std::vector<char> buffer;
+					std::vector<uint8_t> buffer;
 					json data = {
 						{"version", {
 							{"name", server->getVersion().name},

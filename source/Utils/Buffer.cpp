@@ -6,7 +6,7 @@
 
 namespace Utils {
 	namespace Buffer {
-		void printBuffer(std::vector<char>& buffer) {
+		void printBuffer(std::vector<uint8_t>& buffer) {
 			for (const auto& c : buffer) {
 				std::cout << std::hex
 					<< std::setw(2)
@@ -19,8 +19,8 @@ namespace Utils {
 			std::cout << std::dec << std::endl;
 		}
 
-		void printWithSize(std::vector<char>& buffer) {
-			std::vector<char> fullPacket;
+		void printWithSize(std::vector<uint8_t>& buffer) {
+			std::vector<uint8_t> fullPacket;
 
 			Java::Packet::writeVarInt((int32_t)buffer.size(), fullPacket);
 			fullPacket.insert(fullPacket.end(), buffer.begin(), buffer.end());

@@ -1,6 +1,6 @@
 #include <filesystem>
 #define TOML_IMPLEMENTATION
-#include "Config.h"
+#include "Core/Config.h"
 
 toml::table loadConfig() {
 	if (std::filesystem::exists("watermelon.toml")) {
@@ -38,7 +38,7 @@ toml::table loadConfig() {
 			[networking.java]
 			enabled = true
 			address = "0.0.0.0:25565"
-			#encryption = true
+			encryption = true
 			online_mode = true
 			max_players = 10
 			view_distance = 16

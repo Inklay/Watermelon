@@ -7,12 +7,13 @@
 #include <memory>
 #include <queue>
 #include <functional>
-#include "Logger.h"
-#include "Client.h"
+#include "Core/Logger.h"
+#include "Core/Client.h"
 #include "Player/Player.h"
+#include "Registry/RegistryManager.h"
+#include "Core/Keys.h"
 #define TOML_IMPLEMENTATION
 #include "Utils/TOML.h"
-#include "Registry/RegistryManager.h"
 
 class Watermelon {
 public:
@@ -30,7 +31,7 @@ public:
 	void addOperationToQueue(std::shared_ptr<Client> client, std::function<void()> packetHandler);
 	Version& getVersion();
 	Logger& getLogger();
-	void sendDataToClient(std::shared_ptr<Client> client, const std::vector<char>& data);
+	void sendDataToClient(std::shared_ptr<Client> client, const std::vector<uint8_t>& data);
 	toml::table& getConfig();
 	std::vector<Java::Pack>& getPacks();
 	uint32_t increaseEntityCounter();
@@ -40,6 +41,7 @@ public:
 	Player::Gamemode getDefaultGamemode();
 	const std::string& getFaviconData();
 	void stop();
+	Keys& getKeys();
 
 private:
 	void log(const std::string& message, Logger::Level level);
@@ -64,4 +66,5 @@ private:
 	std::atomic<bool> m_running { false };
 	std::atomic<int> m_playerCount { 0 };
 	Player::Gamemode m_defaultGamemode;
+	Keys m_keys;
 };

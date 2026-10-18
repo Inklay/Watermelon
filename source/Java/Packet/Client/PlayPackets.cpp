@@ -7,7 +7,7 @@ namespace Java {
 		namespace Client {
 			namespace Play {
 				void playerInfoUpdate(Watermelon* server, const std::vector<Player::InfoAction>& actions, const std::vector<Player*> players) {
-					std::vector<char> buffer;
+					std::vector<uint8_t> buffer;
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::PLAYER_INFO_UPDATE, buffer);
 
@@ -72,7 +72,7 @@ namespace Java {
 				}
 
 				void synchronizePlayerPosition(std::shared_ptr<::Client> client, Watermelon* server) {
-					std::vector<char> buffer;
+					std::vector<uint8_t> buffer;
 					int32_t teleportId = client->getPlayer()->teleport({ 0, 0, 0 }, { 0, 0 });
 
 					if (teleportId == -1) {
@@ -95,7 +95,7 @@ namespace Java {
 				}
 
 				void gameEvent(std::shared_ptr<::Client> client, Watermelon* server, GameEvent event, float data) {
-					std::vector<char> buffer;
+					std::vector<uint8_t> buffer;
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::GAME_EVENT, buffer);
 					Java::Packet::writeU8((int8_t)event, buffer);
@@ -105,7 +105,7 @@ namespace Java {
 				}
 
 				void setCenterChunk(std::shared_ptr<::Client> client, Watermelon* server) {
-					std::vector<char> buffer;
+					std::vector<uint8_t> buffer;
 					Player* player = client->getPlayer();
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::SET_CENTER_CHUNK, buffer);
@@ -119,8 +119,8 @@ namespace Java {
 					const int dimensionHeight = 384; // FIXME needs to read height from register
 					const int sectionNumber = dimensionHeight / 16;
 					const int heightmapArrayCount = 37;
-					std::vector<char> buffer;
-					std::vector<char> sectionBuffer;
+					std::vector<uint8_t> buffer;
+					std::vector<uint8_t> sectionBuffer;
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::CHUNK_DATA_AND_UPDATE_LIGHT, buffer);
 					Java::Packet::write32(x, buffer);
@@ -159,7 +159,7 @@ namespace Java {
 				}
 
 				void login(std::shared_ptr<::Client> client, Watermelon* server) {
-					std::vector<char> buffer;
+					std::vector<uint8_t> buffer;
 					const Registry* dimensionReg = RegistryManager::getInstance().getRegistry("minecraft:dimension_type");
 					Player* player = client->getPlayer();
 

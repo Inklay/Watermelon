@@ -3,7 +3,7 @@
 #include <iostream>
 #include <format>
 #include <thread>
-#include "Logger.h"
+#include "Core/Logger.h"
 
 Logger::Logger(toml::table& config) :
 	m_stream(config["file"].value_or("latest.log"), std::ios::out | std::ios::trunc),

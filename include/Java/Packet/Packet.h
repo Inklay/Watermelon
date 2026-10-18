@@ -4,8 +4,8 @@
 #include <memory>
 #include <vector>
 #include <stdexcept>
-#include "Client.h"
-#include "Logger.h"
+#include "Core/Client.h"
+#include "Core/Logger.h"
 #include "Java/Pack.h"
 #include "Registry/Registry.h"
 #include "Tag/RegistryTag.h"
@@ -264,21 +264,22 @@ namespace Java {
 		double readDouble(const std::vector<uint8_t>& packet, uint32_t& offset);
 		std::pair<uint64_t, uint64_t> readUUID(const std::vector<uint8_t>& packet, uint32_t& offset);
 		std::vector<Pack> readPacks(const std::vector<uint8_t>& packet, uint32_t& offset);
+		std::vector<uint8_t> readByteArray(const std::vector<uint8_t>& packet, uint32_t& offset);
 
-		void writeString(const std::string& str, std::vector<char>& buffer);
-		void writeVarInt(int32_t value, std::vector<char>& buffer);
-		void writeBool(bool value, std::vector<char>& buffer);
-		void write8(int8_t value, std::vector<char>& buffer);
-		void writeU8(uint8_t value, std::vector<char>& buffer);
-		void write16(int16_t value, std::vector<char>& buffer);
-		void write32(int32_t value, std::vector<char>& buffer);
-		void write64(int64_t value, std::vector<char>& buffer);
-		void writeFloat(float value, std::vector<char>& buffer);
-		void writeDouble(double value, std::vector<char>& buffer);
-		void writeUUID(std::pair<uint64_t, uint64_t>, std::vector<char>& buffer);
-		void writePacks(std::vector<Pack>&, std::vector<char>& buffer);
-		void writeRegistry(const Registry* registry, bool skipNbt, std::vector<char>& buffer);
-		void writeNBT(const std::vector<uint8_t>& data, std::vector<char>& buffer);
-		void writeTags(const std::vector<RegistryTag>& tags, std::vector<char>& buffer);
+		void writeString(const std::string& str, std::vector<uint8_t>& buffer);
+		void writeVarInt(int32_t value, std::vector<uint8_t>& buffer);
+		void writeBool(bool value, std::vector<uint8_t>& buffer);
+		void write8(int8_t value, std::vector<uint8_t>& buffer);
+		void writeU8(uint8_t value, std::vector<uint8_t>& buffer);
+		void write16(int16_t value, std::vector<uint8_t>& buffer);
+		void write32(int32_t value, std::vector<uint8_t>& buffer);
+		void write64(int64_t value, std::vector<uint8_t>& buffer);
+		void writeFloat(float value, std::vector<uint8_t>& buffer);
+		void writeDouble(double value, std::vector<uint8_t>& buffer);
+		void writeUUID(std::pair<uint64_t, uint64_t>, std::vector<uint8_t>& buffer);
+		void writePacks(std::vector<Pack>&, std::vector<uint8_t>& buffer);
+		void writeRegistry(const Registry* registry, bool skipNbt, std::vector<uint8_t>& buffer);
+		void writeNBT(const std::vector<uint8_t>& data, std::vector<uint8_t>& buffer);
+		void writeTags(const std::vector<RegistryTag>& tags, std::vector<uint8_t>& buffer);
 	};
 }

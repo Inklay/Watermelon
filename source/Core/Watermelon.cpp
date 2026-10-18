@@ -1,7 +1,7 @@
 #include <string>
 #define TOML_IMPLEMENTATION
-#include "Config.h"
-#include "Watermelon.h"
+#include "Core/Config.h"
+#include "Core/Watermelon.h"
 #include "Java/Packet/Packet.h"
 #include "Java/Packet/Server/Handler.h"
 #include "Utils/Base64.h"
@@ -224,15 +224,7 @@ void Watermelon::networkLoop() {
 				continue;
 			}
 
-			char received[8192];
-			int count = static_cast<int>(recv(client->getSocket(), received, sizeof(received), 0));
-
-			if (count <= 0) {
-				disconnectClient(client.get());
-				continue;
-			}
-
-			client->appendReceivedData(reinterpret_cast<const uint8_t*>(received), (size_t)count);
+			client->appendReceivedData();
 
 			while (true) {
 				std::vector<uint8_t> packet;
@@ -349,8 +341,8 @@ Logger& Watermelon::getLogger() {
 	return m_logger;
 }
 
-void Watermelon::sendDataToClient(std::shared_ptr<Client> client, const std::vector<char>& data) {
-	std::vector<char> fullPacket;
+void Watermelon::sendDataToClient(std::shared_ptr<Client> client, const std::vector<uint8_t>& data) {
+	std::vector<uint8_t> fullPacket;
 
 	Java::Packet::writeVarInt((int32_t)data.size(), fullPacket);
 	fullPacket.insert(fullPacket.end(), data.begin(), data.end());
@@ -456,4 +448,8 @@ const std::string& Watermelon::getFaviconData() {
 
 void Watermelon::stop() {
 	m_running.store(false);
+}
+
+Keys& Watermelon::getKeys() {
+	return m_keys;
 }
