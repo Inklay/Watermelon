@@ -50,6 +50,10 @@ namespace Java {
             throw parseError("Invalid VarInt: too long");
         }
 
+        bool readBool(const std::vector<uint8_t>& packet, uint32_t& offset) {
+            return readU8(packet, offset);
+        }
+
         uint8_t readU8(const std::vector<uint8_t>& packet, uint32_t& offset) {
             if (offset >= packet.size()) {
                 throw parseError("Invalid u8: unexpected end of packet");

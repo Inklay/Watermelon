@@ -14,20 +14,18 @@ namespace Java {
 					uint32_t offset = 0;
 					const std::vector<uint8_t> encryptedSecret = Java::Packet::readByteArray(packet, offset);
 					const std::vector<uint8_t> encryptedToken = Java::Packet::readByteArray(packet, offset);
+					std::vector<uint8_t> token = server->getKeys().decryptData(encryptedToken);
+					std::vector<uint8_t> secret = server->getKeys().decryptData(encryptedSecret);
 					Java::Packet::checkEmpty(packet, offset);
 
-					server->addOperationToQueue(client, [client, server, encryptedSecret = std::move(encryptedSecret), encryptedToken = std::move(encryptedToken)]() {
+					server->addOperationToQueue(client, [client, server, token = std::move(token), secret = std::move(secret)]() {
 						Player* player = client->getPlayer();
-
-						std::vector<uint8_t> token = server->getKeys().decryptData(encryptedToken);
 
 						if (!client->checkToken(token)) {
 							server->getLogger().log("Unable to verify " + client->getPlayer()->getUsername() + "'s encryption tokens", "Network", Logger::WARN);
 							server->disconnectClient(client.get());
 							return;
-						}
-
-						std::vector<uint8_t> secret = server->getKeys().decryptData(encryptedSecret);
+						}						
 
 						if (secret.size() != 16) {
 							server->getLogger().log("Unable to verify " + client->getPlayer()->getUsername() + "'s encryption secret", "Network", Logger::WARN);

@@ -77,3 +77,7 @@ bool Player::hasChatSignature() {
 bool Player::isTeleporting() {
 	return m_teleporting;
 }
+
+void Player::setClientInfo(ClientInfo clientInfo) {
+	m_clientInfo = clientInfo;
+}

@@ -4,6 +4,7 @@
 #include <mutex>
 #include "Player/Player.h"
 #include "Java/Pack.h"
+#include <atomic>
 #include "Crypto/CFB8.h"
 #ifdef _WIN32
 #include <winsock2.h>
@@ -77,7 +78,7 @@ private:
 	std::vector<uint8_t> m_receiveBuffer;
 	Watermelon* m_server;
 	bool m_disconnected;
-	bool m_encrypted;
+	std::atomic<bool> m_encrypted = { false };
 	std::vector<uint8_t> m_encryptionToken;
 	Crypto::CFB8::Cipher m_cipher;
 };

@@ -56,14 +56,32 @@ namespace Java {
 					throw parseError("Unknown channel");
 				}
 
+				static void clientInformation(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
+					uint32_t offset = 0;
+
+					Java::Packet::readString(packet, offset); // Locale, unused
+					uint8_t viewDistance = Java::Packet::readU8(packet, offset);
+					Player::ChatMode chatMode = static_cast<Player::ChatMode>(Java::Packet::readVarInt(packet, offset));
+					Java::Packet::readBool(packet, offset); // Chat color, unused
+					uint8_t skinPart = Java::Packet::readU8(packet, offset);
+					uint32_t mainHand = Java::Packet::readVarInt(packet, offset);
+					Java::Packet::readBool(packet, offset); // Text filertering, unused
+					bool shownOnServerList = Java::Packet::readBool(packet, offset);
+					uint32_t particles = Java::Packet::readVarInt(packet, offset);
+
+					client->getPlayer()->setClientInfo({ viewDistance, chatMode, skinPart, mainHand, shownOnServerList, particles });
+
+					Java::Packet::checkEmpty(packet, offset);
+				}
+
 				void parse(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					switch (packetId) {
 						case (int)Java::Packet::PacketId::ConfigurationServer::KNOWN_PACKS:
 							return knownPacks(client, server, packet);
 						case (int)Java::Packet::PacketId::ConfigurationServer::ACKNOWLEDGE_FINISH_CONFIGURATION:
 							return AcknowledgeFinishConfiguration(client, server, packet);
-						//case (int)Java::Packet::PacketId::ConfigurationServer::CLIENT_INFORMATION:
-						//	return knownPacks(client, server, packet);
+						case (int)Java::Packet::PacketId::ConfigurationServer::CLIENT_INFORMATION:
+							return clientInformation(client, server, packet);
 						case (int)Java::Packet::PacketId::ConfigurationServer::PLUGIN_MESSAGE:
 							return pluginMessage(client, server, packet);
 						default:

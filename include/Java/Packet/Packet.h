@@ -256,6 +256,7 @@ namespace Java {
 
 		std::string readString(const std::vector<uint8_t>& packet, uint32_t& offset);
 		int32_t readVarInt(const std::vector<uint8_t>& packet, uint32_t& offset);
+		bool readBool(const std::vector<uint8_t>& packet, uint32_t& offset);
 		uint8_t readU8(const std::vector<uint8_t>& packet, uint32_t& offset);
 		uint16_t readU16(const std::vector<uint8_t>& packet, uint32_t& offset);
 		uint32_t readU32(const std::vector<uint8_t>& packet, uint32_t& offset);

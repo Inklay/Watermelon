@@ -23,6 +23,21 @@ public:
 		SPECTATOR = 3
 	};
 
+	enum ChatMode {
+		ENABLED = 0,
+		COMMANDS_ONLY = 1,
+		OFF = 2
+	};
+
+	struct ClientInfo {
+		uint8_t viewDistance;
+		Player::ChatMode chatMode;
+		uint8_t skinPart;
+		uint32_t mainHand;
+		bool shownOnServerList;
+		uint32_t particles;
+	};
+
 	Player(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation);
 	const std::string& getUsername();
 	int32_t teleport(Entity::Position position, Entity::Rotation rotation);
@@ -34,6 +49,7 @@ public:
 	Position getPosition();
 	bool hasChatSignature();
 	bool isTeleporting();
+	void setClientInfo(ClientInfo clientInfo);
 
 private:
 	std::string m_username;
@@ -41,4 +57,5 @@ private:
 	int32_t m_teleportIdCounter;
 	bool m_teleporting;
 	Gamemode m_gamemode;
+	ClientInfo m_clientInfo;
 };

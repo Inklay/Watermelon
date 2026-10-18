@@ -12,8 +12,7 @@ Client::Client(Type type, Socket socket, Watermelon* server) :
 	m_socket(socket),
 	m_player(nullptr),
 	m_server(server),
-	m_disconnected(false),
-	m_encrypted(false)
+	m_disconnected(false)
 {
 }
 
@@ -180,7 +179,7 @@ void Client::appendReceivedData() {
 
 	std::vector<uint8_t> incoming(reinterpret_cast<const uint8_t*>(received), reinterpret_cast<const uint8_t*>(received) + count);
 
-	if (m_encrypted) {
+	if (m_encrypted.load()) {
 		incoming = m_cipher.decrypt(incoming);
 	}
 
@@ -212,7 +211,7 @@ void Client::sendData(std::vector<uint8_t>& data) {
 		size_t totalSent = 0;
 		size_t size = data.size();
 
-		if (m_encrypted) {
+		if (m_encrypted.load()) {
 			data = m_cipher.encrypt(data);
 		}
 
@@ -241,13 +240,18 @@ void Client::sendData(std::vector<uint8_t>& data) {
 
 bool Client::isEncrypted() {
 	std::lock_guard<std::mutex> lock(m_mutex);
-	return m_encrypted;
+	return m_encrypted.load();
 }
 
 void Client::startEncryption(std::vector<uint8_t> secret) {
 	std::lock_guard<std::mutex> lock(m_mutex);
+
+	if (m_encrypted.load()) {
+		throw std::runtime_error("Client already ecnrypted");
+	}
+
 	m_cipher.init(secret);
-	m_encrypted =  true;
+	m_encrypted.store(true);
 }
 
 const std::vector<uint8_t>& Client::generateEncryptionToken() {
@@ -259,11 +263,11 @@ const std::vector<uint8_t>& Client::generateEncryptionToken() {
 bool Client::checkToken(const std::vector<uint8_t>& token) {
 	std::lock_guard<std::mutex> lock(m_mutex);
 
-	if (token.size() != m_encryptionToken.size()) {
+	if (token.size() != m_encryptionToken.size() || m_encryptionToken.empty()) {
 		return false;
 	}
 
-	for (int i = 0; i < m_encryptionToken.size(); i++) {
+	for (int i = 0; i < (int)m_encryptionToken.size(); i++) {
 		if (m_encryptionToken.at(i) != token.at(i)) {
 			return false;
 		}

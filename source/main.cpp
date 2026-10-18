@@ -1,4 +1,6 @@
 ﻿#include <csignal>
+#include <atomic>
+#include <cstdlib>
 #include "Core/Watermelon.h"
 
 namespace {
