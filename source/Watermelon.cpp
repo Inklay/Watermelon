@@ -123,7 +123,7 @@ bool Watermelon::start() {
 
 	if (bind(m_serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
 #ifdef _WIN32
-		log("Bind error:	" + std::to_string(WSAGetLastError()), Logger::DEBUG);
+		log("Bind error: " + std::to_string(WSAGetLastError()), Logger::DEBUG);
 #else
 		log(std::string("Bind error: ") + strerror(errno), Logger::DEBUG);
 #endif
@@ -452,4 +452,8 @@ void Watermelon::readFavicon() {
 
 const std::string& Watermelon::getFaviconData() {
 	return m_faviconBase64;
+}
+
+void Watermelon::stop() {
+	m_running.store(false);
 }

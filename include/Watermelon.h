@@ -39,6 +39,7 @@ public:
 	void increasePlayerCount();
 	Player::Gamemode getDefaultGamemode();
 	const std::string& getFaviconData();
+	void stop();
 
 private:
 	void log(const std::string& message, Logger::Level level);
