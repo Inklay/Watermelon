@@ -29,7 +29,7 @@ I'm currently working on finishing every feature that work but are not perfect y
 
 Networking:
 - Add compression
-- Add encryption (until then, `online_mode` must be `false`)
+- Add authentification (until then, `online_mode` must be `false`)
 - Add skin and cape data
 - Implement the remaining configuration state packets
 - Implement the remaining play state packets that are sent during login

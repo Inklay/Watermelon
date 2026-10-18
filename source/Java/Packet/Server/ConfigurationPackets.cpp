@@ -56,7 +56,7 @@ namespace Java {
 					throw parseError("Unknown channel");
 				}
 
-				static void clientInformation(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
+				static void clientInformation(std::shared_ptr<::Client> client, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 
 					Java::Packet::readString(packet, offset); // Locale, unused
@@ -81,7 +81,7 @@ namespace Java {
 						case (int)Java::Packet::PacketId::ConfigurationServer::ACKNOWLEDGE_FINISH_CONFIGURATION:
 							return AcknowledgeFinishConfiguration(client, server, packet);
 						case (int)Java::Packet::PacketId::ConfigurationServer::CLIENT_INFORMATION:
-							return clientInformation(client, server, packet);
+							return clientInformation(client, packet);
 						case (int)Java::Packet::PacketId::ConfigurationServer::PLUGIN_MESSAGE:
 							return pluginMessage(client, server, packet);
 						default:
