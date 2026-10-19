@@ -63,7 +63,7 @@ namespace Java {
 					uint8_t viewDistance = Java::Packet::readU8(packet, offset);
 					uint32_t tempChatMode = Java::Packet::readVarInt(packet, offset);
 
-					if (tempChatMode < 0 || tempChatMode > 2) {
+					if (tempChatMode > 2) {
 						throw parseError("Invalid chat mode");
 					}
 

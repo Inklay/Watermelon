@@ -5,6 +5,10 @@
 #include "Java/Packet/Packet.h"
 #include "Java/Packet/Server/Handler.h"
 #include "Utils/Base64.h"
+#include "Utils/JSON.h"
+#include "Utils/UUID.h"
+#include "Auth/Auth.h"
+#include "Java/Packet/Client/LoginPackets.h"
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #else
@@ -27,7 +31,8 @@ Watermelon::Watermelon() :
 	m_logger(*m_config["logging"].as_table()),
 	m_registryManager(RegistryManager::getInstance()),
 	m_entityCounter(0),
-	m_defaultGamemode(Player::Gamemode::CREATIVE)
+	m_defaultGamemode(Player::Gamemode::CREATIVE),
+	m_authPool(4, 64, "Worker/Auth", m_logger)
 {
 #ifdef _WIN32
 	WSADATA wsaData;
@@ -489,4 +494,23 @@ bool Watermelon::isOnlineMode() {
 
 bool Watermelon::isEncryptionEnabled() { 
 	return isOnlineMode() || m_config["networking"]["java"]["encryption"].value_or(true);
+}
+
+void Watermelon::addAuthTask(std::shared_ptr<Client> client) {
+	m_authPool.submit([client, server = this]() {
+		Auth::Result result = Auth::authenticatePlayer(client, server);
+		server->addOperationToQueue(client, [client, server, result = std::move(result)]() {
+			switch (result.status) {
+			case Auth::Status::FAILED:
+				return Java::Packet::Client::Login::disconnect(client, server, nlohmann::json({{ "translate", "multiplayer.disconnect.unverified_username" }}));
+			case Auth::Status::SERVER_DOWN:
+				return Java::Packet::Client::Login::disconnect(client, server, nlohmann::json({ { "translate", "multiplayer.loginFailedInfo.serversUnavailable" } }));
+			case Auth::Status::AUTHENTIFIED:
+				client->createPlayer(Utils::UUID::fromString(result.uuid), server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 });
+				client->startEncryption();
+				Player* player = client->getPlayer();
+				Java::Packet::Client::Login::loginSuccess(client, server, player->getUsername(), player->getUUID());
+			}
+		});
+	});
 }

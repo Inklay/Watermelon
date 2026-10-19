@@ -51,6 +51,8 @@ Map and player data:
 | Python | 3.9+ | Registry and tag header generation (see below) |
 | `nbtlib` | latest (`pip install nbtlib`) | Used by `codegen/synchronizedRegistries.py` |
 | Java | the version required by the Minecraft 26.3 server jar | Only to run Mojang's data generator |
+| openssl | 3.0 | Handling the encryption |
+| cpp-httplib | latest | Authenticating the users via Mojang's server |
 
 Tested with GCC 13.3 on Ubuntu 24.04 and MSVC on Windows. Clang and macOS are untested for now.
 
@@ -112,13 +114,6 @@ Run the server from the directory where you want its files to be created:
 ```
 
 On the first launch it creates `watermelon.toml` with the default configuration, and writes its logs to `latest.log`.
-
-Encryption is not implemented yet, so set this in `watermelon.toml` before trying to join:
-
-```toml
-[networking.java]
-online_mode = false
-```
 
 ## Troubleshooting
 

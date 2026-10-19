@@ -14,34 +14,25 @@ namespace Java {
 					uint32_t offset = 0;
 					const std::vector<uint8_t> encryptedSecret = Java::Packet::readByteArray(packet, offset);
 					const std::vector<uint8_t> encryptedToken = Java::Packet::readByteArray(packet, offset);
-					std::vector<uint8_t> token = server->getKeys().decryptData(encryptedToken);
-					std::vector<uint8_t> secret = server->getKeys().decryptData(encryptedSecret);
+					const std::vector<uint8_t> token = server->getKeys().decryptData(encryptedToken);
+					const std::vector<uint8_t> secret = server->getKeys().decryptData(encryptedSecret);
 					Java::Packet::checkEmpty(packet, offset);
 
 					server->addOperationToQueue(client, [client, server, token = std::move(token), secret = std::move(secret)]() {
+						if (!client->authenticate(token, secret)) {
+							server->disconnectClient(client.get());
+							return;
+						}
+						
 						if (server->isOnlineMode()) {
-
+							server->addAuthTask(client);
 						} else {
 							std::pair<uint64_t, uint64_t> uuid = Utils::UUID::offlineUUID(client->getTempUsername());
 							client->createPlayer(uuid, server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 });
+							client->startEncryption();
+							Player* player = client->getPlayer();
+							Java::Packet::Client::Login::loginSuccess(client, server, player->getUsername(), player->getUUID());
 						}
-						
-						Player* player = client->getPlayer();
-
-						if (!client->checkToken(token)) {
-							server->getLogger().log("Unable to verify " + client->getPlayer()->getUsername() + "'s encryption tokens", "Network", Logger::WARN);
-							server->disconnectClient(client.get());
-							return;
-						}						
-
-						if (secret.size() != 16) {
-							server->getLogger().log("Unable to verify " + client->getPlayer()->getUsername() + "'s encryption secret", "Network", Logger::WARN);
-							server->disconnectClient(client.get());
-							return;
-						}
-
-						client->startEncryption(secret);
-						Java::Packet::Client::Login::loginSuccess(client, server, player->getUsername(), player->getUUID());
 					});
 				}
 

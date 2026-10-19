@@ -8,9 +8,9 @@
 #include "Crypto/CFB8.h"
 #ifdef _WIN32
 #include <winsock2.h>
-#define Socket SOCKET
+using Socket = SOCKET;
 #else
-#define Socket int
+using Socket = int;
 #endif
 
 class Watermelon;
@@ -61,12 +61,14 @@ public:
 	void appendReceivedData();
 	void disconnect();
 	void sendData(std::vector<uint8_t>& data);
-	void startEncryption(std::vector<uint8_t> secret);
+	void startEncryption();
 	bool isEncrypted();
 	const std::vector<uint8_t>& generateEncryptionToken();
 	bool checkToken(const std::vector<uint8_t>& token);
 	bool startLogin(const std::string& username);
 	std::string getTempUsername();
+	bool authenticate(const std::vector<uint8_t>& token, const std::vector<uint8_t>& secret);
+	std::vector<uint8_t> getSecret();
 
 private:
 	const Type m_type;
@@ -84,4 +86,5 @@ private:
 	std::vector<uint8_t> m_encryptionToken;
 	Crypto::CFB8::Cipher m_cipher;
 	std::string m_tempPlayerName;
+	std::vector<uint8_t> m_secret;
 };

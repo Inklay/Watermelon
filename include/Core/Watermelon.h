@@ -12,6 +12,7 @@
 #include "Player/Player.h"
 #include "Registry/RegistryManager.h"
 #include "Core/Keys.h"
+#include "Core/TaskPool.h"
 #define TOML_IMPLEMENTATION
 #include "Utils/TOML.h"
 
@@ -46,6 +47,7 @@ public:
 	void updatePlayerSample();
 	bool isOnlineMode();
 	bool isEncryptionEnabled();
+	void addAuthTask(std::shared_ptr<Client> client);
 
 private:
 	void log(const std::string& message, Logger::Level level);
@@ -72,4 +74,5 @@ private:
 	Player::Gamemode m_defaultGamemode;
 	Keys m_keys;
 	std::vector<std::pair<const std::string, std::pair<uint64_t, uint64_t>>> m_playerSample;
+	TaskPool m_authPool;
 };

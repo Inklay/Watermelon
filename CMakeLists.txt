@@ -16,6 +16,8 @@ set(SOURCES
 	source/Core/Config.cpp
     source/Core/Client.cpp
 	source/Core/Watermelon.cpp
+    source/Core/TaskPool.cpp
+    source/Auth/Auth.cpp
     source/Utils/UUID.cpp
     source/Utils/Buffer.cpp
     source/Utils/Base64.cpp
@@ -52,11 +54,21 @@ target_include_directories(Watermelon PRIVATE
 # Additional librairies
 # ---------------------------------------------------------------------------
 if(WIN32)
+    target_compile_definitions(Watermelon PRIVATE
+        WIN32_LEAN_AND_MEAN
+        NOMINMAX
+    )
+
     target_link_libraries(${PROJECT_NAME} PRIVATE ws2_32)
 endif()
 
 find_package(OpenSSL 3.0 REQUIRED)
-target_link_libraries(Watermelon PRIVATE OpenSSL::Crypto)
+find_package(httplib CONFIG REQUIRED)
+target_link_libraries(Watermelon PRIVATE 
+    OpenSSL::Crypto
+    OpenSSL::SSL
+    httplib::httplib
+)
 
 # ---------------------------------------------------------------------------
 # Compiler options

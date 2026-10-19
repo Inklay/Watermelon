@@ -54,5 +54,25 @@ namespace Utils {
 
 			return { msb, lsb };
 		}
+
+		std::pair<uint64_t, uint64_t> fromString(const std::string& str) {
+            std::string hex;
+            hex.reserve(32);
+
+            for (char c : str) {
+                if (c != '-') {
+                    hex.push_back(c);
+                }
+            }
+
+            if (hex.size() != 32) {
+                throw std::invalid_argument("UUID invalide");
+            }
+
+            const uint64_t high = std::stoull(hex.substr(0, 16), nullptr, 16);
+            const uint64_t low = std::stoull(hex.substr(16, 16), nullptr, 16);
+
+            return { high, low };
+		}
 	};
 };

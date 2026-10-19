@@ -64,11 +64,10 @@ bool Client::startLogin(const std::string& username) {
 
 	{
 		std::lock_guard<std::mutex> lock(m_mutex);
-		if (m_player != nullptr) {
+		if (m_player != nullptr || !m_tempPlayerName.empty()) {
 			disconnect = true;
 			logMessage = "Player was already logged in";
-		}
-		else if (!Player::isUsernameValid(username)) {
+		} else if (!Player::isUsernameValid(username)) {
 			disconnect = true;
 			logMessage = "Invalid player name";
 		}
@@ -252,14 +251,14 @@ bool Client::isEncrypted() {
 	return m_encrypted.load();
 }
 
-void Client::startEncryption(std::vector<uint8_t> secret) {
+void Client::startEncryption() {
 	std::lock_guard<std::mutex> lock(m_mutex);
 
 	if (m_encrypted.load()) {
 		throw std::runtime_error("Client already ecnrypted");
 	}
 
-	m_cipher.init(secret);
+	m_cipher.init(m_secret);
 	m_encrypted.store(true);
 }
 
@@ -287,4 +286,23 @@ bool Client::checkToken(const std::vector<uint8_t>& token) {
 
 std::string Client::getTempUsername() {
 	return m_tempPlayerName;
+}
+
+bool Client::authenticate(const std::vector<uint8_t>& token, const std::vector<uint8_t>& secret) {
+	if (!checkToken(token)) {
+		m_server->getLogger().log("Unable to verify " + m_tempPlayerName + "'s encryption tokens", "Network", Logger::WARN);
+		return false;
+	}
+
+	if (secret.size() != 16) {
+		m_server->getLogger().log("Unable to verify " + m_tempPlayerName + "'s encryption secret", "Network", Logger::WARN);
+		return false;
+	}
+
+	m_secret = secret;
+	return true;
+}
+
+std::vector<uint8_t> Client::getSecret() {
+	return m_secret;
 }
