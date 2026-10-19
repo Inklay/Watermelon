@@ -69,6 +69,7 @@ public:
 	std::string getTempUsername();
 	bool authenticate(const std::vector<uint8_t>& token, const std::vector<uint8_t>& secret);
 	std::vector<uint8_t> getSecret();
+	void enableCompression();
 
 private:
 	const Type m_type;
@@ -87,4 +88,5 @@ private:
 	Crypto::CFB8::Cipher m_cipher;
 	std::string m_tempPlayerName;
 	std::vector<uint8_t> m_secret;
+	std::atomic<int32_t> m_compressionThreshold{ -1 };
 };

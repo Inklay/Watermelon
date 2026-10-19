@@ -66,12 +66,12 @@ namespace Java {
 
 					for (auto& client : server->getClients()) {
 						if (client->getStatus() == ::Client::Status::PLAY) {
-							server->sendDataToClient(client, buffer);
+							client->sendData(buffer);
 						}
 					}
 				}
 
-				void synchronizePlayerPosition(std::shared_ptr<::Client> client, Watermelon* server) {
+				void synchronizePlayerPosition(std::shared_ptr<::Client> client) {
 					std::vector<uint8_t> buffer;
 					int32_t teleportId = client->getPlayer()->teleport({ 0, 0, 0 }, { 0, 0 });
 
@@ -91,20 +91,20 @@ namespace Java {
 					Java::Packet::writeFloat(0, buffer); // FIXME pitch
 					Java::Packet::write32(0, buffer);
 
-					server->sendDataToClient(client, buffer);
+					client->sendData(buffer);
 				}
 
-				void gameEvent(std::shared_ptr<::Client> client, Watermelon* server, GameEvent event, float data) {
+				void gameEvent(std::shared_ptr<::Client> client, GameEvent event, float data) {
 					std::vector<uint8_t> buffer;
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::GAME_EVENT, buffer);
 					Java::Packet::writeU8((int8_t)event, buffer);
 					Java::Packet::writeFloat(data, buffer);
 
-					server->sendDataToClient(client, buffer);
+					client->sendData(buffer);
 				}
 
-				void setCenterChunk(std::shared_ptr<::Client> client, Watermelon* server) {
+				void setCenterChunk(std::shared_ptr<::Client> client) {
 					std::vector<uint8_t> buffer;
 					Player* player = client->getPlayer();
 
@@ -112,10 +112,10 @@ namespace Java {
 					Java::Packet::writeVarInt((int32_t)(std::floor(player->getPosition().x / 16)), buffer);
 					Java::Packet::writeVarInt((int32_t)(std::floor(player->getPosition().z / 16)), buffer);
 
-					server->sendDataToClient(client, buffer);
+					client->sendData(buffer);
 				}
 
-				void chunkDataAndUpdateLight(std::shared_ptr<::Client> client, Watermelon* server, int x, int z) {
+				void chunkDataAndUpdateLight(std::shared_ptr<::Client> client, int x, int z) {
 					const int dimensionHeight = 384; // FIXME needs to read height from register
 					const int sectionNumber = dimensionHeight / 16;
 					const int heightmapArrayCount = 37;
@@ -155,7 +155,7 @@ namespace Java {
 					Java::Packet::writeVarInt(0, buffer); // FIXME sky light arrays
 					Java::Packet::writeVarInt(0, buffer); // FIXME block light arrays
 
-					server->sendDataToClient(client, buffer);
+					client->sendData(buffer);
 				}
 
 				void login(std::shared_ptr<::Client> client, Watermelon* server) {
@@ -197,7 +197,7 @@ namespace Java {
 					Java::Packet::writeBool(server->isOnlineMode(), buffer);
 					Java::Packet::writeBool(false, buffer); // FIXME enforce secure chat
 
-					server->sendDataToClient(client, buffer);
+					client->sendData(buffer);
 				}
 			};
 		};

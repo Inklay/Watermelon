@@ -32,7 +32,6 @@ public:
 	void addOperationToQueue(std::shared_ptr<Client> client, std::function<void()> packetHandler);
 	Version& getVersion();
 	Logger& getLogger();
-	void sendDataToClient(std::shared_ptr<Client> client, const std::vector<uint8_t>& data);
 	toml::table& getConfig();
 	std::vector<Java::Pack>& getPacks();
 	uint32_t increaseEntityCounter();

@@ -38,7 +38,7 @@ set(SOURCES
     source/Crypto/RSA.cpp
     source/Crypto/CFB8.cpp
     source/Crypto/Crypto.cpp
-)
+ "source/Compression/ZLIB.cpp")
 
 add_executable(Watermelon ${SOURCES})
 
@@ -64,10 +64,13 @@ endif()
 
 find_package(OpenSSL 3.0 REQUIRED)
 find_package(httplib CONFIG REQUIRED)
+find_package(ZLIB REQUIRED)
+
 target_link_libraries(Watermelon PRIVATE 
     OpenSSL::Crypto
     OpenSSL::SSL
     httplib::httplib
+    ZLIB::ZLIB
 )
 
 # ---------------------------------------------------------------------------

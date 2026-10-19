@@ -2,6 +2,8 @@
 #include "Core/Watermelon.h"
 #include "Crypto/Crypto.h"
 #include "Utils/UUID.h"
+#include "Java/Packet/Packet.h"
+#include "Compression/ZLIB.h"
 #ifndef _WIN32
 #include <unistd.h>
 #include <sys/socket.h>
@@ -161,10 +163,31 @@ Client::PacketStatus Client::readPacket(std::vector<uint8_t>& packet) {
 		return Client::PacketStatus::INCOMPLETE;
 	}
 
-	packet.assign(
-		m_receiveBuffer.begin() + prefixLength,
-		m_receiveBuffer.begin() + prefixLength + length
-	);
+	if (m_compressionThreshold.load() != -1) {
+		std::vector<uint8_t> compressedPacket(m_receiveBuffer.begin() + prefixLength, m_receiveBuffer.begin() + prefixLength + length);
+		uint32_t offset = 0;
+		uint32_t dataLenght = Java::Packet::readVarInt(compressedPacket, offset);
+		compressedPacket.erase(compressedPacket.begin(), compressedPacket.begin() + offset);
+
+		if (dataLenght == 0) {
+			if (length >= 256) {
+				return Client::PacketStatus::INVALID;
+			}
+
+			packet = compressedPacket;
+		} else if (dataLenght < MAX_PACKET_SIZE && dataLenght >= 256) {
+			std::vector<uint8_t> decompressedData = Compression::ZLIB::decompress(compressedPacket, dataLenght);
+
+			if (decompressedData.size() != dataLenght) {
+				return Client::PacketStatus::INVALID;
+			}
+			packet = decompressedData;
+		} else {
+			return Client::PacketStatus::INVALID;
+		}
+	} else {
+		packet.assign(m_receiveBuffer.begin() + prefixLength, m_receiveBuffer.begin() + prefixLength + length);
+	}
 
 	m_receiveBuffer.erase(
 		m_receiveBuffer.begin(),
@@ -217,16 +240,36 @@ void Client::sendData(std::vector<uint8_t>& data) {
 	{
 		std::lock_guard<std::mutex> lock(m_sendingMutex);
 		size_t totalSent = 0;
-		size_t size = data.size();
+		
+
+		if (m_compressionThreshold.load() != -1) {
+			std::vector<uint8_t> compressedPacket;
+
+			if (static_cast<int>(data.size()) >= m_compressionThreshold) {
+				std::vector<uint8_t> compressedData = Compression::ZLIB::compress(data);
+				Java::Packet::writeVarInt(static_cast<uint32_t>(data.size()), compressedPacket);
+				compressedPacket.insert(compressedPacket.end(), compressedData.begin(), compressedData.end());
+			} else {
+				Java::Packet::writeVarInt(0, compressedPacket);
+				compressedPacket.insert(compressedPacket.end(), data.begin(), data.end());
+			}
+
+			data = compressedPacket;
+		}
+
+		std::vector<uint8_t> fullPacket;
+		Java::Packet::writeVarInt((int32_t)data.size(), fullPacket);
+		fullPacket.insert(fullPacket.end(), data.begin(), data.end());
+		size_t size = fullPacket.size();
 
 		if (m_encrypted.load()) {
-			data = m_cipher.encrypt(data);
+			fullPacket = m_cipher.encrypt(fullPacket);
 		}
 
 		while (totalSent < size) {
 			const size_t remaining = size - totalSent;
 			const int toSend = static_cast<int>((std::min)(remaining, static_cast<size_t>(INT_MAX)));
-			const int sent = send(m_socket, reinterpret_cast<const char*>(data.data()) + totalSent, toSend, 0);
+			const int sent = send(m_socket, reinterpret_cast<const char*>(fullPacket.data()) + totalSent, toSend, 0);
 
 			if (sent == -1) {
 				disconnect = true;
@@ -305,4 +348,8 @@ bool Client::authenticate(const std::vector<uint8_t>& token, const std::vector<u
 
 std::vector<uint8_t> Client::getSecret() {
 	return m_secret;
+}
+
+void Client::enableCompression() {
+	m_compressionThreshold.store(256);
 }

@@ -346,14 +346,6 @@ Logger& Watermelon::getLogger() {
 	return m_logger;
 }
 
-void Watermelon::sendDataToClient(std::shared_ptr<Client> client, const std::vector<uint8_t>& data) {
-	std::vector<uint8_t> fullPacket;
-
-	Java::Packet::writeVarInt((int32_t)data.size(), fullPacket);
-	fullPacket.insert(fullPacket.end(), data.begin(), data.end());
-	client->sendData(fullPacket);
-}
-
 toml::table& Watermelon::getConfig() {
 	return m_config;
 }
@@ -509,7 +501,8 @@ void Watermelon::addAuthTask(std::shared_ptr<Client> client) {
 				client->createPlayer(Utils::UUID::fromString(result.uuid), server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 });
 				client->startEncryption();
 				Player* player = client->getPlayer();
-				Java::Packet::Client::Login::loginSuccess(client, server, player->getUsername(), player->getUUID());
+				Java::Packet::Client::Login::setCompression(client);
+				Java::Packet::Client::Login::loginSuccess(client, player->getUsername(), player->getUUID());
 			}
 		});
 	});

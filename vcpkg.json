@@ -1,7 +1,8 @@
 {
   "dependencies": [
     "openssl",
-    "cpp-httplib"
+    "cpp-httplib",
+    "zlib"
   ],
   "builtin-baseline": "bf19794383e8fb95eba5aa553235bc8ec2271688"
 }

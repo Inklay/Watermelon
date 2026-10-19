@@ -14,7 +14,7 @@ namespace Java {
 					});
 				}
 
-				static void ping(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
+				static void ping(std::shared_ptr<::Client> client, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 					int64_t ping = Java::Packet::readU64(packet, offset);
 					Java::Packet::checkEmpty(packet, offset);
@@ -22,7 +22,7 @@ namespace Java {
 					std::vector<uint8_t> buffer;
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::StatusClient::PONG, buffer);
 					Java::Packet::write64(ping, buffer);
-					server->sendDataToClient(client, buffer);
+					client->sendData(buffer);
 				}
 
 				void parse(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
@@ -30,7 +30,7 @@ namespace Java {
 					case (int32_t)Java::Packet::PacketId::StatusServer::STATUS_REQUEST:
 						return status(client, server, packet);
 					case (int32_t)Java::Packet::PacketId::StatusServer::PING:
-						return ping(client, server, packet);
+						return ping(client, packet);
 					default:
 						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::ERR);
 						server->disconnectClient(client.get());

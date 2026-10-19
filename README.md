@@ -18,18 +18,19 @@ Configuration:
 
 Networking:
 - The TCP stack to communicate with Minecraft clients
-- Parsing and serializing of java packets
+- Encryption
+- Compression
+- Full support of "handshake" state packet
 - Full support of "status" state packet (i.e. ping, favicon, motd, version...)
-- Basic login and configuration sequence
-- basic chunk and light data
+- Full support of "login" state sequence
+- Basic support of "configuration" state sequence
+- Minimal support of "play" state sequence (only a few chunk and light data)
 
 ## What's next?
 
 I'm currently working on finishing every feature that work but are not perfect yet
 
 Networking:
-- Add compression
-- Add authentification (until then, `online_mode` must be `false`)
 - Add skin and cape data
 - Implement the remaining configuration state packets
 - Implement the remaining play state packets that are sent during login
@@ -53,6 +54,7 @@ Map and player data:
 | Java | the version required by the Minecraft 26.3 server jar | Only to run Mojang's data generator |
 | openssl | 3.0 | Handling the encryption |
 | cpp-httplib | latest | Authenticating the users via Mojang's server |
+| zlib | latest | Network packet compression |
 
 Tested with GCC 13.3 on Ubuntu 24.04 and MSVC on Windows. Clang and macOS are untested for now.
 

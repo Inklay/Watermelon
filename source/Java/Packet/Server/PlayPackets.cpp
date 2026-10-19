@@ -40,7 +40,7 @@ namespace Java {
 
 						if (!player->finishTeleporting(teleportId)) {
 							server->getLogger().log("Failed to teleport player " + player->getUsername(), "Network", Logger::WARN);
-							Java::Packet::Client::Play::synchronizePlayerPosition(client, server);
+							Java::Packet::Client::Play::synchronizePlayerPosition(client);
 						}
 					});
 				}

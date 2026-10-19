@@ -11,24 +11,24 @@ namespace Java {
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::ConfigurationClient::KNOWN_PACKS, buffer);
 					Java::Packet::writePacks(server->getPacks(), buffer);
-					server->sendDataToClient(client, buffer);
+					client->sendData(buffer);
 				}
 
-				void finishConfiguration(std::shared_ptr<::Client> client, Watermelon* server) {
+				void finishConfiguration(std::shared_ptr<::Client> client) {
 					std::vector<uint8_t> buffer;
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::ConfigurationClient::FINISH_CONFIGURATION, buffer);
-					server->sendDataToClient(client, buffer);
+					client->sendData(buffer);
 				}
 
-				void updateTags(std::shared_ptr<::Client> client, Watermelon* server) {
+				void updateTags(std::shared_ptr<::Client> client) {
 					std::vector<uint8_t> buffer;
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::ConfigurationClient::UPDATE_TAGS, buffer);
 					Java::Packet::writeTags(RegistryManager::getInstance().getRegistryTags(), buffer);
-					server->sendDataToClient(client, buffer);
+					client->sendData(buffer);
 				}
 
-				void registryData(std::shared_ptr<::Client> client, Watermelon* server) {
+				void registryData(std::shared_ptr<::Client> client) {
 					for (const Registry* syncReg : RegistryManager::getInstance().getSynchronizedRegistries()) {
 						std::vector<uint8_t> buffer;
 
@@ -40,16 +40,16 @@ namespace Java {
 							Java::Packet::writeRegistry(syncReg, false, buffer);
 						}
 
-						server->sendDataToClient(client, buffer);
+						client->sendData(buffer);
 					}
 				}
 
-				void pluginMessage(std::shared_ptr<::Client> client, Watermelon* server, const std::string& channel, const std::string& data) {
+				void pluginMessage(std::shared_ptr<::Client> client, const std::string& channel, const std::string& data) {
 					std::vector<uint8_t> buffer;
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::ConfigurationClient::PLUGIN_MESSAGE, buffer);
 					Java::Packet::writeString(channel, buffer);
 					Java::Packet::writeString(data, buffer);
-					server->sendDataToClient(client, buffer);
+					client->sendData(buffer);
 				}
 			};
 		};

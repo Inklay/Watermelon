@@ -11,7 +11,7 @@ namespace Java {
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::LoginClient::DISCONNECT, buffer);
 					Java::Packet::writeString(reason, buffer);
-					server->sendDataToClient(client, buffer);
+					client->sendData(buffer);
 					server->disconnectClient(client.get());
 				}
 
@@ -28,10 +28,10 @@ namespace Java {
 					buffer.insert(buffer.end(), token.begin(), token.end());
 					Java::Packet::writeBool(server->isOnlineMode(), buffer);
 
-					server->sendDataToClient(client, buffer);
+					client->sendData(buffer);
 				}
 
-				void loginSuccess(std::shared_ptr<::Client> client, Watermelon* server, const std::string& username, std::pair<uint64_t, uint64_t> uuid) {
+				void loginSuccess(std::shared_ptr<::Client> client, const std::string& username, std::pair<uint64_t, uint64_t> uuid) {
 					std::vector<uint8_t> buffer;
 					std::pair<uint64_t, uint64_t> sessionUUID = Utils::UUID::generateSessionUUID();
 
@@ -43,7 +43,17 @@ namespace Java {
 					Java::Packet::writeVarInt(0, buffer); // FIXME game profile properties
 					Java::Packet::writeUUID(sessionUUID, buffer);
 
-					server->sendDataToClient(client, buffer);
+					client->sendData(buffer);
+				}
+
+				void setCompression(std::shared_ptr<::Client> client) {
+					std::vector<uint8_t> buffer;
+
+					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::LoginClient::SET_COMPRESSION, buffer);
+					Java::Packet::writeVarInt(256, buffer);
+
+					client->sendData(buffer);
+					client->enableCompression();
 				}
 			};
 		};

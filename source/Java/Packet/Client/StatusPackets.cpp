@@ -42,7 +42,7 @@ namespace Java {
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::StatusClient::STATUS_RESPONSE, buffer);
 					Java::Packet::writeString(data.dump(), buffer);
-					server->sendDataToClient(client, buffer);
+					client->sendData(buffer);
 				}
 			};
 		};

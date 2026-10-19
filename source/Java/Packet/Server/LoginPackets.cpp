@@ -31,7 +31,8 @@ namespace Java {
 							client->createPlayer(uuid, server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 });
 							client->startEncryption();
 							Player* player = client->getPlayer();
-							Java::Packet::Client::Login::loginSuccess(client, server, player->getUsername(), player->getUUID());
+							Java::Packet::Client::Login::setCompression(client);
+							Java::Packet::Client::Login::loginSuccess(client, player->getUsername(), player->getUUID());
 						}
 					});
 				}
@@ -61,7 +62,8 @@ namespace Java {
 						} else {
 							std::pair<uint64_t, uint64_t> uuid = Utils::UUID::offlineUUID(username);
 							client->createPlayer(uuid, server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 });
-							Java::Packet::Client::Login::loginSuccess(client, server, username, uuid);
+							Java::Packet::Client::Login::setCompression(client);
+							Java::Packet::Client::Login::loginSuccess(client, username, uuid);
 						}
 					});
 				}

@@ -13,9 +13,9 @@ namespace Java {
 
 					server->addOperationToQueue(client, [client, server, packs = std::move(packs)]() {
 						client->setPacks(packs);
-						Java::Packet::Client::Configuration::registryData(client, server);
-						Java::Packet::Client::Configuration::updateTags(client, server);
-						Java::Packet::Client::Configuration::finishConfiguration(client, server);
+						Java::Packet::Client::Configuration::registryData(client);
+						Java::Packet::Client::Configuration::updateTags(client);
+						Java::Packet::Client::Configuration::finishConfiguration(client);
 					});
 				}
 
@@ -29,12 +29,12 @@ namespace Java {
 						Player* player = client->getPlayer();
 
 						Java::Packet::Client::Play::login(client, server);
-						Java::Packet::Client::Play::synchronizePlayerPosition(client, server);
+						Java::Packet::Client::Play::synchronizePlayerPosition(client);
 						Java::Packet::Client::Play::playerInfoUpdate(server, actions, { player });
-						Java::Packet::Client::Play::gameEvent(client, server, Java::Packet::GameEvent::START_WAITING_FOR_CHUNKS);
+						Java::Packet::Client::Play::gameEvent(client, Java::Packet::GameEvent::START_WAITING_FOR_CHUNKS);
 						server->getLogger().log(player->getUsername() + " joined the game", "Watermelon", Logger::INFO);
-						Java::Packet::Client::Play::setCenterChunk(client, server);
-						Java::Packet::Client::Play::chunkDataAndUpdateLight(client, server, 0, 0);
+						Java::Packet::Client::Play::setCenterChunk(client);
+						Java::Packet::Client::Play::chunkDataAndUpdateLight(client, 0, 0);
 					});
 				}
 
@@ -47,7 +47,7 @@ namespace Java {
 						Java::Packet::checkEmpty(packet, offset);
 
 						server->addOperationToQueue(client, [client, server, identifier]() {
-							Java::Packet::Client::Configuration::pluginMessage(client, server, identifier, "Watermelon");
+							Java::Packet::Client::Configuration::pluginMessage(client, identifier, "Watermelon");
 						});
 
 						return;
