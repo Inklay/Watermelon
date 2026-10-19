@@ -42,7 +42,7 @@ public:
 	const std::string& getFaviconData();
 	void stop();
 	Keys& getKeys();
-	const std::vector<std::pair<const std::string, std::pair<uint64_t, uint64_t>>> getPlayerSample();
+	std::vector<std::pair<const std::string, std::pair<uint64_t, uint64_t>>> getPlayerSample();
 	void updatePlayerSample();
 	bool isOnlineMode();
 	bool isEncryptionEnabled();

@@ -34,8 +34,10 @@ namespace Auth {
             } catch (const nlohmann::json::exception&) {
 				return { FAILED, "", "" };
             }
-        }
+		} else if (res->status == 204) {
+			return { FAILED, "", "" };
+		}
 
-		return { FAILED, "", "" };
+		return { SERVER_DOWN, "", "" };
 	}
 }

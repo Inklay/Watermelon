@@ -29,6 +29,6 @@ private:
 	std::condition_variable m_condition;
 	std::queue<std::function<void()>> m_tasks;
 	std::vector<std::thread> m_threads;
-	const std::string& m_name;
+	const std::string m_name;
 	Logger& m_logger;
 };

@@ -85,7 +85,16 @@ bool Client::startLogin(const std::string& username) {
 	return true;
 }
 
-bool Client::createPlayer(std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation) {	
+void Client::createPlayer(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation) {
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		m_tempPlayerName = username;
+	}
+
+	createPlayer(uuid, entityId, position, rotation);
+}
+
+void Client::createPlayer(std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation) {	
 	{
 		std::lock_guard<std::mutex> lock(m_mutex);
 		m_player = new Player(m_tempPlayerName, uuid, entityId, position, rotation);
@@ -93,7 +102,6 @@ bool Client::createPlayer(std::pair<uint64_t, uint64_t> uuid, int32_t entityId, 
 
 	m_server->getLogger().log("UUID of player " + m_tempPlayerName + " is " + Utils::UUID::formatUUID(uuid), "Network", Logger::INFO);
 	m_server->increasePlayerCount();
-	return true;
 }
 
 Player* Client::getPlayer() {
@@ -342,7 +350,11 @@ bool Client::authenticate(const std::vector<uint8_t>& token, const std::vector<u
 		return false;
 	}
 
-	m_secret = secret;
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		m_secret = secret;
+	}
+
 	return true;
 }
 

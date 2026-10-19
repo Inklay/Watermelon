@@ -475,7 +475,7 @@ void Watermelon::updatePlayerSample() {
 	}
 }
 
-const std::vector<std::pair<const std::string, std::pair<uint64_t, uint64_t>>> Watermelon::getPlayerSample() {
+std::vector<std::pair<const std::string, std::pair<uint64_t, uint64_t>>> Watermelon::getPlayerSample() {
 	std::lock_guard<std::mutex> lock(m_clientsMutex);
 	return m_playerSample;
 }
@@ -489,16 +489,18 @@ bool Watermelon::isEncryptionEnabled() {
 }
 
 void Watermelon::addAuthTask(std::shared_ptr<Client> client) {
-	m_authPool.submit([client, server = this]() {
+	bool taskResult =  m_authPool.submit([client, server = this]() {
 		Auth::Result result = Auth::authenticatePlayer(client, server);
 		server->addOperationToQueue(client, [client, server, result = std::move(result)]() {
 			switch (result.status) {
 			case Auth::Status::FAILED:
-				return Java::Packet::Client::Login::disconnect(client, server, nlohmann::json({{ "translate", "multiplayer.disconnect.unverified_username" }}));
+				client->startEncryption();
+				return Java::Packet::Client::Login::disconnect(client, server, nlohmann::json({{ "translate", "multiplayer.disconnect.unverified_username" }}).dump());
 			case Auth::Status::SERVER_DOWN:
-				return Java::Packet::Client::Login::disconnect(client, server, nlohmann::json({ { "translate", "multiplayer.loginFailedInfo.serversUnavailable" } }));
+				client->startEncryption();
+				return Java::Packet::Client::Login::disconnect(client, server, nlohmann::json({ { "translate", "multiplayer.disconnect.authservers_down" } }).dump());
 			case Auth::Status::AUTHENTIFIED:
-				client->createPlayer(Utils::UUID::fromString(result.uuid), server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 });
+				client->createPlayer(result.username, Utils::UUID::fromString(result.uuid), server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 });
 				client->startEncryption();
 				Player* player = client->getPlayer();
 				Java::Packet::Client::Login::setCompression(client);
@@ -506,4 +508,9 @@ void Watermelon::addAuthTask(std::shared_ptr<Client> client) {
 			}
 		});
 	});
+
+	if (!taskResult) {
+		log("Auth pool are busy", Logger::WARN);
+		disconnectClient(client.get());
+	}
 }

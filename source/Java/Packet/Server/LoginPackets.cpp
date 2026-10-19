@@ -69,7 +69,11 @@ namespace Java {
 				}
 
 				static void loginAknowledged(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
-					client->getPlayer();
+					if (!client->hasPlayer()) {
+						server->getLogger().log("Player didn't log in", "Network", Logger::WARN);
+						server->disconnectClient(client.get());
+						return;
+					}
 					
 					uint32_t offset = 0;
 					Java::Packet::checkEmpty(packet, offset);
