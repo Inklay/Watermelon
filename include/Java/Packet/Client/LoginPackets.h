@@ -11,6 +11,8 @@ namespace Java {
 				void disconnect(std::shared_ptr<::Client> client, Watermelon* server, const std::string& reason);
 				void encryptionRequest(std::shared_ptr<::Client> client, Watermelon* server);
 				void setCompression(std::shared_ptr<::Client> client);
+				void loginPluginRequest(std::shared_ptr<::Client> client, const std::string& identifier);
+				void cookieRequest(std::shared_ptr<::Client> client, const std::string& key);
 			};
 		};
 	};

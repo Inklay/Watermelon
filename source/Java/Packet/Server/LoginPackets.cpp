@@ -84,6 +84,19 @@ namespace Java {
 					});
 				}
 
+				static void loginPluginResponse(const std::vector<uint8_t>& packet) {
+					uint32_t offset = 0;
+					Java::Packet::readByteArray(packet, offset); // Data
+					Java::Packet::checkEmpty(packet, offset);
+				}
+
+				static void cookieResponse(const std::vector<uint8_t>& packet) {
+					uint32_t offset = 0;
+					Java::Packet::readString(packet, offset); // Identifier
+					Java::Packet::readByteArray(packet, offset); // Payload
+					Java::Packet::checkEmpty(packet, offset);
+				}
+
 				void parse(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					switch (packetId) {
 					case (int32_t)Java::Packet::PacketId::LoginServer::LOGIN_START:
@@ -92,6 +105,10 @@ namespace Java {
 						return encryptionResponse(client, server, packet);
 					case (int32_t)Java::Packet::PacketId::LoginServer::LOGIN_ACKNOWLEDGED:
 						return loginAknowledged(client, server, packet);
+					case (int32_t)Java::Packet::PacketId::LoginServer::LOGIN_PLUGIN_RESPONSE:
+						return loginPluginResponse(packet);
+					case (int32_t)Java::Packet::PacketId::LoginServer::COOKIE_RESPONSE:
+						return cookieResponse(packet);
 					default:
 						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::ERR);
 						server->disconnectClient(client.get());

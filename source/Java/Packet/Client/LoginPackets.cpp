@@ -55,6 +55,25 @@ namespace Java {
 					client->sendData(buffer);
 					client->enableCompression();
 				}
+
+				void loginPluginRequest(std::shared_ptr<::Client> client, const std::string& identifier) {
+					std::vector<uint8_t> buffer;
+
+					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::LoginClient::LOGIN_PLUGIN_REQUEST, buffer);
+					Java::Packet::writeVarInt(std::rand(), buffer);
+					Java::Packet::writeString(identifier, buffer);
+
+					client->sendData(buffer);
+				}
+
+				void cookieRequest(std::shared_ptr<::Client> client, const std::string& key) {
+					std::vector<uint8_t> buffer;
+
+					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::LoginClient::COOKIE_REQUEST, buffer);
+					Java::Packet::writeString(key, buffer);
+
+					client->sendData(buffer);
+				}
 			};
 		};
 	};
