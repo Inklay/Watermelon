@@ -19,6 +19,13 @@ namespace Java {
 					Java::Packet::checkEmpty(packet, offset);
 
 					server->addOperationToQueue(client, [client, server, token = std::move(token), secret = std::move(secret)]() {
+						if (server->isOnlineMode()) {
+
+						} else {
+							std::pair<uint64_t, uint64_t> uuid = Utils::UUID::offlineUUID(client->getTempUsername());
+							client->createPlayer(uuid, server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 });
+						}
+						
 						Player* player = client->getPlayer();
 
 						if (!client->checkToken(token)) {
@@ -47,22 +54,22 @@ namespace Java {
 
 					uint32_t offset = 0;
 					std::string username = Java::Packet::readString(packet, offset);
-					std::pair<uint64_t, uint64_t> uuid = Java::Packet::readUUID(packet, offset);
+					Java::Packet::readUUID(packet, offset); // UUID
 					Java::Packet::checkEmpty(packet, offset);
 
-					server->addOperationToQueue(client, [client, server, username = std::move(username), uuid = std::move(uuid)]() {
-						if (!client->createPlayer(username, uuid, server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 })) {
+					server->addOperationToQueue(client, [client, server, username = std::move(username)]() {
+						if (!client->startLogin(username)) {
 							json reason = {
 								{ "translate", "multiplayer.disconnect.unverified_username" }
 							};
 
 							return Java::Packet::Client::Login::disconnect(client, server, reason.dump());
 						}
-						server->getLogger().log("UUID of player " + username + " is " + Utils::UUID::formatUUID(uuid), "Network", Logger::INFO);
-
-						if (server->getConfig()["networking"]["java"]["encryption"].value_or(true)) {
+						if (server->isEncryptionEnabled()) {
 							Java::Packet::Client::Login::encryptionRequest(client, server);
 						} else {
+							std::pair<uint64_t, uint64_t> uuid = Utils::UUID::offlineUUID(username);
+							client->createPlayer(uuid, server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 });
 							Java::Packet::Client::Login::loginSuccess(client, server, username, uuid);
 						}
 					});

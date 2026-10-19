@@ -482,3 +482,11 @@ const std::vector<std::pair<const std::string, std::pair<uint64_t, uint64_t>>> W
 	std::lock_guard<std::mutex> lock(m_clientsMutex);
 	return m_playerSample;
 }
+
+bool Watermelon::isOnlineMode() { 
+	return m_config["networking"]["java"]["online_mode"].value_or(true);
+}
+
+bool Watermelon::isEncryptionEnabled() { 
+	return isOnlineMode() || m_config["networking"]["java"]["encryption"].value_or(true);
+}

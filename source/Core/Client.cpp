@@ -1,6 +1,7 @@
 #include "Core/Client.h"
 #include "Core/Watermelon.h"
 #include "Crypto/Crypto.h"
+#include "Utils/UUID.h"
 #ifndef _WIN32
 #include <unistd.h>
 #include <sys/socket.h>
@@ -57,22 +58,19 @@ Client::Status Client::getStatus() {
 	return m_status;
 }
 
-bool Client::createPlayer(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation) {
+bool Client::startLogin(const std::string& username) {
 	bool disconnect = false;
 	std::string logMessage;
-	
+
 	{
 		std::lock_guard<std::mutex> lock(m_mutex);
 		if (m_player != nullptr) {
 			disconnect = true;
 			logMessage = "Player was already logged in";
-		} else {
-			if (!Player::isUsernameValid(username)) {
-				disconnect = true;
-				logMessage = "Invalid player name";
-			} else {
-				m_player = new Player(username, uuid, entityId, position, rotation);
-			}
+		}
+		else if (!Player::isUsernameValid(username)) {
+			disconnect = true;
+			logMessage = "Invalid player name";
 		}
 	}
 
@@ -82,6 +80,17 @@ bool Client::createPlayer(const std::string& username, std::pair<uint64_t, uint6
 		return false;
 	}
 
+	m_tempPlayerName = username;
+	return true;
+}
+
+bool Client::createPlayer(std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation) {	
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		m_player = new Player(m_tempPlayerName, uuid, entityId, position, rotation);
+	}
+
+	m_server->getLogger().log("UUID of player " + m_tempPlayerName + " is " + Utils::UUID::formatUUID(uuid), "Network", Logger::INFO);
 	m_server->increasePlayerCount();
 	return true;
 }
@@ -274,4 +283,8 @@ bool Client::checkToken(const std::vector<uint8_t>& token) {
 	}
 
 	return true;
+}
+
+std::string Client::getTempUsername() {
+	return m_tempPlayerName;
 }

@@ -51,7 +51,7 @@ public:
 	bool hasPack(const std::string& name);
 	void changeStatus(Status status);
 	Status getStatus();
-	bool createPlayer(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation);
+	bool createPlayer(std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation);
 	Player* getPlayer();
 	bool hasPlayer();
 	void setPacks(const std::vector<Java::Pack> packs);
@@ -65,6 +65,8 @@ public:
 	bool isEncrypted();
 	const std::vector<uint8_t>& generateEncryptionToken();
 	bool checkToken(const std::vector<uint8_t>& token);
+	bool startLogin(const std::string& username);
+	std::string getTempUsername();
 
 private:
 	const Type m_type;
@@ -81,4 +83,5 @@ private:
 	std::atomic<bool> m_encrypted = { false };
 	std::vector<uint8_t> m_encryptionToken;
 	Crypto::CFB8::Cipher m_cipher;
+	std::string m_tempPlayerName;
 };

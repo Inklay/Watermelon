@@ -26,7 +26,7 @@ namespace Java {
 					buffer.insert(buffer.end(), key.begin(), key.end());
 					Java::Packet::writeVarInt(8, buffer);
 					buffer.insert(buffer.end(), token.begin(), token.end());
-					Java::Packet::writeBool(server->getConfig()["networking"]["java"]["online_mode"].value_or(true), buffer);
+					Java::Packet::writeBool(server->isOnlineMode(), buffer);
 
 					server->sendDataToClient(client, buffer);
 				}

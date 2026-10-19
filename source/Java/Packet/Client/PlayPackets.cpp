@@ -194,7 +194,7 @@ namespace Java {
 					Java::Packet::writeBool(false, buffer); // FIXME has death location
 					Java::Packet::writeVarInt(0, buffer);
 					Java::Packet::writeVarInt(63, buffer);
-					Java::Packet::writeBool(server->getConfig()["networking"]["java"]["online_mode"].value_or(true), buffer);
+					Java::Packet::writeBool(server->isOnlineMode(), buffer);
 					Java::Packet::writeBool(false, buffer); // FIXME enforce secure chat
 
 					server->sendDataToClient(client, buffer);

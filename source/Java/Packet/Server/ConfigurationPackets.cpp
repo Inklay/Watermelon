@@ -61,7 +61,13 @@ namespace Java {
 
 					Java::Packet::readString(packet, offset); // Locale, unused
 					uint8_t viewDistance = Java::Packet::readU8(packet, offset);
-					Player::ChatMode chatMode = static_cast<Player::ChatMode>(Java::Packet::readVarInt(packet, offset));
+					uint32_t tempChatMode = Java::Packet::readVarInt(packet, offset);
+
+					if (tempChatMode < 0 || tempChatMode > 2) {
+						throw parseError("Invalid chat mode");
+					}
+
+					Player::ChatMode chatMode = static_cast<Player::ChatMode>(tempChatMode);
 					Java::Packet::readBool(packet, offset); // Chat color, unused
 					uint8_t skinPart = Java::Packet::readU8(packet, offset);
 					uint32_t mainHand = Java::Packet::readVarInt(packet, offset);
@@ -70,8 +76,10 @@ namespace Java {
 					uint32_t particles = Java::Packet::readVarInt(packet, offset);
 					Java::Packet::checkEmpty(packet, offset);
 
-					client->getPlayer()->setClientInfo({ viewDistance, chatMode, skinPart, mainHand, shownOnServerList, particles });
-					server->addOperationToQueue(client, [client, server]() {
+					Player::ClientInfo clientInfo = { viewDistance, chatMode, skinPart, mainHand, shownOnServerList, particles };
+
+					server->addOperationToQueue(client, [client, server, clientInfo = std::move(clientInfo)]() {
+						client->getPlayer()->setClientInfo(clientInfo);
 						server->updatePlayerSample();
 					});
 				}
