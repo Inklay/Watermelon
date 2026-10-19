@@ -30,12 +30,12 @@ public:
 	};
 
 	struct ClientInfo {
-		uint8_t viewDistance;
-		Player::ChatMode chatMode;
-		uint8_t skinPart;
-		uint32_t mainHand;
-		bool shownOnServerList;
-		uint32_t particles;
+		uint8_t viewDistance = 10;
+		Player::ChatMode chatMode = ENABLED;
+		uint8_t skinPart = 1;
+		uint32_t mainHand = 1;
+		bool shownOnServerList = false;
+		uint32_t particles = 0;
 	};
 
 	Player(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation);
@@ -50,6 +50,7 @@ public:
 	bool hasChatSignature();
 	bool isTeleporting();
 	void setClientInfo(ClientInfo clientInfo);
+	const ClientInfo& getClientInfo();
 
 private:
 	std::string m_username;

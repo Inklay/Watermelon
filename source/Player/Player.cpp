@@ -81,3 +81,7 @@ bool Player::isTeleporting() {
 void Player::setClientInfo(ClientInfo clientInfo) {
 	m_clientInfo = clientInfo;
 }
+
+const Player::ClientInfo& Player::getClientInfo() {
+	return m_clientInfo;
+}

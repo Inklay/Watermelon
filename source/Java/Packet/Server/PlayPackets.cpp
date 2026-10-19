@@ -53,9 +53,9 @@ namespace Java {
 						return setPlayerPositionAndRotation(client, server, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::CLIENT_TICK_END:
 						return;
-					default:
-						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::ERR);
-						server->disconnectClient(client.get());
+					//default:
+					//	server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::ERR);
+					//	server->disconnectClient(client.get());
 					}
 				}
 			};

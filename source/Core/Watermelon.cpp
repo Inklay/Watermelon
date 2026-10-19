@@ -384,6 +384,8 @@ void Watermelon::disconnectClient(Client* client) {
 		ptr->disconnect();
 		log("TCP connection closed", Logger::DEBUG);
 	}
+
+	updatePlayerSample();
 }
 
 int Watermelon::getPlayerCount() {
@@ -452,4 +454,31 @@ void Watermelon::stop() {
 
 Keys& Watermelon::getKeys() {
 	return m_keys;
+}
+
+void Watermelon::updatePlayerSample() {
+	std::lock_guard<std::mutex> lock(m_clientsMutex);
+
+	if (!m_playerSample.empty()) {
+		m_playerSample.clear();
+	}
+
+	for (std::shared_ptr<Client>& client : m_clients) {
+		if (client->hasPlayer()) {
+			Player* player = client->getPlayer();
+
+			if (player->getClientInfo().shownOnServerList) {
+				m_playerSample.push_back(std::make_pair<const std::string&, std::pair<uint64_t, uint64_t>>(player->getUsername(), player->getUUID()));
+
+				if (m_playerSample.size() >= 5) {
+					return;
+				}
+			}
+		}
+	}
+}
+
+const std::vector<std::pair<const std::string, std::pair<uint64_t, uint64_t>>> Watermelon::getPlayerSample() {
+	std::lock_guard<std::mutex> lock(m_clientsMutex);
+	return m_playerSample;
 }

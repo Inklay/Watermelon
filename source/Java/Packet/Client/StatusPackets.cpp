@@ -1,6 +1,7 @@
 #include "Utils/JSON.h"
 #include "Java/Packet/Packet.h"
 #include "Java/Packet/Client/StatusPackets.h"
+#include "Utils/UUID.h"
 
 using json = nlohmann::json;
 
@@ -10,18 +11,27 @@ namespace Java {
 			namespace Status {
 				void statusPacket(std::shared_ptr<::Client> client, Watermelon* server) {
 					std::vector<uint8_t> buffer;
+					json playerSample = json::array();
+
+					for (const auto& player : server->getPlayerSample()) {
+						playerSample.push_back({
+							{ "name", player.first },
+							{ "id", Utils::UUID::formatUUID(player.second) }
+						});
+					}
+
 					json data = {
-						{"version", {
-							{"name", server->getVersion().name},
-							{"protocol", server->getVersion().protocol}
+						{ "version", {
+							{ "name", server->getVersion().name },
+							{ "protocol", server->getVersion().protocol }
 						}},
-						{"players", {
-							{"max", server->getConfig()["networking"]["java"]["max_players"].value_or(10)},
-							{"online", server->getPlayerCount()},
-							{"sample", json::array()}
+						{ "players", {
+							{ "max", server->getConfig()["networking"]["java"]["max_players"].value_or(10) },
+							{ "online", server->getPlayerCount() },
+							{ "sample", playerSample }
 						}},
-						{"description", {
-							{"text", server->getConfig()["networking"]["java"]["motd"].value_or("A (hopefully) blazingly fast Watermelon server!")}
+						{ "description", {
+							{ "text", server->getConfig()["networking"]["java"]["motd"].value_or("A (hopefully) blazingly fast Watermelon server!") }
 						}}
 					};
 

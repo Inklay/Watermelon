@@ -42,6 +42,8 @@ public:
 	const std::string& getFaviconData();
 	void stop();
 	Keys& getKeys();
+	const std::vector<std::pair<const std::string, std::pair<uint64_t, uint64_t>>> getPlayerSample();
+	void updatePlayerSample();
 
 private:
 	void log(const std::string& message, Logger::Level level);
@@ -67,4 +69,5 @@ private:
 	std::atomic<int> m_playerCount { 0 };
 	Player::Gamemode m_defaultGamemode;
 	Keys m_keys;
+	std::vector<std::pair<const std::string, std::pair<uint64_t, uint64_t>>> m_playerSample;
 };
