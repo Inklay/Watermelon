@@ -85,3 +85,11 @@ void Player::setClientInfo(ClientInfo clientInfo) {
 const Player::ClientInfo& Player::getClientInfo() {
 	return m_clientInfo;
 }
+
+void Player::setProfileProperties(std::vector<ProfileProperty> profileProperties) {
+	m_profileProperties = profileProperties;
+}
+
+const std::vector<ProfileProperty>& Player::getProfileProperties() {
+	return m_profileProperties;
+}

@@ -31,16 +31,17 @@ namespace Java {
 					client->sendData(buffer);
 				}
 
-				void loginSuccess(std::shared_ptr<::Client> client, const std::string& username, std::pair<uint64_t, uint64_t> uuid) {
+				void loginSuccess(std::shared_ptr<::Client> client) {
 					std::vector<uint8_t> buffer;
 					std::pair<uint64_t, uint64_t> sessionUUID = Utils::UUID::generateSessionUUID();
+					Player* player = client->getPlayer();
 
 					client->setSessionUUID(sessionUUID);
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::LoginClient::LOGIN_SUCCESS, buffer);
-					Java::Packet::writeUUID(uuid, buffer);
-					Java::Packet::writeString(username, buffer);
-					Java::Packet::writeVarInt(0, buffer); // FIXME game profile properties
+					Java::Packet::writeUUID(player->getUUID(), buffer);
+					Java::Packet::writeString(player->getUsername(), buffer);
+					Java::Packet::writeProfileProperties(player->getProfileProperties(), buffer);
 					Java::Packet::writeUUID(sessionUUID, buffer);
 
 					client->sendData(buffer);

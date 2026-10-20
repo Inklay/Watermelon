@@ -24,7 +24,7 @@ namespace Java {
 
 						if (actionBitMap & (uint8_t)Player::InfoAction::ADD_PLAYER) {
 							Java::Packet::writeString(player->getUsername(), buffer);
-							Java::Packet::writeVarInt(0, buffer); // FIXME Game profile
+							Java::Packet::writeProfileProperties(player->getProfileProperties(), buffer);
 						}
 
 						if (actionBitMap & (uint8_t)Player::InfoAction::INITIALIZE_CHAT) {

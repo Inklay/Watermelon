@@ -16,7 +16,7 @@ namespace Auth {
 		httplib::Result res = http.Get("/session/minecraft/hasJoined?username=" + client->getTempUsername() + "&serverId=" + digest);
 
 		if (!res) {
-			return { SERVER_DOWN, "", "" };
+			return { SERVER_DOWN, "", "", {} };
 		}
 
         if (res->status == 200) {
@@ -29,15 +29,25 @@ namespace Auth {
 
                 std::string uuid = data["id"].get<std::string>();
 				std::string username = data["name"].get<std::string>();
+				std::vector<ProfileProperty> playerProperties;
+				playerProperties.reserve(data["properties"].size());
 
-				return { AUTHENTIFIED, username, uuid };
+				for (const auto& property : data["properties"]) {
+					playerProperties.emplace_back(
+						property["name"].get<std::string>(),
+						property["value"].get<std::string>(),
+						property.value("signature", std::string{})
+					);
+				}
+
+				return { AUTHENTIFIED, username, uuid, playerProperties };
             } catch (const nlohmann::json::exception&) {
-				return { FAILED, "", "" };
+				return { FAILED, "", "", {} };
             }
 		} else if (res->status == 204) {
-			return { FAILED, "", "" };
+			return { FAILED, "", "", {} };
 		}
 
-		return { SERVER_DOWN, "", "" };
+		return { SERVER_DOWN, "", "", {} };
 	}
 }

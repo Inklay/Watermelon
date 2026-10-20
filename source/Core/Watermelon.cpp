@@ -507,6 +507,7 @@ void Watermelon::addAuthTask(std::shared_ptr<Client> client) {
 					}
 
 					client->createPlayer(result.username, uuid, server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 });
+					client->getPlayer()->setProfileProperties(result.properties);
 				} catch (...) {
 					return Java::Packet::Client::Login::disconnect(client, server, nlohmann::json({ { "translate", "multiplayer.disconnect.unverified_username" } }).dump());;
 				}
@@ -514,7 +515,7 @@ void Watermelon::addAuthTask(std::shared_ptr<Client> client) {
 				client->startEncryption();
 				Player* player = client->getPlayer();
 				Java::Packet::Client::Login::setCompression(client);
-				Java::Packet::Client::Login::loginSuccess(client, player->getUsername(), player->getUUID());
+				Java::Packet::Client::Login::loginSuccess(client);
 			}
 		});
 	});

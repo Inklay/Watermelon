@@ -13,6 +13,7 @@ namespace Auth {
 		Status status;
 		std::string username;
 		std::string uuid;
+		std::vector<ProfileProperty> properties;
 	};
 
 	Result authenticatePlayer(std::shared_ptr<Client> client, Watermelon* server);

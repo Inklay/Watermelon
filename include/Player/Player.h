@@ -2,6 +2,8 @@
 
 #include "Entity/Entity.h"
 #include <string>
+#include <vector>
+#include "Player/ProfileProperty.h"
 
 class Player : public Entity {
 public:
@@ -51,6 +53,8 @@ public:
 	bool isTeleporting();
 	void setClientInfo(ClientInfo clientInfo);
 	const ClientInfo& getClientInfo();
+	void setProfileProperties(std::vector<ProfileProperty> profileProperties);
+	const std::vector<ProfileProperty>& getProfileProperties();
 
 private:
 	std::string m_username;
@@ -59,4 +63,5 @@ private:
 	bool m_teleporting;
 	Gamemode m_gamemode;
 	ClientInfo m_clientInfo;
+	std::vector<ProfileProperty> m_profileProperties;
 };
