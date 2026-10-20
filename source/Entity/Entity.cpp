@@ -12,8 +12,9 @@ int32_t Entity::getEntityId() {
 	return m_entityId;
 }
 
-void Entity::setPosition(Position position) {
+bool Entity::setPosition(Position position) {
 	m_position = position;
+	return true;
 }
 
 void Entity::setRotation(Rotation rotation) {

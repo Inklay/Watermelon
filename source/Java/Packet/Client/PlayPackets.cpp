@@ -6,6 +6,15 @@ namespace Java {
 	namespace Packet {
 		namespace Client {
 			namespace Play {
+				void disconnect(const std::shared_ptr<::Client>& client, Watermelon* server, const std::string& reason) {
+					std::vector<uint8_t> buffer;
+
+					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::DISCONNECT, buffer);
+					Java::Packet::writeString(reason, buffer);
+					client->sendData(buffer);
+					server->disconnectClient(client.get());
+				}
+
 				void playerInfoUpdate(Watermelon* server, const std::vector<Player::InfoAction>& actions, const std::vector<Player::Player*>& players) {
 					std::vector<uint8_t> buffer;
 

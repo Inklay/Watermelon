@@ -297,6 +297,20 @@ void Watermelon::run() {
 			queuedPackets.pop();
 		}
 
+		{
+			std::lock_guard<std::mutex> lock(m_clientsMutex);
+
+			for (const std::shared_ptr<Client>& client : m_clients) {
+				if (client->hasPlayer()) {
+					Player::Player* player = client->getPlayer();
+
+					if (player->isLoaded()) {
+						player->tickEnd();
+					}
+				}
+			}
+		}
+
 		nextTick += tickDuration;
 		const std::chrono::steady_clock::time_point now = Clock::now();
 

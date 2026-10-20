@@ -13,7 +13,7 @@ using Socket = SOCKET;
 using Socket = int;
 #endif
 
-class Client {
+class Client : public std::enable_shared_from_this<Client> {
 public:
 	enum Type {
 		JAVA,

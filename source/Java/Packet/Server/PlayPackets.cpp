@@ -18,10 +18,10 @@ namespace Java {
 					server->addOperationToQueue(client, [client, x, y, z, yaw, pitch]() {
 						Player::Player* player = client->getPlayer();
 						
-						if (!player->isTeleporting()) {
-							player->setPosition({ x, y, z });
-							player->setRotation({ yaw, pitch });
+						if (!player->setPosition({ x, y, z })) {
+							return;
 						}
+						player->setRotation({ yaw, pitch });
 					});
 				}
 
@@ -71,7 +71,25 @@ namespace Java {
 					Java::Packet::checkEmpty(packet, offset);
 
 					server->addOperationToQueue(client, [client]() {
-						client->getPlayer()->incrementTickCounter();
+						client->getPlayer()->clientTickEnd();
+					});
+				}
+
+				static void setPlayerPosition(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
+					uint32_t offset = 0;
+					double x = Java::Packet::readDouble(packet, offset);
+					double y = Java::Packet::readDouble(packet, offset);
+					double z = Java::Packet::readDouble(packet, offset);
+					Java::Packet::readU8(packet, offset); // FIXME flags
+					Java::Packet::checkEmpty(packet, offset);
+
+					server->addOperationToQueue(client, [client, x, y, z]() {
+						Player::Player* player = client->getPlayer();
+
+						if (!player->setPosition({ x, y, z })) {
+							return;
+						}
+						
 					});
 				}
 
@@ -79,6 +97,8 @@ namespace Java {
 					switch (packetId) {
 					case (int32_t)Java::Packet::PacketId::PlayServer::CONFIRM_TELEPORTATION:
 						return confirmTeleportation(client, server, packet);
+					case (int32_t)Java::Packet::PacketId::PlayServer::SET_PLAYER_POSITION:
+						return setPlayerPosition(client, server, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::SET_PLAYER_POSITION_AND_ROTATION:
 						return setPlayerPositionAndRotation(client, server, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::PLAYER_SESSION:

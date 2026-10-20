@@ -8,6 +8,7 @@
 #include <atomic>
 
 class Watermelon;
+class Client;
 
 namespace Player {
 	enum class InfoAction : uint8_t {
@@ -47,7 +48,7 @@ namespace Player {
 
 	class Player : public Entity {
 	public:
-		Player(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation, Watermelon* server);
+		Player(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation, Watermelon* server, Client* client);
 		const std::string& getUsername();
 		int32_t teleport(Entity::Position position, Entity::Rotation rotation);
 		bool finishTeleporting(int32_t teleportId);
@@ -64,9 +65,14 @@ namespace Player {
 		void setChatSession(ChatSession chatSession);
 		void setLoading(bool loading);
 		bool isLoaded();
-		void incrementTickCounter();
+		void clientTickEnd();
+		void tickEnd();
+		bool setPosition(Position position);
+		void setRotation(Rotation rotation);
 
 	private:
+		bool isNewPositionValid(Position& position);
+
 		std::string m_username;
 		std::pair<uint64_t, uint64_t> m_uuid;
 		int32_t m_teleportIdCounter;
@@ -78,5 +84,9 @@ namespace Player {
 		Watermelon* m_server;
 		std::atomic<bool> m_loading;
 		int m_loadingTickCounter;
+		int m_movementPacketCounter;
+		int m_knownMovementPacketCounter;
+		Client* m_client;
+		Position m_lastGoodPosition;
 	};
 }
