@@ -4,11 +4,13 @@
 #include <optional>
 #include <vector>
 
-class ProfileProperty {
-public:
-    ProfileProperty(std::string name, std::string value, std::optional<std::string> signature);
+namespace Player {
+    class ProfileProperty {
+    public:
+        ProfileProperty(std::string name, std::string value, std::optional<std::string> signature);
 
-    std::string name;
-    std::string value;
-    std::optional<std::string> signature;
-};
+        std::string name;
+        std::string value;
+        std::optional<std::string> signature;
+    };
+}

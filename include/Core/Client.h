@@ -13,8 +13,6 @@ using Socket = SOCKET;
 using Socket = int;
 #endif
 
-class Watermelon;
-
 class Client {
 public:
 	enum Type {
@@ -53,7 +51,7 @@ public:
 	Status getStatus();
 	void createPlayer(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation);
 	void createPlayer(std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation);
-	Player* getPlayer();
+	Player::Player* getPlayer();
 	bool hasPlayer();
 	void setPacks(const std::vector<Java::Pack> packs);
 	std::vector<Java::Pack> getPacks();
@@ -76,7 +74,7 @@ private:
 	const Type m_type;
 	Status m_status;
 	Socket m_socket;
-	Player* m_player;
+	Player::Player* m_player;
 	std::pair<uint64_t, uint64_t> m_sessionUUID = { -1, -1 };
 	std::vector<Java::Pack> m_packs;
 	std::mutex m_mutex;

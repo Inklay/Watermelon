@@ -1,6 +1,7 @@
 #include "Crypto/Crypto.h"
 #include <openssl/rand.h>
 #include <stdexcept>
+#include <openssl/x509.h>
 
 namespace Crypto {
 	std::vector<uint8_t> generateRandomBytes(int size) {
@@ -52,5 +53,15 @@ namespace Crypto {
 
 		digest.resize(digestLength);
 		return digestToMinecraftHex(std::move(digest));
+	}
+
+	Key DER2EVP(const std::vector<uint8_t>& der) {
+		if (der.empty()) {
+			return nullptr;
+		}
+
+		const unsigned char* ptr = der.data();
+
+		return Key(d2i_PUBKEY(nullptr, &ptr, static_cast<long>(der.size())), EVP_PKEY_free);
 	}
 }

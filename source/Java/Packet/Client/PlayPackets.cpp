@@ -6,7 +6,7 @@ namespace Java {
 	namespace Packet {
 		namespace Client {
 			namespace Play {
-				void playerInfoUpdate(Watermelon* server, const std::vector<Player::InfoAction>& actions, const std::vector<Player*> players) {
+				void playerInfoUpdate(Watermelon* server, const std::vector<Player::InfoAction>& actions, const std::vector<Player::Player*> players) {
 					std::vector<uint8_t> buffer;
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::PLAYER_INFO_UPDATE, buffer);
@@ -19,7 +19,7 @@ namespace Java {
 					Java::Packet::writeU8(actionBitMap, buffer);
 					Java::Packet::writeVarInt((int32_t)players.size(), buffer);
 
-					for (Player* player: players) {
+					for (Player::Player* player: players) {
 						Java::Packet::writeUUID(player->getUUID(), buffer);
 
 						if (actionBitMap & (uint8_t)Player::InfoAction::ADD_PLAYER) {
@@ -106,7 +106,7 @@ namespace Java {
 
 				void setCenterChunk(std::shared_ptr<::Client> client) {
 					std::vector<uint8_t> buffer;
-					Player* player = client->getPlayer();
+					Player::Player* player = client->getPlayer();
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::SET_CENTER_CHUNK, buffer);
 					Java::Packet::writeVarInt((int32_t)(std::floor(player->getPosition().x / 16)), buffer);
@@ -161,7 +161,7 @@ namespace Java {
 				void login(std::shared_ptr<::Client> client, Watermelon* server) {
 					std::vector<uint8_t> buffer;
 					const Registry* dimensionReg = RegistryManager::getInstance().getRegistry("minecraft:dimension_type");
-					Player* player = client->getPlayer();
+					Player::Player* player = client->getPlayer();
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::LOGIN, buffer);
 					Java::Packet::write32(player->getEntityId(), buffer);

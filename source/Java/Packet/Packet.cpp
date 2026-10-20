@@ -1,7 +1,7 @@
 #include "Java/Packet/Packet.h"
 #include <iostream>
 #include "Utils/Byte.h"
-#include <iostream>
+
 namespace Java {
     namespace Packet {
         void checkEmpty(const std::vector<uint8_t>& packet, uint32_t& offset) {
@@ -283,10 +283,10 @@ namespace Java {
 			}
         }
 
-        void writeProfileProperties(const std::vector<ProfileProperty>& properties, std::vector<uint8_t>& buffer) {
+        void writeProfileProperties(const std::vector<Player::ProfileProperty>& properties, std::vector<uint8_t>& buffer) {
             writeVarInt(static_cast<uint32_t>(properties.size()), buffer);
 
-            for (const ProfileProperty& property : properties) {
+            for (const Player::ProfileProperty& property : properties) {
                 writeString(property.name, buffer);
                 writeString(property.value, buffer);
 

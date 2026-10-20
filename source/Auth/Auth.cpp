@@ -29,7 +29,7 @@ namespace Auth {
 
                 std::string uuid = data["id"].get<std::string>();
 				std::string username = data["name"].get<std::string>();
-				std::vector<ProfileProperty> playerProperties;
+				std::vector<Player::ProfileProperty> playerProperties;
 				playerProperties.reserve(data["properties"].size());
 
 				for (const auto& property : data["properties"]) {

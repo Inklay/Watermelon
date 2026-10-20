@@ -283,6 +283,6 @@ namespace Java {
 		void writeRegistry(const Registry* registry, bool skipNbt, std::vector<uint8_t>& buffer);
 		void writeNBT(const std::vector<uint8_t>& data, std::vector<uint8_t>& buffer);
 		void writeTags(const std::vector<RegistryTag>& tags, std::vector<uint8_t>& buffer);
-		void writeProfileProperties(const std::vector<ProfileProperty>& properties, std::vector<uint8_t>& buffer);
+		void writeProfileProperties(const std::vector<Player::ProfileProperty>& properties, std::vector<uint8_t>& buffer);
 	};
 }

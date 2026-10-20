@@ -315,8 +315,8 @@ void Watermelon::log(const std::string& message, Logger::Level level) {
 	m_logger.log(message, "Watermelon", level);
 }
 
-std::vector<const Player*> Watermelon::getPlayers() {
-	std::vector<const Player*> players;
+std::vector<const Player::Player*> Watermelon::getPlayers() {
+	std::vector<const Player::Player*> players;
 	std::lock_guard<std::mutex> lock(m_clientsMutex);
 
 	for (const auto& client : m_clients) {
@@ -462,7 +462,7 @@ void Watermelon::updatePlayerSample() {
 
 	for (std::shared_ptr<Client>& client : m_clients) {
 		if (client->hasPlayer()) {
-			Player* player = client->getPlayer();
+			Player::Player* player = client->getPlayer();
 
 			if (player->getClientInfo().shownOnServerList) {
 				m_playerSample.push_back(std::make_pair<const std::string&, std::pair<uint64_t, uint64_t>>(player->getUsername(), player->getUUID()));

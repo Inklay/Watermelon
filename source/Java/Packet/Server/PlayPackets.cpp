@@ -16,7 +16,7 @@ namespace Java {
 					Java::Packet::checkEmpty(packet, offset);
 
 					server->addOperationToQueue(client, [client, server, x, y, z, yaw, pitch]() {
-						Player* player = client->getPlayer();
+						Player::Player* player = client->getPlayer();
 						
 						if (!player->isTeleporting()) {
 							player->setPosition({ x, y, z });
@@ -36,7 +36,7 @@ namespace Java {
 					Java::Packet::checkEmpty(packet, offset);
 
 					server->addOperationToQueue(client, [client, server, teleportId]() {
-						Player* player = client->getPlayer();
+						Player::Player* player = client->getPlayer();
 
 						if (!player->finishTeleporting(teleportId)) {
 							server->getLogger().log("Failed to teleport player " + player->getUsername(), "Network", Logger::WARN);
@@ -45,12 +45,26 @@ namespace Java {
 					});
 				}
 
+				static void playerSession(std::shared_ptr<::Client> client, const std::vector<uint8_t>& packet) {
+					uint32_t offset = 0;
+					Player::ChatSession chatSession = {
+						Java::Packet::readUUID(packet, offset),
+						Java::Packet::readU64(packet, offset),
+						Java::Packet::readByteArray(packet, offset),
+						Java::Packet::readByteArray(packet, offset)
+					};
+					Java::Packet::checkEmpty(packet, offset);
+					client->getPlayer()->setChatSession(std::move(chatSession));
+				}
+
 				void parse(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					switch (packetId) {
 					case (int32_t)Java::Packet::PacketId::PlayServer::CONFIRM_TELEPORTATION:
 						return confirmTeleportation(client, server, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::SET_PLAYER_POSITION_AND_ROTATION:
 						return setPlayerPositionAndRotation(client, server, packet);
+					case (int32_t)Java::Packet::PacketId::PlayServer::PLAYER_SESSION:
+						return playerSession(client, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::CLIENT_TICK_END:
 						return;
 					default:

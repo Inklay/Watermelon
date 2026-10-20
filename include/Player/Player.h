@@ -4,9 +4,11 @@
 #include <string>
 #include <vector>
 #include "Player/ProfileProperty.h"
+#include "Player/ChatSession.h"
 
-class Player : public Entity {
-public:
+class Watermelon;
+
+namespace Player {
 	enum class InfoAction : uint8_t {
 		ADD_PLAYER = 0x01,
 		INITIALIZE_CHAT = 0x02,
@@ -33,35 +35,42 @@ public:
 
 	struct ClientInfo {
 		uint8_t viewDistance = 10;
-		Player::ChatMode chatMode = ENABLED;
+		ChatMode chatMode = ChatMode::ENABLED;
 		uint8_t skinPart = 1;
 		uint32_t mainHand = 1;
 		bool shownOnServerList = false;
 		uint32_t particles = 0;
 	};
 
-	Player(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation);
-	const std::string& getUsername();
-	int32_t teleport(Entity::Position position, Entity::Rotation rotation);
-	bool finishTeleporting(int32_t teleportId);
-	static bool isUsernameValid(const std::string& username);
-	std::pair<uint64_t, uint64_t> getUUID();
-	Gamemode getGamemode();
-	void setGamemode(Gamemode gamemode);
-	Position getPosition();
-	bool hasChatSignature();
-	bool isTeleporting();
-	void setClientInfo(ClientInfo clientInfo);
-	const ClientInfo& getClientInfo();
-	void setProfileProperties(std::vector<ProfileProperty> profileProperties);
-	const std::vector<ProfileProperty>& getProfileProperties();
+	bool isUsernameValid(const std::string& username);
 
-private:
-	std::string m_username;
-	std::pair<uint64_t, uint64_t> m_uuid;
-	int32_t m_teleportIdCounter;
-	bool m_teleporting;
-	Gamemode m_gamemode;
-	ClientInfo m_clientInfo;
-	std::vector<ProfileProperty> m_profileProperties;
-};
+	class Player : public Entity {
+	public:
+		Player(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation, Watermelon* server);
+		const std::string& getUsername();
+		int32_t teleport(Entity::Position position, Entity::Rotation rotation);
+		bool finishTeleporting(int32_t teleportId);
+		std::pair<uint64_t, uint64_t> getUUID();
+		Gamemode getGamemode();
+		void setGamemode(Gamemode gamemode);
+		Position getPosition();
+		bool hasChatSignature();
+		bool isTeleporting();
+		void setClientInfo(ClientInfo clientInfo);
+		const ClientInfo& getClientInfo();
+		void setProfileProperties(std::vector<ProfileProperty> profileProperties);
+		const std::vector<ProfileProperty>& getProfileProperties();
+		void setChatSession(ChatSession chatSession);
+
+	private:
+		std::string m_username;
+		std::pair<uint64_t, uint64_t> m_uuid;
+		int32_t m_teleportIdCounter;
+		bool m_teleporting;
+		Gamemode m_gamemode;
+		ClientInfo m_clientInfo;
+		std::vector<ProfileProperty> m_profileProperties;
+		ChatSession m_chatSession;
+		Watermelon* m_server;
+	};
+}

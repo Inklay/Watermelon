@@ -1,7 +1,31 @@
 #include "Utils/Base64.h"
+#include <openssl/evp.h>
 
 namespace Utils {
 	namespace Base64 {
+
+		std::vector<uint8_t> decode(const std::string& data) {
+			std::vector<uint8_t> out(data.size() * 3 / 4 + 4);
+
+			int n = EVP_DecodeBlock(out.data(), reinterpret_cast<const unsigned char*>(data.data()), static_cast<int>(data.size()));
+			
+			if (n < 0) {
+				return {};
+			}
+
+			size_t padding = 0;
+			if (!data.empty() && data.back() == '=') {
+				++padding;
+			}
+
+			if (data.size() >= 2 && data[data.size() - 2] == '=') {
+				++padding;
+			}
+
+			out.resize(static_cast<size_t>(n) - padding);
+			return out;
+		}
+
 		std::string encode(const std::vector<uint8_t>& data) {
 			static constexpr char alphabet[] =
 				"ABCDEFGHIJKLMNOPQRSTUVWXYZ"

@@ -16,7 +16,6 @@ namespace Crypto {
 
 		private:
 			std::unique_ptr<EVP_CIPHER_CTX, decltype(&EVP_CIPHER_CTX_free)> m_encryptCtx;
-
 			std::unique_ptr<EVP_CIPHER_CTX, decltype(&EVP_CIPHER_CTX_free)> m_decryptCtx;
 		};
 	}

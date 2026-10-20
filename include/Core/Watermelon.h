@@ -9,7 +9,6 @@
 #include <functional>
 #include "Core/Logger.h"
 #include "Core/Client.h"
-#include "Player/Player.h"
 #include "Registry/RegistryManager.h"
 #include "Core/Keys.h"
 #include "Core/TaskPool.h"
@@ -27,7 +26,7 @@ public:
 	~Watermelon();
 	bool start();
 	void run();
-	std::vector<const Player*> getPlayers();
+	std::vector<const Player::Player*> getPlayers();
 	std::vector<std::shared_ptr<Client>> getClients();
 	void addOperationToQueue(std::shared_ptr<Client> client, std::function<void()> packetHandler);
 	Version& getVersion();

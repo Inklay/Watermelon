@@ -1,95 +1,106 @@
 #include "Player/Player.h"
+#include "Core/Watermelon.h"
 
-Player::Player(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation)
-	: Entity(entityId, position, rotation, Entity::Type::PLAYER),
-	m_username(username),
-	m_uuid(uuid),
-	m_teleportIdCounter(0),
-	m_teleporting(false),
-	m_gamemode(CREATIVE) // FIXME must be survival once it is implemented
-{
-}
-
-const std::string& Player::getUsername() {
-	return m_username;
-}
-
-int32_t Player::teleport(Entity::Position position, Entity::Rotation rotation) {
-	if (m_teleporting) {
-		return -1;
-	}
-
-	m_teleporting = true;
-	m_position = position;
-	m_rotation = rotation;
-
-	return ++m_teleportIdCounter;
-}
-
-bool Player::finishTeleporting(int32_t teleportId) {
-	if (!m_teleporting || teleportId != m_teleportIdCounter) {
-		return false;
-	}
-	
-	m_teleporting = false;
-	return true;
-}
-
-bool Player::isUsernameValid(const std::string& username) {
-	if (username.empty() || username.size() > 16) {
-		return false;
-	}
-
-	for (const char c : username) {
-		const bool ok = (c >= 'a' && c <= 'z')
-			|| (c >= 'A' && c <= 'Z')
-			|| (c >= '0' && c <= '9')
-			|| c == '_';
-
-		if (!ok) {
+namespace Player {
+	bool isUsernameValid(const std::string& username) {
+		if (username.empty() || username.size() > 16) {
 			return false;
 		}
+
+		for (const char c : username) {
+			const bool ok = (c >= 'a' && c <= 'z')
+				|| (c >= 'A' && c <= 'Z')
+				|| (c >= '0' && c <= '9')
+				|| c == '_';
+
+			if (!ok) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
-	return true;
-}
+	Player::Player(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation, Watermelon* server)
+		: Entity(entityId, position, rotation, Entity::Type::PLAYER),
+		m_username(username),
+		m_uuid(uuid),
+		m_teleportIdCounter(0),
+		m_teleporting(false),
+		m_gamemode(CREATIVE), // FIXME must be survival once it is implemented
+		m_server(server)
+	{}
 
-std::pair<uint64_t, uint64_t> Player::getUUID() {
-	return m_uuid;
-}
+	const std::string& Player::getUsername() {
+		return m_username;
+	}
 
-Player::Gamemode Player::getGamemode() {
-	return m_gamemode;
-}
+	int32_t Player::teleport(Entity::Position position, Entity::Rotation rotation) {
+		if (m_teleporting) {
+			return -1;
+		}
 
-void Player::setGamemode(Player::Gamemode gamemode) {
-	m_gamemode = gamemode;
-}
+		m_teleporting = true;
+		m_position = position;
+		m_rotation = rotation;
 
-Player::Position Player::getPosition() {
-	return m_position;
-}
+		return ++m_teleportIdCounter;
+	}
 
-bool Player::hasChatSignature() {
-	return false; // FIXME add real chat signature
-}
+	bool Player::finishTeleporting(int32_t teleportId) {
+		if (!m_teleporting || teleportId != m_teleportIdCounter) {
+			return false;
+		}
 
-bool Player::isTeleporting() {
-	return m_teleporting;
-}
+		m_teleporting = false;
+		return true;
+	}
 
-void Player::setClientInfo(ClientInfo clientInfo) {
-	m_clientInfo = clientInfo;
-}
+	std::pair<uint64_t, uint64_t> Player::getUUID() {
+		return m_uuid;
+	}
 
-const Player::ClientInfo& Player::getClientInfo() {
-	return m_clientInfo;
-}
+	Gamemode Player::getGamemode() {
+		return m_gamemode;
+	}
 
-void Player::setProfileProperties(std::vector<ProfileProperty> profileProperties) {
-	m_profileProperties = profileProperties;
-}
+	void Player::setGamemode(Gamemode gamemode) {
+		m_gamemode = gamemode;
+	}
 
-const std::vector<ProfileProperty>& Player::getProfileProperties() {
-	return m_profileProperties;
+	Player::Position Player::getPosition() {
+		return m_position;
+	}
+
+	bool Player::hasChatSignature() {
+		return false; // FIXME add real chat signature
+	}
+
+	bool Player::isTeleporting() {
+		return m_teleporting;
+	}
+
+	void Player::setClientInfo(ClientInfo clientInfo) {
+		m_clientInfo = clientInfo;
+	}
+
+	const ClientInfo& Player::getClientInfo() {
+		return m_clientInfo;
+	}
+
+	void Player::setProfileProperties(std::vector<ProfileProperty> profileProperties) {
+		m_profileProperties = profileProperties;
+	}
+
+	const std::vector<ProfileProperty>& Player::getProfileProperties() {
+		return m_profileProperties;
+	}
+
+	void Player::setChatSession(ChatSession chatSession) {
+		if (!chatSession.validate(m_server, m_uuid)) {
+			m_server->getLogger().log("Can't validate " + m_username + "'s chat session", "Network", Logger::WARN);
+		} else {
+			m_chatSession = chatSession;
+		}
+	}
 }
