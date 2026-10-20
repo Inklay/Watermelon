@@ -1,11 +1,10 @@
 #include <string>
-#define TOML_IMPLEMENTATION
 #include "Core/Config.h"
 #include "Core/Watermelon.h"
 #include "Java/Packet/Packet.h"
 #include "Java/Packet/Server/Handler.h"
 #include "Utils/Base64.h"
-#include "Utils/JSON.h"
+#include <nlohmann/json.hpp>
 #include "Utils/UUID.h"
 #include "Auth/Auth.h"
 #include "Java/Packet/Client/LoginPackets.h"

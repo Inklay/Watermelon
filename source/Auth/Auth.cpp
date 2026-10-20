@@ -5,7 +5,7 @@
 #include <httplib.h>
 #include "Crypto/Crypto.h"
 #include "Core/Watermelon.h"
-#include "Utils/JSON.h"
+#include <nlohmann/json.hpp>
 
 namespace Auth {
 	Result authenticatePlayer(std::shared_ptr<Client> client, Watermelon* server) {

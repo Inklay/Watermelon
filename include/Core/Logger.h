@@ -1,7 +1,6 @@
 #pragma once
 
-#define TOML_IMPLEMENTATION
-#include "Utils/TOML.h"
+#include <toml++/toml.hpp>
 #include <fstream>
 #include <mutex>
 

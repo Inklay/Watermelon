@@ -1,10 +1,8 @@
 #include "Java/Packet/Server/LoginPackets.h"
 #include "Java/Packet/Client/LoginPackets.h"
 #include "Java/Packet/Client/ConfigurationPackets.h"
-#include "Utils/JSON.h"
+#include <nlohmann/json.hpp>
 #include "Utils/UUID.h"
-
-using json = nlohmann::json;
 
 namespace Java {
 	namespace Packet {
@@ -50,7 +48,7 @@ namespace Java {
 
 					server->addOperationToQueue(client, [client, server, username = std::move(username)]() {
 						if (!client->startLogin(username)) {
-							json reason = {
+							nlohmann::json reason = {
 								{ "translate", "multiplayer.disconnect.unverified_username" }
 							};
 

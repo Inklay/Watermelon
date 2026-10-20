@@ -1,9 +1,7 @@
-#include "Utils/JSON.h"
+#include <nlohmann/json.hpp>
 #include "Java/Packet/Packet.h"
 #include "Java/Packet/Client/StatusPackets.h"
 #include "Utils/UUID.h"
-
-using json = nlohmann::json;
 
 namespace Java {
 	namespace Packet {
@@ -11,7 +9,7 @@ namespace Java {
 			namespace Status {
 				void statusPacket(std::shared_ptr<::Client> client, Watermelon* server) {
 					std::vector<uint8_t> buffer;
-					json playerSample = json::array();
+					nlohmann::json playerSample = nlohmann::json::array();
 
 					for (const auto& player : server->getPlayerSample()) {
 						playerSample.push_back({
@@ -20,7 +18,7 @@ namespace Java {
 						});
 					}
 
-					json data = {
+					nlohmann::json data = {
 						{ "version", {
 							{ "name", server->getVersion().name },
 							{ "protocol", server->getVersion().protocol }

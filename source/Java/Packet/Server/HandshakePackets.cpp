@@ -1,8 +1,6 @@
 #include "Java/Packet/Server/HandshakePackets.h"
 #include "Java/Packet/Client/LoginPackets.h"
-#include "Utils/JSON.h"
-
-using json = nlohmann::json;
+#include <nlohmann/json.hpp>
 
 namespace Java {
 	namespace Packet {
@@ -24,9 +22,9 @@ namespace Java {
 					case Java::Packet::Intent::TRANSFER:
 						if (protocolVersion != server->getVersion().protocol) {
 							server->getLogger().log("Client tried to connect with wrong protocol version " + std::to_string(protocolVersion), "Network", Logger::WARN);
-							json reason = {
+							nlohmann::json reason = {
 									{ "translate", "multiplayer.disconnect.incompatible" },
-									{ "with", json::array({ server->getVersion().name }) }
+									{ "with", nlohmann::json::array({ server->getVersion().name }) }
 							};
 
 							Java::Packet::Client::Login::disconnect(client, server, reason.dump());

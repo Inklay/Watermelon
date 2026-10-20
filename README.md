@@ -55,8 +55,10 @@ Map and player data:
 | openssl | 3.0 | Handling the encryption |
 | cpp-httplib | latest | Authenticating the users via Mojang's server |
 | zlib | latest | Network packet compression |
+| json | latest | Parse and create JSON |
+| tomlplusplus | latest | TOML configuration file |
 
-Tested with GCC 13.3 on Ubuntu 24.04 and MSVC on Windows. Clang and macOS are untested for now.
+Tested with GCC 13.3 on Fedora 44 and MSVC on Windows. Clang, Ming and macOS are untested for now.
 
 All third-party libraries (toml++, nlohmann/json) are bundled in `include/Utils`, nothing else needs to be installed.
 

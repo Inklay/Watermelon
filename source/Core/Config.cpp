@@ -1,5 +1,4 @@
 #include <filesystem>
-#define TOML_IMPLEMENTATION
 #include "Core/Config.h"
 
 toml::table loadConfig() {

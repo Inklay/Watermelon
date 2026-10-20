@@ -12,8 +12,7 @@
 #include "Registry/RegistryManager.h"
 #include "Core/Keys.h"
 #include "Core/TaskPool.h"
-#define TOML_IMPLEMENTATION
-#include "Utils/TOML.h"
+#include <toml++/toml.hpp>
 
 class Watermelon {
 public:

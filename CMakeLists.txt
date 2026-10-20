@@ -23,6 +23,8 @@ set(SOURCES
     source/Utils/Base64.cpp
     source/Entity/Entity.cpp
     source/Player/Player.cpp
+    source/Player/ProfileProperty.cpp
+    source/Player/ChatSession.cpp
     source/Java/Packet/Packet.cpp
     source/Java/Packet/Server/Handler.cpp
     source/Java/Packet/Server/HandshakePackets.cpp
@@ -39,7 +41,7 @@ set(SOURCES
     source/Crypto/CFB8.cpp
     source/Crypto/Crypto.cpp
     source/Compression/ZLIB.cpp
- "source/Player/ProfileProperty.cpp" "source/Player/ChatSession.cpp")
+)
 
 add_executable(Watermelon ${SOURCES})
 
@@ -66,12 +68,16 @@ endif()
 find_package(OpenSSL 3.0 REQUIRED)
 find_package(httplib CONFIG REQUIRED)
 find_package(ZLIB REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(tomlplusplus CONFIG REQUIRED)
 
 target_link_libraries(Watermelon PRIVATE 
     OpenSSL::Crypto
     OpenSSL::SSL
     httplib::httplib
     ZLIB::ZLIB
+    nlohmann_json::nlohmann_json
+    tomlplusplus::tomlplusplus
 )
 
 # ---------------------------------------------------------------------------

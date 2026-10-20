@@ -1,5 +1,5 @@
 #include "Core/Keys.h"
-#include "Utils/JSON.h"
+#include <nlohmann/json.hpp>
 #include "Utils/Base64.h"
 #ifndef CPPHTTPLIB_OPENSSL_SUPPORT
 #define CPPHTTPLIB_OPENSSL_SUPPORT
