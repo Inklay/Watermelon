@@ -5,6 +5,7 @@
 #include <vector>
 #include "Player/ProfileProperty.h"
 #include "Player/ChatSession.h"
+#include <atomic>
 
 class Watermelon;
 
@@ -61,6 +62,9 @@ namespace Player {
 		void setProfileProperties(std::vector<ProfileProperty> profileProperties);
 		const std::vector<ProfileProperty>& getProfileProperties();
 		void setChatSession(ChatSession chatSession);
+		void setLoading(bool loading);
+		bool isLoaded();
+		void incrementTickCounter();
 
 	private:
 		std::string m_username;
@@ -72,5 +76,7 @@ namespace Player {
 		std::vector<ProfileProperty> m_profileProperties;
 		ChatSession m_chatSession;
 		Watermelon* m_server;
+		std::atomic<bool> m_loading;
+		int m_loadingTickCounter;
 	};
 }

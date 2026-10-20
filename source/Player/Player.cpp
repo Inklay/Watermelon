@@ -28,7 +28,9 @@ namespace Player {
 		m_teleportIdCounter(0),
 		m_teleporting(false),
 		m_gamemode(CREATIVE), // FIXME must be survival once it is implemented
-		m_server(server)
+		m_server(server),
+		m_loading({ true }),
+		m_loadingTickCounter(0)
 	{}
 
 	const std::string& Player::getUsername() {
@@ -101,6 +103,22 @@ namespace Player {
 			m_server->getLogger().log("Can't validate " + m_username + "'s chat session", "Network", Logger::WARN);
 		} else {
 			m_chatSession = chatSession;
+		}
+	}
+
+	void Player::setLoading(bool loading) {
+		m_loading.store(loading);
+	}
+
+	bool Player::isLoaded() {
+		return m_loading.load();
+	}
+
+	void Player::incrementTickCounter() {
+		m_loadingTickCounter++;
+
+		if (m_loadingTickCounter >= 60) {
+			m_loading.store(true);
 		}
 	}
 }

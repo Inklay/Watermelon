@@ -57,6 +57,24 @@ namespace Java {
 					client->getPlayer()->setChatSession(std::move(chatSession));
 				}
 
+				static void playerLoaded(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
+					uint32_t offset = 0;
+					Java::Packet::checkEmpty(packet, offset);
+
+					server->addOperationToQueue(client, [client]() {
+						client->getPlayer()->setLoading(false);
+					});
+				}
+
+				static void clientTickEnd(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
+					uint32_t offset = 0;
+					Java::Packet::checkEmpty(packet, offset);
+
+					server->addOperationToQueue(client, [client]() {
+						client->getPlayer()->incrementTickCounter();
+					});
+				}
+
 				void parse(const std::shared_ptr<::Client>& client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					switch (packetId) {
 					case (int32_t)Java::Packet::PacketId::PlayServer::CONFIRM_TELEPORTATION:
@@ -66,7 +84,9 @@ namespace Java {
 					case (int32_t)Java::Packet::PacketId::PlayServer::PLAYER_SESSION:
 						return playerSession(client, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::CLIENT_TICK_END:
-						return;
+						return clientTickEnd(client, server, packet);
+					case (int32_t)Java::Packet::PacketId::PlayServer::PLAYER_LOADED:
+						return playerLoaded(client, server, packet);;
 					default:
 						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::ERR);
 						server->disconnectClient(client.get());
