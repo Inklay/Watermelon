@@ -1,5 +1,6 @@
 #include "Compression/ZLIB.h"
 #include <zlib.h>
+#include <stdexcept>
 
 namespace Compression {
 	namespace ZLIB {
@@ -8,7 +9,11 @@ namespace Compression {
 			std::vector<uint8_t> compressed(static_cast<size_t>(outputSize));
 			compressed.reserve(outputSize);
 
-			compress2(compressed.data(), &outputSize, data.data(), static_cast<uLong>(data.size()), Z_DEFAULT_COMPRESSION);
+			int result = compress2(compressed.data(), &outputSize, data.data(), static_cast<uLong>(data.size()), Z_DEFAULT_COMPRESSION);
+
+			if (result != Z_OK) {
+				throw std::runtime_error("Compression error");
+			}
 
 			compressed.resize(outputSize);
 			return compressed;
@@ -18,7 +23,11 @@ namespace Compression {
 			std::vector<uint8_t> decompressed(static_cast<size_t>(expectedSize));
 			uLongf outputSize = static_cast<uLongf>(expectedSize);
 
-			uncompress(decompressed.data(), &outputSize, data.data(), static_cast<uLong>(data.size()));
+			int result = uncompress(decompressed.data(), &outputSize, data.data(), static_cast<uLong>(data.size()));
+
+			if (result != Z_OK || outputSize != expectedSize) {
+				throw std::runtime_error("Decompression error");
+			}
 
 			decompressed.resize(outputSize);
 			return decompressed;

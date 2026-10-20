@@ -73,6 +73,8 @@ bool Client::startLogin(const std::string& username) {
 			disconnect = true;
 			logMessage = "Invalid player name";
 		}
+
+		m_tempPlayerName = username;
 	}
 
 	if (disconnect) {
@@ -81,7 +83,6 @@ bool Client::startLogin(const std::string& username) {
 		return false;
 	}
 
-	m_tempPlayerName = username;
 	return true;
 }
 
@@ -174,34 +175,35 @@ Client::PacketStatus Client::readPacket(std::vector<uint8_t>& packet) {
 	if (m_compressionThreshold.load() != -1) {
 		std::vector<uint8_t> compressedPacket(m_receiveBuffer.begin() + prefixLength, m_receiveBuffer.begin() + prefixLength + length);
 		uint32_t offset = 0;
-		uint32_t dataLenght = Java::Packet::readVarInt(compressedPacket, offset);
-		compressedPacket.erase(compressedPacket.begin(), compressedPacket.begin() + offset);
 
-		if (dataLenght == 0) {
-			if (length >= 256) {
+		try {
+			uint32_t dataLenght = Java::Packet::readVarInt(compressedPacket, offset);
+			compressedPacket.erase(compressedPacket.begin(), compressedPacket.begin() + offset);
+
+			if (dataLenght == 0) {
+				if (static_cast<int32_t>(length) >= m_compressionThreshold.load()) {
+					return Client::PacketStatus::INVALID;
+				}
+
+				packet = compressedPacket;
+			} else if (dataLenght < MAX_PACKET_SIZE && static_cast<int32_t>(dataLenght) >= m_compressionThreshold.load()) {
+				std::vector<uint8_t> decompressedData = Compression::ZLIB::decompress(compressedPacket, dataLenght);
+
+				if (decompressedData.size() != dataLenght) {
+					return Client::PacketStatus::INVALID;
+				}
+				packet = decompressedData;
+			} else {
 				return Client::PacketStatus::INVALID;
 			}
-
-			packet = compressedPacket;
-		} else if (dataLenght < MAX_PACKET_SIZE && dataLenght >= 256) {
-			std::vector<uint8_t> decompressedData = Compression::ZLIB::decompress(compressedPacket, dataLenght);
-
-			if (decompressedData.size() != dataLenght) {
-				return Client::PacketStatus::INVALID;
-			}
-			packet = decompressedData;
-		} else {
+		} catch (...) {
 			return Client::PacketStatus::INVALID;
 		}
 	} else {
 		packet.assign(m_receiveBuffer.begin() + prefixLength, m_receiveBuffer.begin() + prefixLength + length);
 	}
 
-	m_receiveBuffer.erase(
-		m_receiveBuffer.begin(),
-		m_receiveBuffer.begin() + prefixLength + length
-	);
-
+	m_receiveBuffer.erase(m_receiveBuffer.begin(), m_receiveBuffer.begin() + prefixLength + length);
 	return Client::PacketStatus::COMPLETE;
 }
 
@@ -254,9 +256,14 @@ void Client::sendData(std::vector<uint8_t>& data) {
 			std::vector<uint8_t> compressedPacket;
 
 			if (static_cast<int>(data.size()) >= m_compressionThreshold) {
-				std::vector<uint8_t> compressedData = Compression::ZLIB::compress(data);
-				Java::Packet::writeVarInt(static_cast<uint32_t>(data.size()), compressedPacket);
-				compressedPacket.insert(compressedPacket.end(), compressedData.begin(), compressedData.end());
+				try {
+					std::vector<uint8_t> compressedData = Compression::ZLIB::compress(data);
+					Java::Packet::writeVarInt(static_cast<uint32_t>(data.size()), compressedPacket);
+					compressedPacket.insert(compressedPacket.end(), compressedData.begin(), compressedData.end());
+				} catch (...) {
+					m_server->disconnectClient(this);
+					return;
+				}
 			} else {
 				Java::Packet::writeVarInt(0, compressedPacket);
 				compressedPacket.insert(compressedPacket.end(), data.begin(), data.end());
@@ -359,9 +366,11 @@ bool Client::authenticate(const std::vector<uint8_t>& token, const std::vector<u
 }
 
 std::vector<uint8_t> Client::getSecret() {
+	std::lock_guard<std::mutex> lock(m_mutex);
 	return m_secret;
 }
 
 void Client::enableCompression() {
+	std::lock_guard<std::mutex> lock(m_mutex);
 	m_compressionThreshold.store(256);
 }

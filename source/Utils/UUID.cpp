@@ -56,23 +56,48 @@ namespace Utils {
 		}
 
 		std::pair<uint64_t, uint64_t> fromString(const std::string& str) {
-            std::string hex;
-            hex.reserve(32);
+			std::string hex;
 
-            for (char c : str) {
-                if (c != '-') {
-                    hex.push_back(c);
-                }
-            }
+			if (str.size() == 36) {
+				for (size_t i = 0; i < str.size(); i++) {
+					const bool dashPosition = i == 8 || i == 13 || i == 18 || i == 23;
 
-            if (hex.size() != 32) {
-                throw std::invalid_argument("UUID invalide");
-            }
+					if (dashPosition != (str[i] == '-')) {
+						throw std::invalid_argument("Invalid UUID");
+					}
 
-            const uint64_t high = std::stoull(hex.substr(0, 16), nullptr, 16);
-            const uint64_t low = std::stoull(hex.substr(16, 16), nullptr, 16);
+					if (!dashPosition) {
+						hex.push_back(str[i]);
+					}
+				}
+			} else {
+				hex = str;
+			}
 
-            return { high, low };
+			if (hex.size() != 32) {
+				throw std::invalid_argument("Invalid UUID");
+			}
+
+			uint64_t parts[2] = { 0, 0 };
+
+			for (size_t i = 0; i < hex.size(); i++) {
+				const char c = hex[i];
+				uint64_t value = 0;
+
+				if (c >= '0' && c <= '9') {
+					value = static_cast<uint64_t>(c - '0');
+				} else if (c >= 'a' && c <= 'f') {
+					value = static_cast<uint64_t>(c - 'a' + 10);
+				} else if (c >= 'A' && c <= 'F') {
+					value = static_cast<uint64_t>(c - 'A' + 10);
+				} else {
+					throw std::invalid_argument("Invalid UUID");
+				}
+
+				parts[i / 16] = (parts[i / 16] << 4) | value;
+			}
+
+			return { parts[0], parts[1] };
 		}
 	};
 };

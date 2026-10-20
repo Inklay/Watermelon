@@ -500,7 +500,17 @@ void Watermelon::addAuthTask(std::shared_ptr<Client> client) {
 				client->startEncryption();
 				return Java::Packet::Client::Login::disconnect(client, server, nlohmann::json({ { "translate", "multiplayer.disconnect.authservers_down" } }).dump());
 			case Auth::Status::AUTHENTIFIED:
-				client->createPlayer(result.username, Utils::UUID::fromString(result.uuid), server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 });
+				try {
+					std::pair<uint64_t, uint64_t> uuid = Utils::UUID::fromString(result.uuid);
+					if (!Player::isUsernameValid(result.username)) {
+						throw std::runtime_error("Invalid username");
+					}
+
+					client->createPlayer(result.username, uuid, server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 });
+				} catch (...) {
+					return Java::Packet::Client::Login::disconnect(client, server, nlohmann::json({ { "translate", "multiplayer.disconnect.unverified_username" } }).dump());;
+				}
+
 				client->startEncryption();
 				Player* player = client->getPlayer();
 				Java::Packet::Client::Login::setCompression(client);

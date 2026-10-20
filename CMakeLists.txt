@@ -38,7 +38,8 @@ set(SOURCES
     source/Crypto/RSA.cpp
     source/Crypto/CFB8.cpp
     source/Crypto/Crypto.cpp
- "source/Compression/ZLIB.cpp")
+    source/Compression/ZLIB.cpp
+)
 
 add_executable(Watermelon ${SOURCES})
 
