@@ -44,23 +44,30 @@ Map and player data:
 
 ### Prerequisites
 
+#### Build tools
 | Tool | Version | Why |
-| --- | --- | --- |
+|-|-|-|
 | C++ compiler | GCC 13+, or Visual Studio 2022 17.2+ (MSVC 19.32+) | C++23: `std::byteswap`, `std::bit_cast`, `<format>` and `std::chrono` time zones |
 | CMake | 3.20+ | Build system |
 | Ninja | any recent version | Generator used by the provided presets |
-| Python | 3.9+ | Registry and tag header generation (see below) |
-| `nbtlib` | latest (`pip install nbtlib`) | Used by `codegen/synchronizedRegistries.py` |
-| Java | the version required by the Minecraft 26.3 server jar | Only to run Mojang's data generator |
+
+#### Build dependencies
+| Tool | Version | Why |
+|-|-|-|
 | openssl | 3.0 | Handling the encryption |
 | cpp-httplib | latest | Authenticating the users via Mojang's server |
 | zlib | latest | Network packet compression |
 | json | latest | Parse and create JSON |
 | tomlplusplus | latest | TOML configuration file |
 
-Tested with GCC 13.3 on Fedora 44 and MSVC on Windows. Clang, Ming and macOS are untested for now.
+#### Code generation
+| Tool | Version | Why |
+|-|-|-|
+| Python | 3.9+ | Registry and tag header generation (see below) |
+| nbtlib | latest (`pip install nbtlib`) | Used by `codegen/synchronizedRegistries.py` |
+| Java | the version required by the Minecraft 26.3 server jar | Only to run Mojang's data generator |
 
-All third-party libraries (toml++, nlohmann/json) are bundled in `include/Utils`, nothing else needs to be installed.
+Tested with GCC 13.3 on Fedora 44 and MSVC on Windows. Clang, MinGW and macOS are untested for now.
 
 ### 1. Generate the registry and tag headers
 
