@@ -24,7 +24,7 @@ namespace Auth {
                 const auto data = nlohmann::json::parse(res->body);
 
                 if (!data.contains("id") || !data["id"].is_string() || !data.contains("name") || !data["name"].is_string()) {
-					return { FAILED, "", "" };
+					return { FAILED, "", "",{} };
                 }
 
                 std::string uuid = data["id"].get<std::string>();
@@ -33,10 +33,17 @@ namespace Auth {
 				playerProperties.reserve(data["properties"].size());
 
 				for (const auto& property : data["properties"]) {
+					std::optional<std::string> signature;
+
+					if (property.contains("signature") &&
+						property["signature"].is_string()) {
+						signature = property["signature"].get<std::string>();
+					}
+
 					playerProperties.emplace_back(
 						property["name"].get<std::string>(),
 						property["value"].get<std::string>(),
-						property.value("signature", std::string{})
+						signature
 					);
 				}
 

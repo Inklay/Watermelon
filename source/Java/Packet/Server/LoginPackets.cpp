@@ -30,7 +30,6 @@ namespace Java {
 							std::pair<uint64_t, uint64_t> uuid = Utils::UUID::offlineUUID(client->getTempUsername());
 							client->createPlayer(uuid, server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 });
 							client->startEncryption();
-							Player* player = client->getPlayer();
 							Java::Packet::Client::Login::setCompression(client);
 							Java::Packet::Client::Login::loginSuccess(client);
 						}

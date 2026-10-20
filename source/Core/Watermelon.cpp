@@ -513,7 +513,6 @@ void Watermelon::addAuthTask(std::shared_ptr<Client> client) {
 				}
 
 				client->startEncryption();
-				Player* player = client->getPlayer();
 				Java::Packet::Client::Login::setCompression(client);
 				Java::Packet::Client::Login::loginSuccess(client);
 			}
