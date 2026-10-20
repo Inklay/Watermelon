@@ -31,10 +31,6 @@ Logger::Logger(toml::table& config) :
 	}
 }
 
-Logger::~Logger() {
-	m_stream.close();
-}
-
 void Logger::log(const std::string& message, const std::string& caller, Level level) {
 	if (!m_enabled || m_minLevel == OFF) {
 		return;

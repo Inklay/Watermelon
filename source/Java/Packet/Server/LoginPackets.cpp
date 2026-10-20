@@ -8,7 +8,7 @@ namespace Java {
 	namespace Packet {
 		namespace Server {
 			namespace Login {
-				static void encryptionResponse(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
+				static void encryptionResponse(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 					const std::vector<uint8_t> encryptedSecret = Java::Packet::readByteArray(packet, offset);
 					const std::vector<uint8_t> encryptedToken = Java::Packet::readByteArray(packet, offset);
@@ -34,7 +34,7 @@ namespace Java {
 					});
 				}
 
-				static void loginStart(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
+				static void loginStart(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
 					if (client->hasPlayer()) {
 						server->getLogger().log("Player was already logged in", "Network", Logger::WARN);
 						server->disconnectClient(client.get());
@@ -65,7 +65,7 @@ namespace Java {
 					});
 				}
 
-				static void loginAknowledged(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
+				static void loginAknowledged(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
 					if (!client->hasPlayer()) {
 						server->getLogger().log("Player didn't log in", "Network", Logger::WARN);
 						server->disconnectClient(client.get());
@@ -94,7 +94,7 @@ namespace Java {
 					Java::Packet::checkEmpty(packet, offset);
 				}
 
-				void parse(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
+				void parse(const std::shared_ptr<::Client>& client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					switch (packetId) {
 					case (int32_t)Java::Packet::PacketId::LoginServer::LOGIN_START:
 						return loginStart(client, server, packet);

@@ -1,5 +1,6 @@
 #include <filesystem>
 #include "Core/Config.h"
+#include <fstream>
 
 toml::table loadConfig() {
 	if (std::filesystem::exists("watermelon.toml")) {

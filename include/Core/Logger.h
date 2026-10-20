@@ -15,7 +15,6 @@ public:
 	};
 
 	Logger(toml::table& config);
-	~Logger();
 	void log(const std::string& message, const std::string& caller, Level level);
 
 private:

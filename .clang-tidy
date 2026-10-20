@@ -1,0 +1,15 @@
+Checks: >
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-narrowing-conversions,
+  -bugprone-signed-bitwise,
+  -bugprone-exception-escape,
+  -bugprone-throwing-static-initialization,
+  performance-for-range-copy,
+  performance-unnecessary-copy-initialization,
+  performance-unnecessary-value-param,
+  performance-inefficient-string-concatenation,
+  performance-inefficient-vector-operationWarningsAsErrors: ''
+HeaderFilterRegex: '.*[\\/](source|include)[\\/]'
+SystemHeaders: false
+FormatStyle: file

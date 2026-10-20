@@ -7,12 +7,12 @@ namespace Java {
 	namespace Packet {
 		namespace Client {
 			namespace Login {
-				void loginSuccess(std::shared_ptr<::Client> client);
-				void disconnect(std::shared_ptr<::Client> client, Watermelon* server, const std::string& reason);
-				void encryptionRequest(std::shared_ptr<::Client> client, Watermelon* server);
-				void setCompression(std::shared_ptr<::Client> client);
-				void loginPluginRequest(std::shared_ptr<::Client> client, const std::string& identifier);
-				void cookieRequest(std::shared_ptr<::Client> client, const std::string& key);
+				void loginSuccess(const std::shared_ptr<::Client>& client);
+				void disconnect(const std::shared_ptr<::Client>& client, Watermelon* server, const std::string& reason);
+				void encryptionRequest(const std::shared_ptr<::Client>& client, Watermelon* server);
+				void setCompression(const std::shared_ptr<::Client>& client);
+				void loginPluginRequest(const std::shared_ptr<::Client>& client, const std::string& identifier);
+				void cookieRequest(const std::shared_ptr<::Client>& client, const std::string& key);
 			};
 		};
 	};

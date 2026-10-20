@@ -16,5 +16,5 @@ namespace Auth {
 		std::vector<Player::ProfileProperty> properties;
 	};
 
-	Result authenticatePlayer(std::shared_ptr<Client> client, Watermelon* server);
+	Result authenticatePlayer(const std::shared_ptr<Client>& client, Watermelon* server);
 }

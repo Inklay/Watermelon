@@ -27,7 +27,7 @@ Keys::Keys() :
 	for (const auto& entry : keys) {
 		const std::string encoded = entry.at("publicKey").get<std::string>();
 		std::vector<uint8_t> decoded = Utils::Base64::decode(encoded);
-		m_mojangPublicKeys.push_back(std::move(Crypto::DER2EVP(decoded)));
+		m_mojangPublicKeys.emplace_back(Crypto::DER2EVP(decoded));
 	}
 }
 

@@ -27,7 +27,7 @@ public:
 	void run();
 	std::vector<const Player::Player*> getPlayers();
 	std::vector<std::shared_ptr<Client>> getClients();
-	void addOperationToQueue(std::shared_ptr<Client> client, std::function<void()> packetHandler);
+	void addOperationToQueue(const std::shared_ptr<Client>& client, const std::function<void()>& packetHandler);
 	Version& getVersion();
 	Logger& getLogger();
 	toml::table& getConfig();
@@ -44,7 +44,7 @@ public:
 	void updatePlayerSample();
 	bool isOnlineMode();
 	bool isEncryptionEnabled();
-	void addAuthTask(std::shared_ptr<Client> client);
+	void addAuthTask(const std::shared_ptr<Client>& client);
 
 private:
 	void log(const std::string& message, Logger::Level level);

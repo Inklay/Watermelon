@@ -8,7 +8,7 @@
 #include <nlohmann/json.hpp>
 
 namespace Auth {
-	Result authenticatePlayer(std::shared_ptr<Client> client, Watermelon* server) {
+	Result authenticatePlayer(const std::shared_ptr<Client>& client, Watermelon* server) {
 		const std::string digest = Crypto::minecraftDigest("", client->getSecret(), server->getKeys().getPublicKey());
 		httplib::Client http("https://sessionserver.mojang.com");
 		http.set_connection_timeout(5);

@@ -87,9 +87,9 @@ namespace Utils {
 				if (c >= '0' && c <= '9') {
 					value = static_cast<uint64_t>(c - '0');
 				} else if (c >= 'a' && c <= 'f') {
-					value = static_cast<uint64_t>(c - 'a' + 10);
+					value = static_cast<uint64_t>(c - 'a') + 10;
 				} else if (c >= 'A' && c <= 'F') {
-					value = static_cast<uint64_t>(c - 'A' + 10);
+					value = static_cast<uint64_t>(c - 'A') + 10;
 				} else {
 					throw std::invalid_argument("Invalid UUID");
 				}

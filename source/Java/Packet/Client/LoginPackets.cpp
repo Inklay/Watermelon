@@ -6,7 +6,7 @@ namespace Java {
 	namespace Packet {
 		namespace Client {
 			namespace Login {
-				void disconnect(std::shared_ptr<::Client> client, Watermelon* server, const std::string& reason) {
+				void disconnect(const std::shared_ptr<::Client>& client, Watermelon* server, const std::string& reason) {
 					std::vector<uint8_t> buffer;
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::LoginClient::DISCONNECT, buffer);
@@ -15,7 +15,7 @@ namespace Java {
 					server->disconnectClient(client.get());
 				}
 
-				void encryptionRequest(std::shared_ptr<::Client> client, Watermelon* server) {
+				void encryptionRequest(const std::shared_ptr<::Client>& client, Watermelon* server) {
 					std::vector<uint8_t> buffer;
 					std::vector<uint8_t> key = server->getKeys().getPublicKey();
 					std::vector<uint8_t> token = client->generateEncryptionToken();
@@ -31,7 +31,7 @@ namespace Java {
 					client->sendData(buffer);
 				}
 
-				void loginSuccess(std::shared_ptr<::Client> client) {
+				void loginSuccess(const std::shared_ptr<::Client>& client) {
 					std::vector<uint8_t> buffer;
 					std::pair<uint64_t, uint64_t> sessionUUID = Utils::UUID::generateSessionUUID();
 					Player::Player* player = client->getPlayer();
@@ -47,7 +47,7 @@ namespace Java {
 					client->sendData(buffer);
 				}
 
-				void setCompression(std::shared_ptr<::Client> client) {
+				void setCompression(const std::shared_ptr<::Client>& client) {
 					std::vector<uint8_t> buffer;
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::LoginClient::SET_COMPRESSION, buffer);
@@ -57,7 +57,7 @@ namespace Java {
 					client->enableCompression();
 				}
 
-				void loginPluginRequest(std::shared_ptr<::Client> client, const std::string& identifier) {
+				void loginPluginRequest(const std::shared_ptr<::Client>& client, const std::string& identifier) {
 					std::vector<uint8_t> buffer;
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::LoginClient::LOGIN_PLUGIN_REQUEST, buffer);
@@ -67,7 +67,7 @@ namespace Java {
 					client->sendData(buffer);
 				}
 
-				void cookieRequest(std::shared_ptr<::Client> client, const std::string& key) {
+				void cookieRequest(const std::shared_ptr<::Client>& client, const std::string& key) {
 					std::vector<uint8_t> buffer;
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::LoginClient::COOKIE_REQUEST, buffer);

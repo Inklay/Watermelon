@@ -89,7 +89,7 @@ namespace Player {
 	}
 
 	void Player::setProfileProperties(std::vector<ProfileProperty> profileProperties) {
-		m_profileProperties = profileProperties;
+		m_profileProperties = std::move(profileProperties);
 	}
 
 	const std::vector<ProfileProperty>& Player::getProfileProperties() {

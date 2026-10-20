@@ -5,7 +5,7 @@ namespace Java {
 	namespace Packet {
 		namespace Server {
 			namespace Status {
-				static void status(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
+				static void status(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 					Java::Packet::checkEmpty(packet, offset);
 
@@ -14,7 +14,7 @@ namespace Java {
 					});
 				}
 
-				static void ping(std::shared_ptr<::Client> client, const std::vector<uint8_t>& packet) {
+				static void ping(const std::shared_ptr<::Client>& client, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 					int64_t ping = Java::Packet::readU64(packet, offset);
 					Java::Packet::checkEmpty(packet, offset);
@@ -25,7 +25,7 @@ namespace Java {
 					client->sendData(buffer);
 				}
 
-				void parse(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
+				void parse(const std::shared_ptr<::Client>& client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					switch (packetId) {
 					case (int32_t)Java::Packet::PacketId::StatusServer::STATUS_REQUEST:
 						return status(client, server, packet);

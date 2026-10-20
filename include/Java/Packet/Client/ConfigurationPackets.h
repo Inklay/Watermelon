@@ -7,11 +7,11 @@ namespace Java {
 	namespace Packet {
 		namespace Client {
 			namespace Configuration {
-				void knownPacks(std::shared_ptr<::Client> client, Watermelon* server);
-				void registryData(std::shared_ptr<::Client> client);
-				void finishConfiguration(std::shared_ptr<::Client> client);
-				void updateTags(std::shared_ptr<::Client> client);
-				void pluginMessage(std::shared_ptr<::Client> client, const std::string& channel, const std::string& data);
+				void knownPacks(const std::shared_ptr<::Client>& client, Watermelon* server);
+				void registryData(const std::shared_ptr<::Client>& client);
+				void finishConfiguration(const std::shared_ptr<::Client>& client);
+				void updateTags(const std::shared_ptr<::Client>& client);
+				void pluginMessage(const std::shared_ptr<::Client>& client, const std::string& channel, const std::string& data);
 			};
 		};
 	};

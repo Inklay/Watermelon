@@ -10,7 +10,7 @@ namespace Java {
 	namespace Packet {
 		namespace Server {
 			namespace Handler {
-				void handlePacket(std::shared_ptr<::Client> client,  Watermelon* server, std::vector<uint8_t>& packet) {
+				void handlePacket(const std::shared_ptr<::Client>& client,  Watermelon* server, std::vector<uint8_t>& packet) {
 					int32_t packetId = 0;
 					uint32_t offset = 0;
 

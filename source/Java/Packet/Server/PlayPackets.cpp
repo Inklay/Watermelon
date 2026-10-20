@@ -5,7 +5,7 @@ namespace Java {
 	namespace Packet {
 		namespace Server {
 			namespace Play {
-				static void setPlayerPositionAndRotation(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
+				static void setPlayerPositionAndRotation(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 					double x = Java::Packet::readDouble(packet, offset);
 					double y = Java::Packet::readDouble(packet, offset);
@@ -15,7 +15,7 @@ namespace Java {
 					Java::Packet::readU8(packet, offset); // FIXME flags
 					Java::Packet::checkEmpty(packet, offset);
 
-					server->addOperationToQueue(client, [client, server, x, y, z, yaw, pitch]() {
+					server->addOperationToQueue(client, [client, x, y, z, yaw, pitch]() {
 						Player::Player* player = client->getPlayer();
 						
 						if (!player->isTeleporting()) {
@@ -25,7 +25,7 @@ namespace Java {
 					});
 				}
 
-				static void confirmTeleportation(std::shared_ptr<::Client> client,Watermelon* server, const std::vector<uint8_t>& packet) {
+				static void confirmTeleportation(const std::shared_ptr<::Client>& client,Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 					int32_t teleportId = Java::Packet::readVarInt(packet, offset);
 					Java::Packet::readDouble(packet, offset); // x
@@ -45,7 +45,7 @@ namespace Java {
 					});
 				}
 
-				static void playerSession(std::shared_ptr<::Client> client, const std::vector<uint8_t>& packet) {
+				static void playerSession(const std::shared_ptr<::Client>& client, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 					Player::ChatSession chatSession = {
 						Java::Packet::readUUID(packet, offset),
@@ -57,7 +57,7 @@ namespace Java {
 					client->getPlayer()->setChatSession(std::move(chatSession));
 				}
 
-				void parse(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
+				void parse(const std::shared_ptr<::Client>& client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					switch (packetId) {
 					case (int32_t)Java::Packet::PacketId::PlayServer::CONFIRM_TELEPORTATION:
 						return confirmTeleportation(client, server, packet);

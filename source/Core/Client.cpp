@@ -120,7 +120,7 @@ bool Client::hasPlayer() {
 	return m_player != nullptr;
 }
 
-void Client::setPacks(const std::vector<Java::Pack> packs) {
+void Client::setPacks(const std::vector<Java::Pack>& packs) {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	m_packs = packs;
 }
@@ -151,9 +151,9 @@ Client::PacketStatus Client::readPacket(std::vector<uint8_t>& packet) {
 		}
 
 		const uint8_t byte = m_receiveBuffer[prefixLength++];
-		length |= uint32_t(byte & 0x7F) << (7 * i);
+		length |= uint32_t(byte & static_cast<uint8_t>(0x7F)) << static_cast<uint8_t>(7 * i);
 
-		if ((byte & 0x80) == 0) {
+		if ((byte & static_cast<uint8_t>(0x80)) == 0) {
 			break;
 		}
 

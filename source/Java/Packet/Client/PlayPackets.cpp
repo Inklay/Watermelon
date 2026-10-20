@@ -6,7 +6,7 @@ namespace Java {
 	namespace Packet {
 		namespace Client {
 			namespace Play {
-				void playerInfoUpdate(Watermelon* server, const std::vector<Player::InfoAction>& actions, const std::vector<Player::Player*> players) {
+				void playerInfoUpdate(Watermelon* server, const std::vector<Player::InfoAction>& actions, const std::vector<Player::Player*>& players) {
 					std::vector<uint8_t> buffer;
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::PLAYER_INFO_UPDATE, buffer);
@@ -71,7 +71,7 @@ namespace Java {
 					}
 				}
 
-				void synchronizePlayerPosition(std::shared_ptr<::Client> client) {
+				void synchronizePlayerPosition(const std::shared_ptr<::Client>& client) {
 					std::vector<uint8_t> buffer;
 					int32_t teleportId = client->getPlayer()->teleport({ 0, 0, 0 }, { 0, 0 });
 
@@ -94,7 +94,7 @@ namespace Java {
 					client->sendData(buffer);
 				}
 
-				void gameEvent(std::shared_ptr<::Client> client, GameEvent event, float data) {
+				void gameEvent(const std::shared_ptr<::Client>& client, GameEvent event, float data) {
 					std::vector<uint8_t> buffer;
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::GAME_EVENT, buffer);
@@ -104,7 +104,7 @@ namespace Java {
 					client->sendData(buffer);
 				}
 
-				void setCenterChunk(std::shared_ptr<::Client> client) {
+				void setCenterChunk(const std::shared_ptr<::Client>& client) {
 					std::vector<uint8_t> buffer;
 					Player::Player* player = client->getPlayer();
 
@@ -115,7 +115,7 @@ namespace Java {
 					client->sendData(buffer);
 				}
 
-				void chunkDataAndUpdateLight(std::shared_ptr<::Client> client, int x, int z) {
+				void chunkDataAndUpdateLight(const std::shared_ptr<::Client>& client, int x, int z) {
 					const int dimensionHeight = 384; // FIXME needs to read height from register
 					const int sectionNumber = dimensionHeight / 16;
 					const int heightmapArrayCount = 37;
@@ -158,7 +158,7 @@ namespace Java {
 					client->sendData(buffer);
 				}
 
-				void login(std::shared_ptr<::Client> client, Watermelon* server) {
+				void login(const std::shared_ptr<::Client>& client, Watermelon* server) {
 					std::vector<uint8_t> buffer;
 					const Registry* dimensionReg = RegistryManager::getInstance().getRegistry("minecraft:dimension_type");
 					Player::Player* player = client->getPlayer();

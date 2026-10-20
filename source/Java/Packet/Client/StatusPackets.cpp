@@ -7,7 +7,7 @@ namespace Java {
 	namespace Packet {
 		namespace Client {
 			namespace Status {
-				void statusPacket(std::shared_ptr<::Client> client, Watermelon* server) {
+				void statusPacket(const std::shared_ptr<::Client>& client, Watermelon* server) {
 					std::vector<uint8_t> buffer;
 					nlohmann::json playerSample = nlohmann::json::array();
 

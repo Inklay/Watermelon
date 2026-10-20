@@ -6,12 +6,12 @@ namespace Java {
 	namespace Packet {
 		namespace Server {
 			namespace Configuration {
-				static void knownPacks(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
+				static void knownPacks(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 					std::vector<Java::Pack> packs = Java::Packet::readPacks(packet, offset);
 					Java::Packet::checkEmpty(packet, offset);
 
-					server->addOperationToQueue(client, [client, server, packs = std::move(packs)]() {
+					server->addOperationToQueue(client, [client, packs = std::move(packs)]() {
 						client->setPacks(packs);
 						Java::Packet::Client::Configuration::registryData(client);
 						Java::Packet::Client::Configuration::updateTags(client);
@@ -19,7 +19,7 @@ namespace Java {
 					});
 				}
 
-				static void AcknowledgeFinishConfiguration(std::shared_ptr<::Client> client,  Watermelon* server, const std::vector<uint8_t>& packet) {
+				static void AcknowledgeFinishConfiguration(const std::shared_ptr<::Client>& client,  Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 					Java::Packet::checkEmpty(packet, offset);
 
@@ -38,7 +38,7 @@ namespace Java {
 					});
 				}
 
-				static void pluginMessage(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
+				static void pluginMessage(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 					const std::string identifier = Java::Packet::readString(packet, offset);
 					
@@ -46,7 +46,7 @@ namespace Java {
 						Java::Packet::readString(packet, offset); // Client's brand
 						Java::Packet::checkEmpty(packet, offset);
 
-						server->addOperationToQueue(client, [client, server, identifier]() {
+						server->addOperationToQueue(client, [client, identifier]() {
 							Java::Packet::Client::Configuration::pluginMessage(client, identifier, "Watermelon");
 						});
 
@@ -56,7 +56,7 @@ namespace Java {
 					throw parseError("Unknown channel");
 				}
 
-				static void clientInformation(std::shared_ptr<::Client> client, Watermelon* server, const std::vector<uint8_t>& packet) {
+				static void clientInformation(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 
 					Java::Packet::readString(packet, offset); // Locale, unused
@@ -84,7 +84,7 @@ namespace Java {
 					});
 				}
 
-				void parse(std::shared_ptr<::Client> client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
+				void parse(const std::shared_ptr<::Client>& client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					switch (packetId) {
 						case (int)Java::Packet::PacketId::ConfigurationServer::KNOWN_PACKS:
 							return knownPacks(client, server, packet);

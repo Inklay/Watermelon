@@ -53,7 +53,7 @@ public:
 	void createPlayer(std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation);
 	Player::Player* getPlayer();
 	bool hasPlayer();
-	void setPacks(const std::vector<Java::Pack> packs);
+	void setPacks(const std::vector<Java::Pack>& packs);
 	std::vector<Java::Pack> getPacks();
 	void setSessionUUID(std::pair<uint64_t, uint64_t> sessionUUID);
 	PacketStatus readPacket(std::vector<uint8_t>& packet);

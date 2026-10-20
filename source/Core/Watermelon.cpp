@@ -332,7 +332,7 @@ std::vector<std::shared_ptr<Client>> Watermelon::getClients() {
 	return m_clients;
 }
 
-void Watermelon::addOperationToQueue(std::shared_ptr<Client> client, std::function<void()> packetHandler) {
+void Watermelon::addOperationToQueue(const std::shared_ptr<Client>& client, const std::function<void()>& packetHandler) {
 	std::lock_guard<std::mutex> lock(m_packetQueueMutex);
 	m_packetQueue.push(std::make_pair(client, packetHandler));
 }
@@ -487,7 +487,7 @@ bool Watermelon::isEncryptionEnabled() {
 	return isOnlineMode() || m_config["networking"]["java"]["encryption"].value_or(true);
 }
 
-void Watermelon::addAuthTask(std::shared_ptr<Client> client) {
+void Watermelon::addAuthTask(const std::shared_ptr<Client>& client) {
 	bool taskResult =  m_authPool.submit([client, server = this]() {
 		Auth::Result result = Auth::authenticatePlayer(client, server);
 		server->addOperationToQueue(client, [client, server, result = std::move(result)]() {
