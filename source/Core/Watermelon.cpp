@@ -262,7 +262,6 @@ void Watermelon::networkLoop() {
 }
 
 void Watermelon::run() {
-	using Clock = std::chrono::steady_clock;
 	int configTps = m_config["tps"].value_or(20);
 
 	if (configTps <= 0) {
@@ -272,8 +271,8 @@ void Watermelon::run() {
 
 	const auto tickDuration = std::chrono::milliseconds(1000 / configTps);
 
-	std::chrono::steady_clock::time_point nextTick = Clock::now();
-
+	std::chrono::steady_clock::time_point nextTick = std::chrono::steady_clock::now();
+	std::chrono::steady_clock::time_point nextKeepAlive = std::chrono::steady_clock::now() + std::chrono::seconds(10);
 
 	while (m_running.load()) {
 		std::queue<std::pair<std::shared_ptr<Client>, std::function<void()>>> queuedPackets;
@@ -298,22 +297,40 @@ void Watermelon::run() {
 			queuedPackets.pop();
 		}
 
+		std::vector<std::shared_ptr<Client>> clients;
 		{
 			std::lock_guard<std::mutex> lock(m_clientsMutex);
+			clients = m_clients;
+		}
 
-			for (const std::shared_ptr<Client>& client : m_clients) {
-				if (client->hasPlayer()) {
-					Player::Player* player = client->getPlayer();
+		std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+		bool sendKeepAlive = now > nextKeepAlive;
 
-					if (player->isLoaded()) {
-						player->tickEnd();
+		for (const std::shared_ptr<Client>& client : clients) {
+			if (client->hasPlayer() && client->getStatus() == Client::Status::PLAY) {
+				Player::Player* player = client->getPlayer();
+
+				if (player->isLoaded()) {
+					if (sendKeepAlive) {
+						try {
+							client->keepAlive(now);
+						} catch (...) {
+							log("Failed to send keep alive", Logger::WARN);
+						}
 					}
+
+					player->tickEnd();
 				}
 			}
 		}
 
+		if (sendKeepAlive) {
+			log("Sent keep alive", Logger::DEBUG);
+			nextKeepAlive += std::chrono::seconds(10);
+		}
+
 		nextTick += tickDuration;
-		const std::chrono::steady_clock::time_point now = Clock::now();
+		now = std::chrono::steady_clock::now();
 
 		if (now < nextTick) {
 			std::this_thread::sleep_until(nextTick);

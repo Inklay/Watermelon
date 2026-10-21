@@ -69,6 +69,8 @@ public:
 	bool authenticate(const std::vector<uint8_t>& token, const std::vector<uint8_t>& secret);
 	std::vector<uint8_t> getSecret();
 	void enableCompression();
+	void keepAlive(const std::chrono::steady_clock::time_point& now);
+	void validateKeepAlive(uint64_t keepAliveId);
 
 private:
 	const Type m_type;
@@ -88,4 +90,7 @@ private:
 	std::string m_tempPlayerName;
 	std::vector<uint8_t> m_secret;
 	std::atomic<int32_t> m_compressionThreshold{ -1 };
+	uint64_t m_pendingKeepAliveId;
+	int32_t m_ping = 0;
+	std::chrono::steady_clock::time_point m_keepAliveSentAt {};
 };

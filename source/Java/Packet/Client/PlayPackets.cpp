@@ -208,6 +208,15 @@ namespace Java {
 
 					client->sendData(buffer);
 				}
+
+				void keepAlive(const std::shared_ptr<::Client>& client, uint64_t keepAliveid) {
+					std::vector<uint8_t> buffer;
+
+					Java::Packet::writeVarInt(static_cast<uint32_t>(Java::Packet::PacketId::PlayClient::KEEP_ALIVE), buffer);
+					Java::Packet::write64(keepAliveid, buffer);
+
+					client->sendData(buffer);
+				}
 			};
 		};
 	};

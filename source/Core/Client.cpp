@@ -4,6 +4,8 @@
 #include "Utils/UUID.h"
 #include "Java/Packet/Packet.h"
 #include "Compression/ZLIB.h"
+#include "Java/Packet/Client/PlayPackets.h"
+#include <nlohmann/json.hpp>
 #ifndef _WIN32
 #include <unistd.h>
 #include <sys/socket.h>
@@ -15,7 +17,8 @@ Client::Client(Type type, Socket socket, Watermelon* server) :
 	m_socket(socket),
 	m_player(nullptr),
 	m_server(server),
-	m_disconnected(false)
+	m_disconnected(false),
+	m_pendingKeepAliveId(0)
 {
 }
 
@@ -373,4 +376,35 @@ std::vector<uint8_t> Client::getSecret() {
 void Client::enableCompression() {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	m_compressionThreshold.store(256);
+}
+
+void Client::keepAlive(const std::chrono::steady_clock::time_point& now) {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	if (m_pendingKeepAliveId != 0) {
+		std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+		std::chrono::duration duration = std::chrono::duration<float>(now - m_keepAliveSentAt);
+
+		if (duration.count() > 15.0f) {
+			return Java::Packet::Client::Play::disconnect(shared_from_this(), m_server, nlohmann::json({{ "translate", "multiplayer.disconnect.timeout" }}).dump());;
+		}
+	}
+
+	while (m_pendingKeepAliveId == 0) {
+		m_pendingKeepAliveId = std::rand();
+	}
+
+	m_keepAliveSentAt = now;
+	Java::Packet::Client::Play::keepAlive(shared_from_this(), m_pendingKeepAliveId);
+}
+
+void Client::validateKeepAlive(uint64_t keepAliveId) {
+	std::lock_guard<std::mutex> lock(m_mutex);
+	if (keepAliveId != m_pendingKeepAliveId) {
+		return;
+	}
+
+	std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+	std::chrono::duration duration = std::chrono::duration<float, std::milli>(now  - m_keepAliveSentAt);
+	m_ping = static_cast<int32_t>(duration.count());
+	m_pendingKeepAliveId = 0;
 }
