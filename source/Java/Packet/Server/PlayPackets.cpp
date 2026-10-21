@@ -126,6 +126,20 @@ namespace Java {
 					});
 				}
 
+				static void setPlayerRotation(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
+					uint32_t offset = 0;
+					float yaw = Java::Packet::readFloat(packet, offset);
+					float pitch = Java::Packet::readFloat(packet, offset);
+					Java::Packet::readU8(packet, offset); // FIXME flags
+					Java::Packet::checkEmpty(packet, offset);
+
+					server->addOperationToQueue(client, [client, yaw, pitch]() {
+						Player::Player* player = client->getPlayer();
+
+						player->setRotation({ yaw, pitch });
+					});
+				}
+
 				void parse(const std::shared_ptr<::Client>& client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					switch (packetId) {
 					case (int32_t)Java::Packet::PacketId::PlayServer::CONFIRM_TELEPORTATION:
@@ -146,6 +160,8 @@ namespace Java {
 						return playerAbilities(client, server, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::KEEP_ALIVE:
 						return keepAlive(client, server, packet);
+					case (int32_t)Java::Packet::PacketId::PlayServer::SET_PLAYER_ROTATION:
+						return setPlayerRotation(client, server, packet);
 					default:
 						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::ERR);
 						server->disconnectClient(client.get());
