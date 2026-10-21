@@ -45,7 +45,7 @@ namespace Java {
 					});
 				}
 
-				static void playerSession(const std::shared_ptr<::Client>& client, const std::vector<uint8_t>& packet) {
+				static void playerSession(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 					Player::ChatSession chatSession = {
 						Java::Packet::readUUID(packet, offset),
@@ -54,7 +54,10 @@ namespace Java {
 						Java::Packet::readByteArray(packet, offset)
 					};
 					Java::Packet::checkEmpty(packet, offset);
-					client->getPlayer()->setChatSession(std::move(chatSession));
+
+					server->addOperationToQueue(client, [client, chatSession = std::move(chatSession)]() {
+						client->getPlayer()->setChatSession(std::move(chatSession));
+					});
 				}
 
 				static void playerLoaded(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
@@ -102,7 +105,7 @@ namespace Java {
 					case (int32_t)Java::Packet::PacketId::PlayServer::SET_PLAYER_POSITION_AND_ROTATION:
 						return setPlayerPositionAndRotation(client, server, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::PLAYER_SESSION:
-						return playerSession(client, packet);
+						return playerSession(client, server, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::CLIENT_TICK_END:
 						return clientTickEnd(client, server, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::PLAYER_LOADED:

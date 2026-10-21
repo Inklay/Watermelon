@@ -24,9 +24,9 @@ namespace Java {
 
 					packet.erase(packet.begin(), packet.begin() + offset);
 
-					if (client->getStatus() != ::Client::Status::PLAY || packetId != (int32_t)Java::Packet::PacketId::PlayServer::CLIENT_TICK_END) {
-						server->getLogger().log("Received java packet with ID: " + std::to_string(packetId) + " and client status: " + std::to_string(client->getStatus()), "Network", Logger::DEBUG);
-					}
+					//if (client->getStatus() != ::Client::Status::PLAY || packetId != (int32_t)Java::Packet::PacketId::PlayServer::CLIENT_TICK_END) {
+					//	server->getLogger().log("Received java packet with ID: " + std::to_string(packetId) + " and client status: " + std::to_string(client->getStatus()), "Network", Logger::DEBUG);
+					//}
 
 					try {
 						switch (client->getStatus()) {

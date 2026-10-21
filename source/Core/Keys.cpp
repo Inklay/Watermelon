@@ -6,9 +6,15 @@
 #endif
 #include <httplib.h>
 
-Keys::Keys() :
+Keys::Keys(Logger& logger, bool keyMojangPublicKeys) :
 	m_key(Crypto::RSA::generateKeyPair())
 {
+	if (keyMojangPublicKeys) {
+		fetchMojangPublicKeys(logger);
+	}
+}
+
+void Keys::fetchMojangPublicKeys(Logger& logger) {
 	httplib::Client http("https://api.minecraftservices.com");
 	http.set_connection_timeout(5);
 	http.set_read_timeout(5);
@@ -18,16 +24,20 @@ Keys::Keys() :
 		return;
 	}
 
-	const auto data = nlohmann::json::parse(res->body);
-	const auto& keys = data.at("playerCertificateKeys");
+	try {
+		const auto data = nlohmann::json::parse(res->body);
+		const auto& keys = data.at("playerCertificateKeys");
 
-	if (!keys.is_array() || keys.empty())
-		return;
+		if (!keys.is_array() || keys.empty())
+			return;
 
-	for (const auto& entry : keys) {
-		const std::string encoded = entry.at("publicKey").get<std::string>();
-		std::vector<uint8_t> decoded = Utils::Base64::decode(encoded);
-		m_mojangPublicKeys.emplace_back(Crypto::DER2EVP(decoded));
+		for (const auto& entry : keys) {
+			const std::string encoded = entry.at("publicKey").get<std::string>();
+			std::vector<uint8_t> decoded = Utils::Base64::decode(encoded);
+			m_mojangPublicKeys.emplace_back(Crypto::DER2EVP(decoded));
+		}
+	} catch (...) {
+		logger.log("Can't get Mojang's public key. Chat messages can't be secured", "Watermelon", Logger::WARN);
 	}
 }
 

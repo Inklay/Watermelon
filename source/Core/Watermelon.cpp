@@ -31,6 +31,7 @@ Watermelon::Watermelon() :
 	m_registryManager(RegistryManager::getInstance()),
 	m_entityCounter(0),
 	m_defaultGamemode(Player::Gamemode::CREATIVE),
+	m_keys(m_logger, m_config["networking"]["java"]["online_mode"].value_or(true)),
 	m_authPool(4, 64, "Worker/Auth", m_logger)
 {
 #ifdef _WIN32

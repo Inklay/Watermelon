@@ -49,7 +49,7 @@ namespace Auth {
 
 				return { AUTHENTIFIED, username, uuid, playerProperties };
             } catch (const nlohmann::json::exception&) {
-				return { FAILED, "", "", {} };
+				return { SERVER_DOWN, "", "", {} };
             }
 		} else if (res->status == 204) {
 			return { FAILED, "", "", {} };

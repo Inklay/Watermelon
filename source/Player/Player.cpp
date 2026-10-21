@@ -109,7 +109,7 @@ namespace Player {
 		if (!chatSession.validate(m_server, m_uuid)) {
 			m_server->getLogger().log("Can't validate " + m_username + "'s chat session", "Network", Logger::WARN);
 		} else {
-			m_chatSession = chatSession;
+			m_chatSession = std::move(chatSession);
 		}
 	}
 
