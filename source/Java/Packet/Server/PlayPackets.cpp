@@ -109,7 +109,7 @@ namespace Java {
 					case (int32_t)Java::Packet::PacketId::PlayServer::CLIENT_TICK_END:
 						return clientTickEnd(client, server, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::PLAYER_LOADED:
-						return playerLoaded(client, server, packet);;
+						return playerLoaded(client, server, packet);
 					default:
 						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::ERR);
 						server->disconnectClient(client.get());

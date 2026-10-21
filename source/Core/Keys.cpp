@@ -21,7 +21,7 @@ void Keys::fetchMojangPublicKeys(Logger& logger) {
 	httplib::Result res = http.Get("/publickeys");
 
 	if (!res || res->status != 200) {
-		return;
+		logger.log("Can't get Mojang's public key. Chat messages can't be secured", "Watermelon", Logger::WARN);
 	}
 
 	try {
@@ -49,7 +49,7 @@ std::vector<uint8_t> Keys::decryptData(const std::vector<uint8_t>& data) {
 	return Crypto::RSA::decrypt(data, m_key);
 }
 
-std::vector<Crypto::Key> Keys::getMojangPublicKeys() {
+const std::vector<Crypto::Key>& Keys::getMojangPublicKeys() {
 	return m_mojangPublicKeys;
 }
 

@@ -10,7 +10,7 @@ public:
 	Keys(Logger& logger, bool keyMojangPublicKeys);
 	std::vector<uint8_t> getPublicKey();
 	std::vector<uint8_t> decryptData(const std::vector<uint8_t>& data);
-	std::vector<Crypto::Key> getMojangPublicKeys();
+	const std::vector<Crypto::Key>& getMojangPublicKeys();
 	bool checkChatSession(const std::vector<uint8_t>& signedData, const std::vector<uint8_t>& signature);
 
 private:

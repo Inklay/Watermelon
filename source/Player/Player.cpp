@@ -37,7 +37,8 @@ namespace Player {
 		m_loadingTickCounter(0),
 		m_movementPacketCounter(0),
 		m_knownMovementPacketCounter(0),
-		m_client(client)
+		m_client(client),
+		m_lastGoodPosition(position)
 	{}
 
 	const std::string& Player::getUsername() {
@@ -107,7 +108,9 @@ namespace Player {
 
 	void Player::setChatSession(ChatSession chatSession) {
 		if (!chatSession.validate(m_server, m_uuid)) {
-			m_server->getLogger().log("Can't validate " + m_username + "'s chat session", "Network", Logger::WARN);
+			if (m_server->getKeys().getMojangPublicKeys().size() != 0) {
+				m_server->getLogger().log("Can't validate " + m_username + "'s chat session", "Network", Logger::WARN);
+			}
 		} else {
 			m_chatSession = std::move(chatSession);
 		}
@@ -118,14 +121,12 @@ namespace Player {
 	}
 
 	bool Player::isLoaded() {
-		return m_loading.load();
+		return !m_loading.load();
 	}
 
 	void Player::clientTickEnd() {
-		m_loadingTickCounter++;
-
-		if (m_loadingTickCounter >= 60) {
-			m_loading.store(true);
+		if (++m_loadingTickCounter >= 60) {
+			m_loading.store(false);
 		}
 	}
 

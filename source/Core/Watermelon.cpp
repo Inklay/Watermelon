@@ -514,6 +514,7 @@ void Watermelon::addAuthTask(const std::shared_ptr<Client>& client) {
 				client->startEncryption();
 				return Java::Packet::Client::Login::disconnect(client, server, nlohmann::json({ { "translate", "multiplayer.disconnect.authservers_down" } }).dump());
 			case Auth::Status::AUTHENTIFIED:
+				client->startEncryption();
 				try {
 					std::pair<uint64_t, uint64_t> uuid = Utils::UUID::fromString(result.uuid);
 					if (!Player::isUsernameValid(result.username)) {
@@ -526,7 +527,6 @@ void Watermelon::addAuthTask(const std::shared_ptr<Client>& client) {
 					return Java::Packet::Client::Login::disconnect(client, server, nlohmann::json({ { "translate", "multiplayer.disconnect.unverified_username" } }).dump());;
 				}
 
-				client->startEncryption();
 				Java::Packet::Client::Login::setCompression(client);
 				Java::Packet::Client::Login::loginSuccess(client);
 			}

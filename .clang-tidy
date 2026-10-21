@@ -9,7 +9,8 @@ Checks: >
   performance-unnecessary-copy-initialization,
   performance-unnecessary-value-param,
   performance-inefficient-string-concatenation,
-  performance-inefficient-vector-operationWarningsAsErrors: ''
+  performance-inefficient-vector-operation
+WarningsAsErrors: ''
 HeaderFilterRegex: '.*[\\/](source|include)[\\/]'
 SystemHeaders: false
 FormatStyle: file
