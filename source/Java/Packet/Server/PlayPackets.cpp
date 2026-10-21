@@ -96,6 +96,26 @@ namespace Java {
 					});
 				}
 
+				static void playerInput(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
+					uint32_t offset = 0;
+					uint8_t inputFlag = Java::Packet::readU8(packet, offset);
+					Java::Packet::checkEmpty(packet, offset);
+
+					server->addOperationToQueue(client, [client, inputFlag]() {
+						client->getPlayer()->setInputFlag(inputFlag);
+					});
+				}
+
+				static void playerAbilities(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
+					uint32_t offset = 0;
+					uint8_t flags = Java::Packet::readU8(packet, offset);
+					Java::Packet::checkEmpty(packet, offset);
+
+					server->addOperationToQueue(client, [client, flags]() {
+						client->getPlayer()->setFlying(flags & 0x02);
+					});
+				}
+
 				void parse(const std::shared_ptr<::Client>& client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					switch (packetId) {
 					case (int32_t)Java::Packet::PacketId::PlayServer::CONFIRM_TELEPORTATION:
@@ -110,6 +130,10 @@ namespace Java {
 						return clientTickEnd(client, server, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::PLAYER_LOADED:
 						return playerLoaded(client, server, packet);
+					case (int32_t)Java::Packet::PacketId::PlayServer::PLAYER_INPUT:
+						return playerInput(client, server, packet);
+					case (int32_t)Java::Packet::PacketId::PlayServer::PLAYER_ABILITIES:
+						return playerAbilities(client, server, packet);
 					default:
 						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::ERR);
 						server->disconnectClient(client.get());

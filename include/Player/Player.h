@@ -69,6 +69,9 @@ namespace Player {
 		void tickEnd();
 		bool setPosition(Position position);
 		void setRotation(Rotation rotation);
+		void setInputFlag(uint8_t inputFlag);
+		void setFlying(bool isFlying);
+		bool isFlying();
 
 	private:
 		bool isNewPositionValid(Position& position);
@@ -88,5 +91,7 @@ namespace Player {
 		int m_knownMovementPacketCounter;
 		Client* m_client;
 		Position m_lastGoodPosition;
+		uint8_t m_inputFlag;
+		bool m_isFlying;
 	};
 }

@@ -38,7 +38,9 @@ namespace Player {
 		m_movementPacketCounter(0),
 		m_knownMovementPacketCounter(0),
 		m_client(client),
-		m_lastGoodPosition(position)
+		m_lastGoodPosition(position),
+		m_inputFlag(0),
+		m_isFlying(false)
 	{}
 
 	const std::string& Player::getUsername() {
@@ -191,5 +193,17 @@ namespace Player {
 
 		m_position = std::move(position);
 		return true;
+	}
+
+	void Player::setInputFlag(uint8_t inputFlag) {
+		m_inputFlag = inputFlag;
+	}
+
+	void Player::setFlying(bool isFlying) {
+		m_isFlying = isFlying;
+	}
+
+	bool Player::isFlying() {
+		return m_isFlying;
 	}
 }
