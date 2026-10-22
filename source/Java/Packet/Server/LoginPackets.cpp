@@ -41,6 +41,11 @@ namespace Java {
 						return;
 					}
 
+					if (server->getPlayerCount() >= server->getConfig()["networking"]["java"]["max_players"].value_or(10)) {
+						server->disconnectClient(client.get(), std::string("multiplayer.disconnect.server_full"));
+						return;
+					}
+
 					uint32_t offset = 0;
 					std::string username = Java::Packet::readString(packet, offset);
 					Java::Packet::readUUID(packet, offset); // UUID
