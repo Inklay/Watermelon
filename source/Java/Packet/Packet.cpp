@@ -300,8 +300,6 @@ namespace Java {
         }
 
         void writeString16(const std::string& value, std::vector<uint8_t>& buffer) {
-            const uint16_t length = static_cast<uint16_t>(value.size());
-
             write16(static_cast<uint16_t>(value.size()), buffer);
             buffer.insert(buffer.end(), value.begin(), value.end());
         }

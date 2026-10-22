@@ -14,7 +14,7 @@ namespace Java {
 				void playerInfoUpdate(Watermelon* server, const std::vector<Player::InfoAction>& actions, const std::vector<Player::Player*>& players);
 				void setCenterChunk(const std::shared_ptr<::Client>& client);
 				void chunkDataAndUpdateLight(const std::shared_ptr<::Client>& client, int x, int z);
-				void disconnect(const std::shared_ptr<::Client>& client, Watermelon* server, const std::string& reason);
+				void disconnect(const std::shared_ptr<::Client>& client, const std::string& reason);
 				void keepAlive(const std::shared_ptr<::Client>& client, uint64_t keepAliveid);
 			};
 		};

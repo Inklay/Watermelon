@@ -397,13 +397,13 @@ void Watermelon::disconnectClient(Client* client, const std::string& reason) {
 void Watermelon::disconnectClient(Client* client, const nlohmann::json& reason) {
 	switch (client->getStatus()) {
 		case Client::Status::LOGIN:
-			Java::Packet::Client::Login::disconnect(client->shared_from_this(), this, reason.dump());
+			Java::Packet::Client::Login::disconnect(client->shared_from_this(), reason.dump());
 			break;
 		case Client::Status::CONFIGURATION:
-			Java::Packet::Client::Configuration::disconnect(client->shared_from_this(), this, reason.dump());
+			Java::Packet::Client::Configuration::disconnect(client->shared_from_this(), reason.dump());
 			break;
 		case Client::Status::PLAY:
-			Java::Packet::Client::Play::disconnect(client->shared_from_this(), this, reason.at("translate").get<std::string>());
+			Java::Packet::Client::Play::disconnect(client->shared_from_this(), reason.at("translate").get<std::string>());
 			break;
 		default:
 			break;

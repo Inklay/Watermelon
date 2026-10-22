@@ -6,7 +6,7 @@ namespace Java {
 	namespace Packet {
 		namespace Client {
 			namespace Login {
-				void disconnect(const std::shared_ptr<::Client>& client, Watermelon* server, const std::string& reason) {
+				void disconnect(const std::shared_ptr<::Client>& client, const std::string& reason) {
 					std::vector<uint8_t> buffer;
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::LoginClient::DISCONNECT, buffer);
