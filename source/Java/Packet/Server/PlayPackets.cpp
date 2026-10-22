@@ -140,6 +140,11 @@ namespace Java {
 					});
 				}
 
+				static void punch(const std::vector<uint8_t>& packet) {
+					uint32_t offset = 0;
+					Java::Packet::checkEmpty(packet, offset);
+				}
+
 				void parse(const std::shared_ptr<::Client>& client, int32_t packetId, Watermelon* server, const std::vector<uint8_t>& packet) {
 					switch (packetId) {
 					case (int32_t)Java::Packet::PacketId::PlayServer::CONFIRM_TELEPORTATION:
@@ -162,6 +167,8 @@ namespace Java {
 						return keepAlive(client, server, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::SET_PLAYER_ROTATION:
 						return setPlayerRotation(client, server, packet);
+					case (int32_t)Java::Packet::PacketId::PlayServer::PUNCH:
+						return punch(packet);
 					default:
 						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::ERR);
 						server->disconnectClient(client.get(), std::string("disconnect.packetError"));

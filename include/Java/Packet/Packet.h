@@ -262,6 +262,9 @@ namespace Java {
 				PLAYER_COMMAND = 0x2A,
 				PLAYER_INPUT = 0x2B,
 				PLAYER_LOADED = 0x2C,
+				PONG = 0x2D,
+				PUNCH = 0x2E,
+				CHANGE_RECIPE_BOOK_SETTINGS = 0x2F,
 			};
 		};
 
