@@ -27,8 +27,7 @@ namespace Java {
 									{ "with", nlohmann::json::array({ server->getVersion().name }) }
 							};
 
-							Java::Packet::Client::Login::disconnect(client, server, reason.dump());
-							return;
+							return server->disconnectClient(client.get(), reason);
 						}
 						client->changeStatus(::Client::Status::LOGIN);
 						break;
@@ -42,8 +41,8 @@ namespace Java {
 					case (int32_t)Java::Packet::PacketId::HandshakeServer::HANDSHAKE:
 						return handshake(client, server, packet);
 					default:
-						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::ERR);
-						server->disconnectClient(client.get());
+						server->getLogger().log("Unknown handshake state packet ID: " + std::to_string(packetId), "Network", Logger::WARN);
+						server->disconnectClient(client.get(), std::string("disconnect.packetError"));
 					}
 				}
 			};

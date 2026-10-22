@@ -164,7 +164,7 @@ namespace Java {
 						return setPlayerRotation(client, server, packet);
 					default:
 						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::ERR);
-						server->disconnectClient(client.get());
+						server->disconnectClient(client.get(), std::string("disconnect.packetError"));
 					}
 				}
 			};

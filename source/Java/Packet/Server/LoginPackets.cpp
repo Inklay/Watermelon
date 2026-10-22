@@ -18,7 +18,7 @@ namespace Java {
 
 					server->addOperationToQueue(client, [client, server, token = std::move(token), secret = std::move(secret)]() {
 						if (!client->authenticate(token, secret)) {
-							server->disconnectClient(client.get());
+							server->disconnectClient(client.get(), std::string("disconnect.loginFailedInfo.invalidSession"));
 							return;
 						}
 						
@@ -37,7 +37,7 @@ namespace Java {
 				static void loginStart(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
 					if (client->hasPlayer()) {
 						server->getLogger().log("Player was already logged in", "Network", Logger::WARN);
-						server->disconnectClient(client.get());
+						server->disconnectClient(client.get(), std::string("multiplayer.disconnect.duplicate_login"));
 						return;
 					}
 
@@ -48,12 +48,9 @@ namespace Java {
 
 					server->addOperationToQueue(client, [client, server, username = std::move(username)]() {
 						if (!client->startLogin(username)) {
-							nlohmann::json reason = {
-								{ "translate", "multiplayer.disconnect.unverified_username" }
-							};
-
-							return Java::Packet::Client::Login::disconnect(client, server, reason.dump());
+							return;
 						}
+
 						if (server->isEncryptionEnabled()) {
 							Java::Packet::Client::Login::encryptionRequest(client, server);
 						} else {
@@ -68,7 +65,7 @@ namespace Java {
 				static void loginAknowledged(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
 					if (!client->hasPlayer()) {
 						server->getLogger().log("Player didn't log in", "Network", Logger::WARN);
-						server->disconnectClient(client.get());
+						server->disconnectClient(client.get(), std::string("disconnect.packetError"));
 						return;
 					}
 					
@@ -108,7 +105,7 @@ namespace Java {
 						return cookieResponse(packet);
 					default:
 						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::ERR);
-						server->disconnectClient(client.get());
+						server->disconnectClient(client.get(), std::string("disconnect.packetError"));
 					}
 				}
 			};

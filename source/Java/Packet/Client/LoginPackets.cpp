@@ -12,7 +12,6 @@ namespace Java {
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::LoginClient::DISCONNECT, buffer);
 					Java::Packet::writeString(reason, buffer);
 					client->sendData(buffer);
-					server->disconnectClient(client.get());
 				}
 
 				void encryptionRequest(const std::shared_ptr<::Client>& client, Watermelon* server) {

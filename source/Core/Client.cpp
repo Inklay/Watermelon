@@ -82,7 +82,7 @@ bool Client::startLogin(const std::string& username) {
 
 	if (disconnect) {
 		m_server->getLogger().log(logMessage, "Network", Logger::WARN);
-		m_server->disconnectClient(this);
+		m_server->disconnectClient(this, std::string("multiplayer.disconnect.unverified_username"));
 		return false;
 	}
 
@@ -217,7 +217,7 @@ void Client::appendReceivedData() {
 	int count = static_cast<int>(recv(m_socket, received, sizeof(received), 0));
 
 	if (count <= 0) {
-		m_server->disconnectClient(this);
+		m_server->disconnectClient(this, std::string("disconnect.endOfStream"));
 		return;
 	}
 
@@ -238,7 +238,7 @@ void Client::appendReceivedData() {
 
 	if (disconnect) {
 		m_server->getLogger().log("Client exceded max buffer size", "Network", Logger::WARN);
-		m_server->disconnectClient(this);
+		m_server->disconnectClient(this, std::string("disconnect.exceeded_packet_rate"));
 	}
 }
 
@@ -264,7 +264,7 @@ void Client::sendData(std::vector<uint8_t>& data) {
 					Java::Packet::writeVarInt(static_cast<uint32_t>(data.size()), compressedPacket);
 					compressedPacket.insert(compressedPacket.end(), compressedData.begin(), compressedData.end());
 				} catch (...) {
-					m_server->disconnectClient(this);
+					m_server->disconnectClient(this, std::string("multiplayer.disconnect.invalid_packet"));
 					return;
 				}
 			} else {
@@ -303,7 +303,7 @@ void Client::sendData(std::vector<uint8_t>& data) {
 	}
 
 	if (disconnect) {
-		m_server->disconnectClient(this);
+		m_server->disconnectClient(this, std::string("disconnect.lost"));
 	}
 }
 
@@ -385,7 +385,7 @@ void Client::keepAlive(const std::chrono::steady_clock::time_point& now) {
 		std::chrono::duration duration = std::chrono::duration<float>(now - m_keepAliveSentAt);
 
 		if (duration.count() > 15.0f) {
-			return Java::Packet::Client::Play::disconnect(shared_from_this(), m_server, nlohmann::json({{ "translate", "multiplayer.disconnect.timeout" }}).dump());;
+			return m_server->disconnectClient(this, std::string("multiplayer.disconnect.timeout"));
 		}
 	}
 

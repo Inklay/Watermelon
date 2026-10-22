@@ -298,5 +298,22 @@ namespace Java {
                 }
             }
         }
+
+        void writeString16(const std::string& value, std::vector<uint8_t>& buffer) {
+            const uint16_t length = static_cast<uint16_t>(value.size());
+
+            write16(static_cast<uint16_t>(value.size()), buffer);
+            buffer.insert(buffer.end(), value.begin(), value.end());
+        }
+
+        void writeNBTTranslatedString(const std::string& value, std::vector<uint8_t>& buffer) {
+            write8(10, buffer); // TAG_Compound
+
+            write8(8, buffer); // TAG_String
+            writeString16("translate", buffer);
+            writeString16(value, buffer);
+
+            write8(0, buffer); // TAG_End
+        }
     };
 };

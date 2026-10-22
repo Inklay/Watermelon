@@ -296,5 +296,7 @@ namespace Java {
 		void writeNBT(const std::vector<uint8_t>& data, std::vector<uint8_t>& buffer);
 		void writeTags(const std::vector<RegistryTag>& tags, std::vector<uint8_t>& buffer);
 		void writeProfileProperties(const std::vector<Player::ProfileProperty>& properties, std::vector<uint8_t>& buffer);
+		void writeString16(const std::string& value, std::vector<uint8_t>& buffer);
+		void writeNBTTranslatedString(const std::string& value, std::vector<uint8_t>& buffer);
 	};
 }

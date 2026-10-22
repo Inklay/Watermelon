@@ -13,6 +13,7 @@
 #include "Core/Keys.h"
 #include "Core/TaskPool.h"
 #include <toml++/toml.hpp>
+#include <nlohmann/json.hpp>
 
 class Watermelon {
 public:
@@ -33,7 +34,8 @@ public:
 	toml::table& getConfig();
 	std::vector<Java::Pack>& getPacks();
 	uint32_t increaseEntityCounter();
-	void disconnectClient(Client* client);
+	void disconnectClient(Client* client, const std::string& reason);
+	void disconnectClient(Client* client, const nlohmann::json& reason);
 	int getPlayerCount();
 	void increasePlayerCount();
 	Player::Gamemode getDefaultGamemode();

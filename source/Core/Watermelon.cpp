@@ -4,10 +4,11 @@
 #include "Java/Packet/Packet.h"
 #include "Java/Packet/Server/Handler.h"
 #include "Utils/Base64.h"
-#include <nlohmann/json.hpp>
 #include "Utils/UUID.h"
 #include "Auth/Auth.h"
 #include "Java/Packet/Client/LoginPackets.h"
+#include "Java/Packet/Client/PlayPackets.h"
+#include "Java/Packet/Client/ConfigurationPackets.h"
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #else
@@ -240,7 +241,7 @@ void Watermelon::networkLoop() {
 				}
 
 				if (result == Client::PacketStatus::INVALID) {
-					disconnectClient(client.get());
+					disconnectClient(client.get(), std::string("disconnect.packetError"));
 					break;
 				}
 
@@ -249,7 +250,7 @@ void Watermelon::networkLoop() {
 						Java::Packet::Server::Handler::handlePacket(client, this, packet);
 					} catch (const std::exception& e) {
 						log(std::string("Exception while handling a packet: ") + e.what(), Logger::ERR);
-						disconnectClient(client.get());
+						disconnectClient(client.get(), std::string("disconnect.packetError"));
 						break;
 					}
 				} else {
@@ -288,10 +289,10 @@ void Watermelon::run() {
 				operation();
 			} catch (const std::exception& e) {
 				log(std::string("Exception while handling a client operation: ") + e.what(), Logger::ERR);
-				disconnectClient(client.get());
+				disconnectClient(client.get(), std::string("disconnect.packetError"));
 			} catch (...) {
 				log("Unknown exception while handling a client operation", Logger::ERR);
-				disconnectClient(client.get());
+				disconnectClient(client.get(), std::string("disconnect.packetError"));
 			}
 
 			queuedPackets.pop();
@@ -389,7 +390,25 @@ uint32_t Watermelon::increaseEntityCounter() {
 	return ++m_entityCounter;
 }
 
-void Watermelon::disconnectClient(Client* client) {
+void Watermelon::disconnectClient(Client* client, const std::string& reason) {
+	disconnectClient(client, nlohmann::json({ { "translate", reason } }));
+}
+
+void Watermelon::disconnectClient(Client* client, const nlohmann::json& reason) {
+	switch (client->getStatus()) {
+		case Client::Status::LOGIN:
+			Java::Packet::Client::Login::disconnect(client->shared_from_this(), this, reason.dump());
+			break;
+		case Client::Status::CONFIGURATION:
+			Java::Packet::Client::Configuration::disconnect(client->shared_from_this(), this, reason.dump());
+			break;
+		case Client::Status::PLAY:
+			Java::Packet::Client::Play::disconnect(client->shared_from_this(), this, reason.at("translate").get<std::string>());
+			break;
+		default:
+			break;
+	}
+
 	std::shared_ptr<Client> ptr;
 	{
 		std::lock_guard<std::mutex> lock(m_clientsMutex);
@@ -409,6 +428,9 @@ void Watermelon::disconnectClient(Client* client) {
 	}
 
 	if (ptr) {
+		if (client->hasPlayer()) {
+			log(client->getPlayer()->getUsername() + " left the game", Logger::INFO);
+		}
 		ptr->disconnect();
 		log("TCP connection closed", Logger::DEBUG);
 	}
@@ -526,10 +548,10 @@ void Watermelon::addAuthTask(const std::shared_ptr<Client>& client) {
 			switch (result.status) {
 			case Auth::Status::FAILED:
 				client->startEncryption();
-				return Java::Packet::Client::Login::disconnect(client, server, nlohmann::json({{ "translate", "multiplayer.disconnect.unverified_username" }}).dump());
+				return server->disconnectClient(client.get(), std::string("multiplayer.disconnect.unverified_username"));
 			case Auth::Status::SERVER_DOWN:
 				client->startEncryption();
-				return Java::Packet::Client::Login::disconnect(client, server, nlohmann::json({ { "translate", "multiplayer.disconnect.authservers_down" } }).dump());
+				return server->disconnectClient(client.get(), std::string("multiplayer.disconnect.authservers_down"));
 			case Auth::Status::AUTHENTIFIED:
 				client->startEncryption();
 				try {
@@ -541,7 +563,7 @@ void Watermelon::addAuthTask(const std::shared_ptr<Client>& client) {
 					client->createPlayer(result.username, uuid, server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 });
 					client->getPlayer()->setProfileProperties(result.properties);
 				} catch (...) {
-					return Java::Packet::Client::Login::disconnect(client, server, nlohmann::json({ { "translate", "multiplayer.disconnect.unverified_username" } }).dump());;
+					return server->disconnectClient(client.get(), std::string("multiplayer.disconnect.unverified_username"));
 				}
 
 				Java::Packet::Client::Login::setCompression(client);
@@ -552,6 +574,6 @@ void Watermelon::addAuthTask(const std::shared_ptr<Client>& client) {
 
 	if (!taskResult) {
 		log("Auth pool are busy", Logger::WARN);
-		disconnectClient(client.get());
+		disconnectClient(client.get(), std::string("multiplayer.disconnect.generic"));
 	}
 }

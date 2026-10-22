@@ -32,8 +32,8 @@ namespace Java {
 					case (int32_t)Java::Packet::PacketId::StatusServer::PING:
 						return ping(client, packet);
 					default:
-						server->getLogger().log("Unknown packet ID: " + std::to_string(packetId), "Network", Logger::ERR);
-						server->disconnectClient(client.get());
+						server->getLogger().log("Unknown status state packet ID: " + std::to_string(packetId), "Network", Logger::WARN);
+						server->disconnectClient(client.get(), std::string("disconnect.packetError"));
 					}
 				}
 			};

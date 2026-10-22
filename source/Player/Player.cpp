@@ -139,7 +139,7 @@ namespace Player {
 
 	bool Player::isNewPositionValid(Position& position) {
 		if (!std::isfinite(position.x) || !std::isfinite(position.y) || !std::isfinite(position.z)) {
-			Java::Packet::Client::Play::disconnect(m_client->shared_from_this(), m_server, nlohmann::json({{"translate", "multiplayer.disconnect.invalid_player_movement"}}).dump());
+			m_server->disconnectClient(m_client, std::string("multiplayer.disconnect.invalid_player_movement"));
 			return false;
 		}
 

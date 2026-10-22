@@ -6,6 +6,14 @@ namespace Java {
 	namespace Packet {
 		namespace Client {
 			namespace Configuration {
+				void disconnect(const std::shared_ptr<::Client>& client, Watermelon* server, const std::string& reason) {
+					std::vector<uint8_t> buffer;
+
+					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::ConfigurationClient::DISCONNECT, buffer);
+					Java::Packet::writeString(reason, buffer);
+					client->sendData(buffer);
+				}
+
 				void knownPacks(const std::shared_ptr<::Client>& client, Watermelon* server) {
 					std::vector<uint8_t> buffer;
 
