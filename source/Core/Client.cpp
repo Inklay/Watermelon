@@ -18,7 +18,8 @@ Client::Client(Type type, Socket socket, Watermelon* server) :
 	m_player(nullptr),
 	m_server(server),
 	m_disconnected(false),
-	m_pendingKeepAliveId(0)
+	m_pendingKeepAliveId(0),
+	m_failedPacket(0)
 {
 }
 
@@ -303,7 +304,13 @@ void Client::sendData(std::vector<uint8_t>& data) {
 	}
 
 	if (disconnect) {
+		if (++m_failedPacket >= 5) {
+			return;
+		}
+
 		m_server->disconnectClient(this, std::string("disconnect.lost"));
+	} else if (m_failedPacket != 0) {
+		m_failedPacket = 0;
 	}
 }
 

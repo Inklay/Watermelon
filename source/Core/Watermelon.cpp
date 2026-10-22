@@ -418,13 +418,15 @@ void Watermelon::disconnectClient(Client* client, const nlohmann::json& reason) 
 			}
 		);
 
-		if (it != m_clients.end()) {
-			if (it->get()->hasPlayer()) {
-				m_playerCount--;
-			}
-			ptr = *it;
-			m_clients.erase(it);
+		if (it == m_clients.end()) {
+			return;
 		}
+
+		if (it->get()->hasPlayer()) {
+			m_playerCount--;
+		}
+		ptr = *it;
+		m_clients.erase(it);
 	}
 
 	if (ptr) {
@@ -499,6 +501,20 @@ const std::string& Watermelon::getFaviconData() {
 }
 
 void Watermelon::stop() {
+	if (!m_running.load()) {
+		return;
+	}
+
+	std::vector<std::shared_ptr<Client>> clients;
+	{
+		std::lock_guard<std::mutex> lock(m_clientsMutex);
+		clients = m_clients;
+	}
+
+	for (const std::shared_ptr<Client>& client : clients) {
+		disconnectClient(client.get(), std::string("multiplayer.disconnect.server_shutdown"));
+	}
+
 	m_running.store(false);
 }
 

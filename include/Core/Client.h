@@ -93,4 +93,5 @@ private:
 	uint64_t m_pendingKeepAliveId;
 	int32_t m_ping = 0;
 	std::chrono::steady_clock::time_point m_keepAliveSentAt {};
+	int m_failedPacket;
 };
