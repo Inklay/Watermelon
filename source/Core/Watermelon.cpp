@@ -312,16 +312,22 @@ void Watermelon::run() {
 				Player::Player* player = client->getPlayer();
 
 				if (player->isLoaded()) {
-					if (sendKeepAlive) {
-						try {
-							client->keepAlive(now);
-						} catch (...) {
-							log("Failed to send keep alive", Logger::WARN);
-						}
-					}
+					try {
+						player->tick();
 
-					player->tickEnd();
+						if (sendKeepAlive) {
+							client->keepAlive(now);
+						}
+					} catch (...) {
+						log("Failed to process player " + player->getUsername(), Logger::WARN);
+					}
 				}
+			}
+		}
+
+		for (const std::shared_ptr<Client>& client : clients) {
+			if (client->hasPlayer() && client->getStatus() == Client::Status::PLAY) {
+				client->getPlayer()->tickEnd();
 			}
 		}
 
@@ -573,12 +579,13 @@ void Watermelon::addAuthTask(const std::shared_ptr<Client>& client) {
 				try {
 					std::pair<uint64_t, uint64_t> uuid = Utils::UUID::fromString(result.uuid);
 					if (!Player::isUsernameValid(result.username)) {
-						throw std::runtime_error("Invalid username");
+						throw std::runtime_error("Invalid player name");
 					}
 
 					client->createPlayer(result.username, uuid, server->increaseEntityCounter(), { 0, 0, 0 }, { 0, 0 });
 					client->getPlayer()->setProfileProperties(result.properties);
-				} catch (...) {
+				} catch (const std::exception& e) {
+					server->getLogger().log(e.what(), "Watermelon", Logger::WARN);
 					return server->disconnectClient(client.get(), std::string("multiplayer.disconnect.unverified_username"));
 				}
 

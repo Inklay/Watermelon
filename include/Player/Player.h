@@ -6,6 +6,7 @@
 #include "Player/ProfileProperty.h"
 #include "Player/ChatSession.h"
 #include <atomic>
+#include <unordered_set>
 
 class Watermelon;
 class Client;
@@ -48,36 +49,35 @@ namespace Player {
 
 	class Player : public Entity {
 	public:
-		Player(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation, Watermelon* server, Client* client);
-		const std::string& getUsername();
-		int32_t teleport(Entity::Position position, Entity::Rotation rotation);
+		Player(const std::string& username, std::pair<uint64_t, uint64_t> uuid, uint32_t entityId, Entity::Vec3 position, Entity::Rotation rotation, Watermelon* server, Client* client);
+		const std::string& getUsername() const;
+		int32_t teleport(Entity::Vec3 position, Entity::Rotation rotation);
 		bool finishTeleporting(int32_t teleportId);
-		std::pair<uint64_t, uint64_t> getUUID();
-		Gamemode getGamemode();
+		Gamemode getGamemode() const;
 		void setGamemode(Gamemode gamemode);
-		Position getPosition();
-		bool hasChatSignature();
-		bool isTeleporting();
+		bool hasChatSignature() const;
+		bool isTeleporting() const;
 		void setClientInfo(ClientInfo clientInfo);
-		const ClientInfo& getClientInfo();
+		const ClientInfo& getClientInfo() const;
 		void setProfileProperties(std::vector<ProfileProperty> profileProperties);
-		const std::vector<ProfileProperty>& getProfileProperties();
+		const std::vector<ProfileProperty>& getProfileProperties() const;
 		void setChatSession(ChatSession chatSession);
 		void setLoading(bool loading);
-		bool isLoaded();
+		bool isLoaded() const;
 		void clientTickEnd();
 		void tickEnd();
-		bool setPosition(Position position);
+		void tick();
+		bool setPosition(Vec3 position);
 		void setRotation(Rotation rotation);
 		void setInputFlag(uint8_t inputFlag);
 		void setFlying(bool isFlying);
-		bool isFlying();
+		bool isFlying() const;
+		void syncEntities();
 
 	private:
-		bool isNewPositionValid(Position& position);
+		bool isNewPositionValid(Vec3& position);
 
 		std::string m_username;
-		std::pair<uint64_t, uint64_t> m_uuid;
 		int32_t m_teleportIdCounter;
 		bool m_teleporting;
 		Gamemode m_gamemode;
@@ -90,8 +90,12 @@ namespace Player {
 		int m_movementPacketCounter;
 		int m_knownMovementPacketCounter;
 		Client* m_client;
-		Position m_lastGoodPosition;
+		Vec3 m_lastGoodPosition;
 		uint8_t m_inputFlag;
 		bool m_isFlying;
+		std::unordered_set<int32_t> m_trackedEntities;
+		std::unordered_set<int32_t> m_visibleEntitiesNow;
+		std::vector<uint32_t> m_entitiesVec;
+		std::unordered_set<uint32_t> m_knownPlayers;
 	};
 }

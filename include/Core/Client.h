@@ -49,8 +49,8 @@ public:
 	bool hasPack(const std::string& name);
 	void changeStatus(Status status);
 	Status getStatus();
-	void createPlayer(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation);
-	void createPlayer(std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation);
+	void createPlayer(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Vec3 position, Entity::Rotation rotation);
+	void createPlayer(std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Vec3 position, Entity::Rotation rotation);
 	Player::Player* getPlayer();
 	bool hasPlayer();
 	void setPacks(const std::vector<Java::Pack>& packs);

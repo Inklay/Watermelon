@@ -2,6 +2,63 @@
 #include "Registry/RegistryManager.h"
 #include "Java/Packet/Client/StatusPackets.h"
 
+void buildPlayerInfoUpdatePacket(const std::vector<Player::InfoAction>& actions, const std::vector<const Player::Player*>& players, std::vector<uint8_t>& buffer) {
+	Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::PLAYER_INFO_UPDATE, buffer);
+
+	uint8_t actionBitMap = 0;
+	for (const Player::InfoAction action : actions) {
+		actionBitMap |= (uint8_t)action;
+	}
+
+	Java::Packet::writeU8(actionBitMap, buffer);
+	Java::Packet::writeVarInt((int32_t)players.size(), buffer);
+
+	for (const Player::Player* player : players) {
+		Java::Packet::writeUUID(player->getUUID(), buffer);
+
+		if (actionBitMap & (uint8_t)Player::InfoAction::ADD_PLAYER) {
+			Java::Packet::writeString(player->getUsername(), buffer);
+			Java::Packet::writeProfileProperties(player->getProfileProperties(), buffer);
+		}
+
+		if (actionBitMap & (uint8_t)Player::InfoAction::INITIALIZE_CHAT) {
+			if (player->hasChatSignature()) {
+				Java::Packet::writeBool(true, buffer);
+				Java::Packet::writeBool(false, buffer); // FIXME chat session id
+				Java::Packet::writeBool(false, buffer); // FIXME public key expiry time
+				Java::Packet::writeBool(false, buffer); // FIXME encoded public key
+				Java::Packet::writeBool(false, buffer); // FIXME public key signature
+			} else {
+				Java::Packet::writeBool(false, buffer);
+			}
+		}
+
+		if (actionBitMap & (uint8_t)Player::InfoAction::UPDATE_GAME_MODE) {
+			Java::Packet::writeVarInt(player->getGamemode(), buffer);
+		}
+
+		if (actionBitMap & (uint8_t)Player::InfoAction::UPDATE_LISTED) {
+			Java::Packet::writeBool(true, buffer); // FIXME listed
+		}
+
+		if (actionBitMap & (uint8_t)Player::InfoAction::UPDATE_LATENCY) {
+			Java::Packet::writeVarInt(0, buffer); // FIXME ping
+		}
+
+		if (actionBitMap & (uint8_t)Player::InfoAction::UPDATE_DISPLAY_NAME) {
+			Java::Packet::writeBool(false, buffer); // FIXME display name
+		}
+
+		if (actionBitMap & (uint8_t)Player::InfoAction::UPDATE_LIST_PRIORITY) {
+			Java::Packet::writeVarInt(0, buffer); // FIXME list priority
+		}
+
+		if (actionBitMap & (uint8_t)Player::InfoAction::UPDATE_HAT) {
+			Java::Packet::writeBool(true, buffer); // FIXME visible
+		}
+	}
+}
+
 namespace Java {
 	namespace Packet {
 		namespace Client {
@@ -14,67 +71,25 @@ namespace Java {
 					client->sendData(buffer);
 				}
 
-				void playerInfoUpdate(Watermelon* server, const std::vector<Player::InfoAction>& actions, const std::vector<Player::Player*>& players) {
+				void playerInfoUpdateOne(const std::vector<Player::InfoAction>& actions, const std::vector<const Player::Player*>& players, const std::shared_ptr<::Client>& client) {
 					std::vector<uint8_t> buffer;
+					buildPlayerInfoUpdatePacket(actions, players, buffer);
 
-					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::PLAYER_INFO_UPDATE, buffer);
+					client->sendData(buffer);
+				}
 
-					uint8_t actionBitMap = 0;
-					for (const Player::InfoAction action : actions) {
-						actionBitMap |= (uint8_t)action;
-					}
-
-					Java::Packet::writeU8(actionBitMap, buffer);
-					Java::Packet::writeVarInt((int32_t)players.size(), buffer);
-
-					for (Player::Player* player: players) {
-						Java::Packet::writeUUID(player->getUUID(), buffer);
-
-						if (actionBitMap & (uint8_t)Player::InfoAction::ADD_PLAYER) {
-							Java::Packet::writeString(player->getUsername(), buffer);
-							Java::Packet::writeProfileProperties(player->getProfileProperties(), buffer);
-						}
-
-						if (actionBitMap & (uint8_t)Player::InfoAction::INITIALIZE_CHAT) {
-							if (player->hasChatSignature()) {
-								Java::Packet::writeBool(true, buffer);
-								Java::Packet::writeBool(false, buffer); // FIXME chat session id
-								Java::Packet::writeBool(false, buffer); // FIXME public key expiry time
-								Java::Packet::writeBool(false, buffer); // FIXME encoded public key
-								Java::Packet::writeBool(false, buffer); // FIXME public key signature
-							} else {
-								Java::Packet::writeBool(false, buffer);
-							}
-						}
-
-						if (actionBitMap & (uint8_t)Player::InfoAction::UPDATE_GAME_MODE) {
-							Java::Packet::writeVarInt(player->getGamemode(), buffer);
-						}
-
-						if (actionBitMap & (uint8_t)Player::InfoAction::UPDATE_LISTED) {
-							Java::Packet::writeBool(true, buffer); // FIXME listed
-						}
-
-						if (actionBitMap & (uint8_t)Player::InfoAction::UPDATE_LATENCY) {
-							Java::Packet::writeVarInt(0, buffer); // FIXME ping
-						}
-
-						if (actionBitMap & (uint8_t)Player::InfoAction::UPDATE_DISPLAY_NAME) {
-							Java::Packet::writeBool(false, buffer); // FIXME display name
-						}
-
-						if (actionBitMap & (uint8_t)Player::InfoAction::UPDATE_LIST_PRIORITY) {
-							Java::Packet::writeVarInt(0, buffer); // FIXME list priority
-						}
-
-						if (actionBitMap & (uint8_t)Player::InfoAction::UPDATE_HAT) {
-							Java::Packet::writeBool(true, buffer); // FIXME visible
-						}
-					}
+				void playerInfoUpdateAll(Watermelon* server, const std::vector<Player::InfoAction>& actions, const std::vector<const Player::Player*>& players, const std::shared_ptr<::Client>& sendingClient) {
+					std::vector<uint8_t> buffer;
+					buildPlayerInfoUpdatePacket(actions, players, buffer);
 
 					for (auto& client : server->getClients()) {
+						if (client == sendingClient) {
+							continue;
+						}
+
 						if (client->getStatus() == ::Client::Status::PLAY) {
-							client->sendData(buffer);
+							std::vector<uint8_t> clientBuffer = buffer;
+							client->sendData(clientBuffer);
 						}
 					}
 				}
@@ -215,6 +230,35 @@ namespace Java {
 					Java::Packet::write64(keepAliveid, buffer);
 
 					client->sendData(buffer);
+				}
+
+				void spawnEntity(const std::shared_ptr<::Client>& client, Entity* entity) {
+					std::vector<uint8_t> buffer;
+
+					Java::Packet::writeVarInt(static_cast<uint32_t>(Java::Packet::PacketId::PlayClient::SPANW_ENTITY), buffer);
+					Java::Packet::writeVarInt(entity->getEntityId(), buffer);
+					Java::Packet::writeUUID(entity->getUUID(), buffer);
+					Java::Packet::writeVarInt(static_cast<uint32_t>(entity->getType()), buffer);
+					Java::Packet::writePosition(entity->getPosition(), buffer);
+					Java::Packet::writeLpVec3(entity->getVelocity(), buffer);
+					Java::Packet::writeRotation(entity->getRotation(), buffer);
+					Java::Packet::writeVarInt(entity->getProtocolData(), buffer);
+
+					client->sendData(buffer);
+				}
+
+				void removeEntities(const std::shared_ptr<::Client>& client, std::vector<uint32_t> ids) {
+					std::vector<uint8_t> buffer;
+
+					Java::Packet::writeVarInt(static_cast<uint32_t>(Java::Packet::PacketId::PlayClient::REMOVE_ENTITIES), buffer);
+					Java::Packet::writeVarInt(static_cast<uint32_t>(ids.size()), buffer);
+					
+					for (uint32_t id : ids) {
+						Java::Packet::writeVarInt(id, buffer);
+					}
+
+					client->sendData(buffer);
+
 				}
 			};
 		};

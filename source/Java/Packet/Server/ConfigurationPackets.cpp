@@ -30,7 +30,8 @@ namespace Java {
 
 						Java::Packet::Client::Play::login(client, server);
 						Java::Packet::Client::Play::synchronizePlayerPosition(client);
-						Java::Packet::Client::Play::playerInfoUpdate(server, actions, { player });
+						Java::Packet::Client::Play::playerInfoUpdateAll(server, actions, { player }, client);
+						Java::Packet::Client::Play::playerInfoUpdateOne(actions, server->getPlayers(), client);
 						Java::Packet::Client::Play::gameEvent(client, Java::Packet::GameEvent::START_WAITING_FOR_CHUNKS);
 						server->getLogger().log(player->getUsername() + " joined the game", "Watermelon", Logger::INFO);
 						Java::Packet::Client::Play::setCenterChunk(client);

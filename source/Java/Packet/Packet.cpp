@@ -1,6 +1,8 @@
 #include "Java/Packet/Packet.h"
 #include <iostream>
 #include "Utils/Byte.h"
+#include <cmath>
+#include <algorithm>
 
 namespace Java {
     namespace Packet {
@@ -214,6 +216,11 @@ namespace Java {
             buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(&networkValue), reinterpret_cast<const uint8_t*>(&networkValue) + sizeof(networkValue));
         }
 
+        void writeU32(uint32_t value, std::vector<uint8_t>& buffer) {
+            uint32_t networkValue = Byte::toBigEndian(value);
+            buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(&networkValue), reinterpret_cast<const uint8_t*>(&networkValue) + sizeof(networkValue));
+        }
+
         void write64(int64_t value, std::vector<uint8_t>& buffer) {
             int64_t networkValue = Byte::toBigEndian(value);
             buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(&networkValue), reinterpret_cast<const uint8_t*>(&networkValue) + sizeof(networkValue));
@@ -312,6 +319,64 @@ namespace Java {
             writeString16(value, buffer);
 
             write8(0, buffer); // TAG_End
+        }
+
+        void writeLpVec3(const Entity::Vec3& value, std::vector<uint8_t>& buffer) {
+            constexpr double ABS_MAX = 1.7179869183E10;
+            constexpr double ABS_MIN = 3.051944088384301E-5;
+
+            auto sanitize = [&](double d) {
+                return std::isnan(d) ? 0.0 : std::clamp(d, -ABS_MAX, ABS_MAX);
+            };
+
+            auto pack = [](double d) -> uint64_t {
+                return static_cast<uint64_t>(std::llround((d * 0.5 + 0.5) * 32766.0));
+            };
+
+            const double x = sanitize(value.x);
+            const double y = sanitize(value.y);
+            const double z = sanitize(value.z);
+            const double biggest = std::max({ std::abs(x), std::abs(y), std::abs(z) });
+
+            if (biggest < ABS_MIN) {
+                writeU8(0, buffer);
+                return;
+            }
+
+            const uint64_t scale = static_cast<uint64_t>(std::ceil(biggest));
+            const bool continuation = (scale & 3) != scale;
+            const uint64_t low = continuation ? ((scale & 3) | 4) : scale;
+
+            const uint64_t packed = low
+                | (pack(x / scale) << 3)
+                | (pack(y / scale) << 18)
+                | (pack(z / scale) << 33);
+
+            writeU8(static_cast<uint8_t>(packed & 0xFF), buffer);
+            writeU8(static_cast<uint8_t>((packed >> 8) & 0xFF), buffer);
+
+            const uint32_t high = static_cast<uint32_t>(packed >> 16);
+            writeU32(high, buffer);
+
+            if (continuation) {
+                Java::Packet::writeVarInt(static_cast<uint32_t>(scale >> 2), buffer);
+            }
+        }
+
+        void writeAngle(float value, std::vector<uint8_t>& buffer) {
+            writeU8(static_cast<uint8_t>(static_cast<int>(std::floor(value * 256.0f / 360.0f))), buffer);
+        }
+
+        void writeRotation(const Entity::Rotation& value, std::vector<uint8_t>& buffer) {
+            writeAngle(value.pitch, buffer);
+            writeAngle(value.yaw, buffer);
+            writeAngle(value.headYaw, buffer);
+        }
+
+        void writePosition(const Entity::Vec3& value, std::vector<uint8_t>& buffer) {
+            writeDouble(value.x, buffer);
+            writeDouble(value.y, buffer);
+            writeDouble(value.z, buffer);
         }
     };
 };

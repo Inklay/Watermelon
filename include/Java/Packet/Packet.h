@@ -290,6 +290,7 @@ namespace Java {
 		void writeU8(uint8_t value, std::vector<uint8_t>& buffer);
 		void write16(int16_t value, std::vector<uint8_t>& buffer);
 		void write32(int32_t value, std::vector<uint8_t>& buffer);
+		void writeU32(uint32_t value, std::vector<uint8_t>& buffer);
 		void write64(int64_t value, std::vector<uint8_t>& buffer);
 		void writeFloat(float value, std::vector<uint8_t>& buffer);
 		void writeDouble(double value, std::vector<uint8_t>& buffer);
@@ -301,5 +302,9 @@ namespace Java {
 		void writeProfileProperties(const std::vector<Player::ProfileProperty>& properties, std::vector<uint8_t>& buffer);
 		void writeString16(const std::string& value, std::vector<uint8_t>& buffer);
 		void writeNBTTranslatedString(const std::string& value, std::vector<uint8_t>& buffer);
+		void writeLpVec3(const Entity::Vec3& value, std::vector<uint8_t>& buffer);
+		void writeAngle(float value, std::vector<uint8_t>& buffer);
+		void writeRotation(const Entity::Rotation& value, std::vector<uint8_t>& buffer);
+		void writePosition(const Entity::Vec3& value, std::vector<uint8_t>& buffer);
 	};
 }

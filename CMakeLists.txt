@@ -22,6 +22,7 @@ set(SOURCES
     source/Utils/Buffer.cpp
     source/Utils/Base64.cpp
     source/Entity/Entity.cpp
+    source/Entity/EntityManager.cpp
     source/Player/Player.cpp
     source/Player/ProfileProperty.cpp
     source/Player/ChatSession.cpp

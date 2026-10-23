@@ -90,7 +90,7 @@ bool Client::startLogin(const std::string& username) {
 	return true;
 }
 
-void Client::createPlayer(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation) {
+void Client::createPlayer(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Vec3 position, Entity::Rotation rotation) {
 	{
 		std::lock_guard<std::mutex> lock(m_mutex);
 		m_tempPlayerName = username;
@@ -99,7 +99,7 @@ void Client::createPlayer(const std::string& username, std::pair<uint64_t, uint6
 	createPlayer(uuid, entityId, position, rotation);
 }
 
-void Client::createPlayer(std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation) {	
+void Client::createPlayer(std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Vec3 position, Entity::Rotation rotation) {	
 	{
 		std::lock_guard<std::mutex> lock(m_mutex);
 		m_player = new Player::Player(m_tempPlayerName, uuid, entityId, position, rotation, m_server, this);

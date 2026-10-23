@@ -4,6 +4,7 @@
 #include "Core/Client.h"
 #include "Java/Packet/Client/PlayPackets.h"
 #include <nlohmann/json.hpp>
+#include "Entity/EntityManager.h"
 
 namespace Player {
 	bool isUsernameValid(const std::string& username) {
@@ -25,10 +26,9 @@ namespace Player {
 		return true;
 	}
 
-	Player::Player(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Position position, Entity::Rotation rotation, Watermelon* server, Client* client)
-		: Entity(entityId, position, rotation, Entity::Type::PLAYER),
+	Player::Player(const std::string& username, std::pair<uint64_t, uint64_t> uuid, uint32_t entityId, Entity::Vec3 position, Entity::Rotation rotation, Watermelon* server, Client* client)
+		: Entity(entityId, position, rotation, Entity::Type::PLAYER, uuid),
 		m_username(username),
-		m_uuid(uuid),
 		m_teleportIdCounter(0),
 		m_teleporting(false),
 		m_gamemode(CREATIVE), // FIXME must be survival once it is implemented
@@ -41,20 +41,22 @@ namespace Player {
 		m_lastGoodPosition(position),
 		m_inputFlag(0),
 		m_isFlying(false)
-	{}
+	{
+	}
 
-	const std::string& Player::getUsername() {
+	const std::string& Player::getUsername() const {
 		return m_username;
 	}
 
-	int32_t Player::teleport(Entity::Position position, Entity::Rotation rotation) {
+	int32_t Player::teleport(Entity::Vec3 position, Entity::Rotation rotation) {
 		if (m_teleporting) {
 			return -1;
 		}
 
 		m_teleporting = true;
-		m_position = position;
-		m_rotation = rotation;
+		m_position = std::move(position);
+		updateChunk();
+		m_rotation = std::move(rotation);
 
 		return ++m_teleportIdCounter;
 	}
@@ -68,11 +70,7 @@ namespace Player {
 		return true;
 	}
 
-	std::pair<uint64_t, uint64_t> Player::getUUID() {
-		return m_uuid;
-	}
-
-	Gamemode Player::getGamemode() {
+	Gamemode Player::getGamemode() const {
 		return m_gamemode;
 	}
 
@@ -80,15 +78,11 @@ namespace Player {
 		m_gamemode = gamemode;
 	}
 
-	Player::Position Player::getPosition() {
-		return m_position;
-	}
-
-	bool Player::hasChatSignature() {
+	bool Player::hasChatSignature() const {
 		return false; // FIXME add real chat signature
 	}
 
-	bool Player::isTeleporting() {
+	bool Player::isTeleporting() const {
 		return m_teleporting;
 	}
 
@@ -96,7 +90,7 @@ namespace Player {
 		m_clientInfo = clientInfo;
 	}
 
-	const ClientInfo& Player::getClientInfo() {
+	const ClientInfo& Player::getClientInfo() const {
 		return m_clientInfo;
 	}
 
@@ -104,7 +98,7 @@ namespace Player {
 		m_profileProperties = std::move(profileProperties);
 	}
 
-	const std::vector<ProfileProperty>& Player::getProfileProperties() {
+	const std::vector<ProfileProperty>& Player::getProfileProperties() const {
 		return m_profileProperties;
 	}
 
@@ -122,7 +116,7 @@ namespace Player {
 		m_loading.store(loading);
 	}
 
-	bool Player::isLoaded() {
+	bool Player::isLoaded() const {
 		return !m_loading.load();
 	}
 
@@ -132,12 +126,69 @@ namespace Player {
 		}
 	}
 
+	void Player::syncEntities() {
+		m_entitiesVec.clear();
+		m_visibleEntitiesNow.clear();
+		EntityManager::getInstance().getEntityAround(m_chunkPosition, m_entitiesVec, 1); // 555555
+
+		for (uint32_t entityId : m_entitiesVec) {
+			if (entityId == m_entityId) {
+				continue;
+			}
+
+			Entity* entity = EntityManager::getInstance().getEntity(entityId);
+			if (entity == nullptr) {
+				continue;
+			}
+
+			if (m_trackedEntities.contains(entityId)) {
+				// move entity
+			} else {
+				if (entity->getType() == Type::PLAYER) {
+					if (!static_cast<Player*>(entity)->isLoaded()) {
+						continue;
+					}
+
+					if (!m_knownPlayers.contains(entityId)) {
+						std::vector<InfoAction> actions = { InfoAction::ADD_PLAYER, InfoAction::UPDATE_LISTED, InfoAction::UPDATE_GAME_MODE, InfoAction::UPDATE_LATENCY };
+						Java::Packet::Client::Play::playerInfoUpdateOne(actions, { static_cast<Player*>(entity) }, m_client->shared_from_this());
+						m_knownPlayers.insert(entityId);
+					}
+				}
+
+				Java::Packet::Client::Play::spawnEntity(m_client->shared_from_this(), entity);
+			}
+			m_visibleEntitiesNow.insert(entityId);
+		}
+
+		std::vector<uint32_t> removed;
+		for (uint32_t id : m_trackedEntities) {
+			if (!m_visibleEntitiesNow.contains(id)) {
+				removed.push_back(id);
+
+				if (m_knownPlayers.contains(id)) {
+					m_knownPlayers.erase(id);
+				}
+			}
+		}
+
+		if (!removed.empty()) {
+			Java::Packet::Client::Play::removeEntities(m_client->shared_from_this(), removed);
+		}
+
+		std::swap(m_trackedEntities, m_visibleEntitiesNow);
+	}
+
+	void Player::tick() {
+		syncEntities();
+	}
+
 	void Player::tickEnd() {
 		m_knownMovementPacketCounter = m_movementPacketCounter;
 		m_lastGoodPosition = m_position;
 	}
 
-	bool Player::isNewPositionValid(Position& position) {
+	bool Player::isNewPositionValid(Vec3& position) {
 		if (!std::isfinite(position.x) || !std::isfinite(position.y) || !std::isfinite(position.z)) {
 			m_server->disconnectClient(m_client, std::string("multiplayer.disconnect.invalid_player_movement"));
 			return false;
@@ -161,7 +212,7 @@ namespace Player {
 		m_rotation = std::move(rotation);
 	}
 
-	bool Player::setPosition(Position position) {
+	bool Player::setPosition(Vec3 position) {
 		m_movementPacketCounter++;
 
 		if (m_teleporting) {
@@ -192,6 +243,7 @@ namespace Player {
 		}
 
 		m_position = std::move(position);
+		updateChunk();
 		return true;
 	}
 
@@ -203,7 +255,7 @@ namespace Player {
 		m_isFlying = isFlying;
 	}
 
-	bool Player::isFlying() {
+	bool Player::isFlying() const {
 		return m_isFlying;
 	}
 }
