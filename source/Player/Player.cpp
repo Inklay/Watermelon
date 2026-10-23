@@ -38,7 +38,6 @@ namespace Player {
 		m_movementPacketCounter(0),
 		m_knownMovementPacketCounter(0),
 		m_client(client),
-		m_lastGoodPosition(position),
 		m_inputFlag(0),
 		m_isFlying(false)
 	{
@@ -129,29 +128,39 @@ namespace Player {
 	void Player::syncEntities() {
 		m_entitiesVec.clear();
 		m_visibleEntitiesNow.clear();
-		EntityManager::getInstance().getEntityAround(m_chunkPosition, m_entitiesVec, 1); // 555555
+		EntityManager::getInstance().getEntityAround(m_chunkPosition, m_entitiesVec, 1); // FIXME 555555
 
 		for (uint32_t entityId : m_entitiesVec) {
 			if (entityId == m_entityId) {
 				continue;
 			}
 
-			Entity* entity = EntityManager::getInstance().getEntity(entityId);
-			if (entity == nullptr) {
+			const std::shared_ptr<Entity> entity = EntityManager::getInstance().getEntity(entityId);
+			if (entity.get() == nullptr) {
 				continue;
 			}
 
 			if (m_trackedEntities.contains(entityId)) {
-				// move entity
+				bool changedPosition = entity->changedPosition();
+				bool changedRotation = entity->changedRotation();
+
+				if (changedPosition && changedRotation) {
+					Java::Packet::Client::Play::updateEntityPositionAndRotation(m_client->shared_from_this(), entity);
+				} else if (changedPosition) {
+					Java::Packet::Client::Play::updateEntityPosition(m_client->shared_from_this(), entity);
+				} else if (changedRotation) {
+					Java::Packet::Client::Play::updateEntityRotation(m_client->shared_from_this(), entity);
+				}
 			} else {
 				if (entity->getType() == Type::PLAYER) {
-					if (!static_cast<Player*>(entity)->isLoaded()) {
+					const std::shared_ptr<Player> player = std::dynamic_pointer_cast<Player>(entity);
+					if (!player->isLoaded()) {
 						continue;
 					}
 
 					if (!m_knownPlayers.contains(entityId)) {
 						std::vector<InfoAction> actions = { InfoAction::ADD_PLAYER, InfoAction::UPDATE_LISTED, InfoAction::UPDATE_GAME_MODE, InfoAction::UPDATE_LATENCY };
-						Java::Packet::Client::Play::playerInfoUpdateOne(actions, { static_cast<Player*>(entity) }, m_client->shared_from_this());
+						Java::Packet::Client::Play::playerInfoUpdateOne(actions, { player }, m_client->shared_from_this());
 						m_knownPlayers.insert(entityId);
 					}
 				}
@@ -186,6 +195,8 @@ namespace Player {
 	void Player::tickEnd() {
 		m_knownMovementPacketCounter = m_movementPacketCounter;
 		m_lastGoodPosition = m_position;
+		m_changedPosition = false;
+		m_changedRotation = false;
 	}
 
 	bool Player::isNewPositionValid(Vec3& position) {
@@ -209,7 +220,8 @@ namespace Player {
 			return;
 		}
 
-		m_rotation = std::move(rotation);
+		m_rotation = { rotation.yaw, rotation.pitch, rotation.yaw };
+		m_changedRotation = true;
 	}
 
 	bool Player::setPosition(Vec3 position) {
@@ -243,6 +255,7 @@ namespace Player {
 		}
 
 		m_position = std::move(position);
+		m_changedPosition = true;
 		updateChunk();
 		return true;
 	}

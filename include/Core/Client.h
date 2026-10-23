@@ -51,7 +51,7 @@ public:
 	Status getStatus();
 	void createPlayer(const std::string& username, std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Vec3 position, Entity::Rotation rotation);
 	void createPlayer(std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Vec3 position, Entity::Rotation rotation);
-	Player::Player* getPlayer();
+	std::shared_ptr<Player::Player> getPlayer();
 	bool hasPlayer();
 	void setPacks(const std::vector<Java::Pack>& packs);
 	std::vector<Java::Pack> getPacks();
@@ -76,7 +76,7 @@ private:
 	const Type m_type;
 	Status m_status;
 	Socket m_socket;
-	Player::Player* m_player;
+	std::shared_ptr<Player::Player> m_player;
 	std::pair<uint64_t, uint64_t> m_sessionUUID = { -1, -1 };
 	std::vector<Java::Pack> m_packs;
 	std::mutex m_mutex;

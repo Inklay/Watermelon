@@ -16,7 +16,7 @@ namespace Java {
 					Java::Packet::checkEmpty(packet, offset);
 
 					server->addOperationToQueue(client, [client, x, y, z, yaw, pitch]() {
-						Player::Player* player = client->getPlayer();
+						const std::shared_ptr<Player::Player> player = client->getPlayer();
 						
 						if (!player->setPosition({ x, y, z })) {
 							return;
@@ -36,7 +36,7 @@ namespace Java {
 					Java::Packet::checkEmpty(packet, offset);
 
 					server->addOperationToQueue(client, [client, server, teleportId]() {
-						Player::Player* player = client->getPlayer();
+						const std::shared_ptr<Player::Player> player = client->getPlayer();
 
 						if (!player->finishTeleporting(teleportId)) {
 							server->getLogger().log("Failed to teleport player " + player->getUsername(), "Network", Logger::WARN);
@@ -87,7 +87,7 @@ namespace Java {
 					Java::Packet::checkEmpty(packet, offset);
 
 					server->addOperationToQueue(client, [client, x, y, z]() {
-						Player::Player* player = client->getPlayer();
+						const std::shared_ptr<Player::Player> player = client->getPlayer();
 
 						if (!player->setPosition({ x, y, z })) {
 							return;
@@ -134,7 +134,7 @@ namespace Java {
 					Java::Packet::checkEmpty(packet, offset);
 
 					server->addOperationToQueue(client, [client, yaw, pitch]() {
-						Player::Player* player = client->getPlayer();
+						const std::shared_ptr<Player::Player> player = client->getPlayer();
 
 						player->setRotation({ yaw, pitch, 0 });
 					});

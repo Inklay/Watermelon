@@ -90,7 +90,6 @@ namespace Player {
 		int m_movementPacketCounter;
 		int m_knownMovementPacketCounter;
 		Client* m_client;
-		Vec3 m_lastGoodPosition;
 		uint8_t m_inputFlag;
 		bool m_isFlying;
 		std::unordered_set<int32_t> m_trackedEntities;

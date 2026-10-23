@@ -26,7 +26,7 @@ public:
 	~Watermelon();
 	bool start();
 	void run();
-	std::vector<const Player::Player*> getPlayers();
+	std::vector<std::shared_ptr<Player::Player>> getPlayers();
 	std::vector<std::shared_ptr<Client>> getClients();
 	void addOperationToQueue(const std::shared_ptr<Client>& client, const std::function<void()>& packetHandler);
 	Version& getVersion();

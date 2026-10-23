@@ -5,6 +5,7 @@
 #include "Java/Packet/Packet.h"
 #include "Compression/ZLIB.h"
 #include "Java/Packet/Client/PlayPackets.h"
+#include <Entity/EntityManager.h>
 #include <nlohmann/json.hpp>
 #ifndef _WIN32
 #include <unistd.h>
@@ -24,8 +25,8 @@ Client::Client(Type type, Socket socket, Watermelon* server) :
 }
 
 Client::~Client() {
-	if (m_player != nullptr) {
-		delete m_player;
+	if (m_player.get() != nullptr) {
+		m_player->despawn();
 	}
 
 #ifdef _WIN32
@@ -102,17 +103,18 @@ void Client::createPlayer(const std::string& username, std::pair<uint64_t, uint6
 void Client::createPlayer(std::pair<uint64_t, uint64_t> uuid, int32_t entityId, Entity::Vec3 position, Entity::Rotation rotation) {	
 	{
 		std::lock_guard<std::mutex> lock(m_mutex);
-		m_player = new Player::Player(m_tempPlayerName, uuid, entityId, position, rotation, m_server, this);
+		m_player = std::make_shared<Player::Player>(m_tempPlayerName, uuid, entityId, position, rotation, m_server, this);
 	}
 
+	EntityManager::getInstance().createEntity(m_player);
 	m_server->getLogger().log("UUID of player " + m_tempPlayerName + " is " + Utils::UUID::formatUUID(uuid), "Network", Logger::INFO);
 	m_server->increasePlayerCount();
 }
 
-Player::Player* Client::getPlayer() {
+std::shared_ptr<Player::Player> Client::getPlayer() {
 	std::lock_guard<std::mutex> lock(m_mutex);
 
-	if (m_player == nullptr) {
+	if (m_player.get() == nullptr) {
 		throw std::runtime_error("Accessing data of a non existant player");
 	}
 
@@ -121,7 +123,7 @@ Player::Player* Client::getPlayer() {
 
 bool Client::hasPlayer() {
 	std::lock_guard<std::mutex> lock(m_mutex);
-	return m_player != nullptr;
+	return m_player.get() != nullptr;
 }
 
 void Client::setPacks(const std::vector<Java::Pack>& packs) {

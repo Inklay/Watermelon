@@ -2,7 +2,7 @@
 #include "Registry/RegistryManager.h"
 #include "Java/Packet/Client/StatusPackets.h"
 
-void buildPlayerInfoUpdatePacket(const std::vector<Player::InfoAction>& actions, const std::vector<const Player::Player*>& players, std::vector<uint8_t>& buffer) {
+void buildPlayerInfoUpdatePacket(const std::vector<Player::InfoAction>& actions, const std::vector<std::shared_ptr<Player::Player>>& players, std::vector<uint8_t>& buffer) {
 	Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::PLAYER_INFO_UPDATE, buffer);
 
 	uint8_t actionBitMap = 0;
@@ -13,7 +13,7 @@ void buildPlayerInfoUpdatePacket(const std::vector<Player::InfoAction>& actions,
 	Java::Packet::writeU8(actionBitMap, buffer);
 	Java::Packet::writeVarInt((int32_t)players.size(), buffer);
 
-	for (const Player::Player* player : players) {
+	for (const std::shared_ptr<Player::Player> player : players) {
 		Java::Packet::writeUUID(player->getUUID(), buffer);
 
 		if (actionBitMap & (uint8_t)Player::InfoAction::ADD_PLAYER) {
@@ -71,14 +71,14 @@ namespace Java {
 					client->sendData(buffer);
 				}
 
-				void playerInfoUpdateOne(const std::vector<Player::InfoAction>& actions, const std::vector<const Player::Player*>& players, const std::shared_ptr<::Client>& client) {
+				void playerInfoUpdateOne(const std::vector<Player::InfoAction>& actions, const std::vector<std::shared_ptr<Player::Player>>& players, const std::shared_ptr<::Client>& client) {
 					std::vector<uint8_t> buffer;
 					buildPlayerInfoUpdatePacket(actions, players, buffer);
 
 					client->sendData(buffer);
 				}
 
-				void playerInfoUpdateAll(Watermelon* server, const std::vector<Player::InfoAction>& actions, const std::vector<const Player::Player*>& players, const std::shared_ptr<::Client>& sendingClient) {
+				void playerInfoUpdateAll(Watermelon* server, const std::vector<Player::InfoAction>& actions, const std::vector<std::shared_ptr<Player::Player>>& players, const std::shared_ptr<::Client>& sendingClient) {
 					std::vector<uint8_t> buffer;
 					buildPlayerInfoUpdatePacket(actions, players, buffer);
 
@@ -129,7 +129,7 @@ namespace Java {
 
 				void setCenterChunk(const std::shared_ptr<::Client>& client) {
 					std::vector<uint8_t> buffer;
-					Player::Player* player = client->getPlayer();
+					const std::shared_ptr<Player::Player> player = client->getPlayer();
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::SET_CENTER_CHUNK, buffer);
 					Java::Packet::writeVarInt((int32_t)(std::floor(player->getPosition().x / 16)), buffer);
@@ -184,7 +184,7 @@ namespace Java {
 				void login(const std::shared_ptr<::Client>& client, Watermelon* server) {
 					std::vector<uint8_t> buffer;
 					const Registry* dimensionReg = RegistryManager::getInstance().getRegistry("minecraft:dimension_type");
-					Player::Player* player = client->getPlayer();
+					const std::shared_ptr<Player::Player> player = client->getPlayer();
 
 					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::LOGIN, buffer);
 					Java::Packet::write32(player->getEntityId(), buffer);
@@ -232,7 +232,7 @@ namespace Java {
 					client->sendData(buffer);
 				}
 
-				void spawnEntity(const std::shared_ptr<::Client>& client, Entity* entity) {
+				void spawnEntity(const std::shared_ptr<::Client>& client, const std::shared_ptr<Entity>& entity) {
 					std::vector<uint8_t> buffer;
 
 					Java::Packet::writeVarInt(static_cast<uint32_t>(Java::Packet::PacketId::PlayClient::SPANW_ENTITY), buffer);
@@ -259,6 +259,49 @@ namespace Java {
 
 					client->sendData(buffer);
 
+				}
+
+				void updateEntityPositionAndRotation(const std::shared_ptr<::Client>& client, const std::shared_ptr<Entity>& entity) {
+					std::vector<uint8_t> buffer;
+					Entity::Delta3 delta = entity->getPositionDelta();
+
+					Java::Packet::writeVarInt(static_cast<uint32_t>(Java::Packet::PacketId::PlayClient::UPDATE_ENTITY_POSITION_AND_ROTATION), buffer);
+					Java::Packet::writeVarInt(entity->getEntityId(), buffer);
+					Java::Packet::writeVarInt(entity->isOnGround() ? 1 : 0, buffer);
+					Java::Packet::write16(delta.x, buffer);
+					Java::Packet::write16(delta.y, buffer);
+					Java::Packet::write16(delta.z, buffer);
+					Java::Packet::writeAngle(entity->getRotation().yaw, buffer);
+					Java::Packet::writeAngle(entity->getRotation().pitch, buffer);
+
+					client->sendData(buffer);
+				}
+
+				void updateEntityPosition(const std::shared_ptr<::Client>& client, const std::shared_ptr<Entity>& entity) {
+					std::vector<uint8_t> buffer;
+					Entity::Delta3 delta = entity->getPositionDelta();
+
+					Java::Packet::writeVarInt(static_cast<uint32_t>(Java::Packet::PacketId::PlayClient::UPDATE_ENTITY_POSITION), buffer);
+					Java::Packet::writeVarInt(entity->getEntityId(), buffer);
+					Java::Packet::writeVarInt(entity->isOnGround() ? 1 : 0, buffer);
+					Java::Packet::write16(delta.x, buffer);
+					Java::Packet::write16(delta.y, buffer);
+					Java::Packet::write16(delta.z, buffer);
+
+					client->sendData(buffer);
+				}
+
+				void updateEntityRotation(const std::shared_ptr<::Client>& client, const std::shared_ptr<Entity>& entity) {
+					//std::cout << "update rotation " << entity->getRotation().yaw << "/" << entity->getRotation().pitch << std::endl;
+					std::vector<uint8_t> buffer;
+
+					Java::Packet::writeVarInt(static_cast<uint32_t>(Java::Packet::PacketId::PlayClient::UPDATE_ENTITY_ROTATION), buffer);
+					Java::Packet::writeVarInt(entity->getEntityId(), buffer);
+					Java::Packet::writeBool(entity->isOnGround(), buffer);
+					Java::Packet::writeAngle(entity->getRotation().yaw, buffer);
+					Java::Packet::writeAngle(entity->getRotation().pitch, buffer);
+
+					client->sendData(buffer);
 				}
 			};
 		};

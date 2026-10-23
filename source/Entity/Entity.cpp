@@ -10,13 +10,18 @@ Entity::Entity(uint32_t entityId, const Vec3& position, const Rotation& rotation
 	m_velocity({0, 0, 0}),
 	m_rotation(rotation),
 	m_chunkPosition(m_position),
-	m_protocolData(0)
+	m_protocolData(0),
+	m_onGround(true),
+	m_changedPosition(false),
+	m_changedRotation(false),
+	m_lastGoodPosition(position)
 {
-	EntityManager::getInstance().createEntity(this);
 }
 
-Entity::~Entity() {
-	EntityManager::getInstance().deleteEntity(this);
+Entity::~Entity() {}
+
+void Entity::despawn() {
+	EntityManager::getInstance().deleteEntity(shared_from_this());
 }
 
 uint32_t Entity::getEntityId() const {
@@ -26,11 +31,13 @@ uint32_t Entity::getEntityId() const {
 bool Entity::setPosition(Vec3 position) {
 	m_position = position;
 	updateChunk();
+	m_changedPosition= true;
 	return true;
 }
 
 void Entity::setRotation(Rotation rotation) {
 	m_rotation = rotation;
+	m_changedRotation = true;
 }
 
 void Entity::updateChunk() {
@@ -80,4 +87,30 @@ const Entity::Rotation& Entity::getRotation() const {
 
 uint32_t Entity::getProtocolData() const {
 	return m_protocolData;
+}
+
+bool Entity::isOnGround() const {
+	return m_onGround;
+}
+
+bool Entity::changedPosition() const {
+	return m_changedPosition;
+}
+
+bool Entity::changedRotation() const {
+	return m_changedRotation;
+}
+
+void Entity::tickEnd() {
+	m_lastGoodPosition = m_position;
+	m_changedPosition = false;
+	m_changedRotation = false;
+}
+
+Entity::Delta3 Entity::getPositionDelta() const {
+	return {
+		static_cast<uint16_t>((m_position.x - m_lastGoodPosition.x) * 4096),
+		static_cast<uint16_t>((m_position.y - m_lastGoodPosition.y) * 4096),
+		static_cast<uint16_t>((m_position.z - m_lastGoodPosition.z) * 4096)
+	};
 }

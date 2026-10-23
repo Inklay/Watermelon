@@ -33,7 +33,7 @@ namespace Java {
 				void loginSuccess(const std::shared_ptr<::Client>& client) {
 					std::vector<uint8_t> buffer;
 					std::pair<uint64_t, uint64_t> sessionUUID = Utils::UUID::generateSessionUUID();
-					Player::Player* player = client->getPlayer();
+					const std::shared_ptr<Player::Player> player = client->getPlayer();
 
 					client->setSessionUUID(sessionUUID);
 

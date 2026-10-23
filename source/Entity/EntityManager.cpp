@@ -50,19 +50,19 @@ EntityManager& EntityManager::getInstance() {
 	return instance;
 }
 
-void EntityManager::createEntity(Entity* entity) {
+void EntityManager::createEntity(const std::shared_ptr<Entity>& entity) {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	m_map[entity->getEntityId()] = entity;
 	addToPosMap(entity->getChunkPosition(), entity->getEntityId());
 }
 
-void EntityManager::deleteEntity(Entity* entity) {
+void EntityManager::deleteEntity(const std::shared_ptr<Entity>& entity) {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	m_map.erase(entity->getEntityId());
 	removeFromPosMap(entity->getChunkPosition(), entity->getEntityId());
 }
 
-Entity* EntityManager::getEntity(uint32_t entityId) {
+const std::shared_ptr<Entity> EntityManager::getEntity(uint32_t entityId) {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	auto it = m_map.find(entityId);
 
