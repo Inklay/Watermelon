@@ -1,5 +1,6 @@
 #include "Java/Packet/Server/PlayPackets.h"
 #include "Java/Packet/Client/PlayPackets.h"
+#include "Entity/EntityManager.h"
 
 namespace Java {
 	namespace Packet {
@@ -140,9 +141,20 @@ namespace Java {
 					});
 				}
 
-				static void punch(const std::vector<uint8_t>& packet) {
+				static void punch(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
 					uint32_t offset = 0;
 					Java::Packet::checkEmpty(packet, offset);
+
+					server->addOperationToQueue(client, [client, server]() {
+						std::vector<uint32_t> entities;
+						EntityManager::getInstance().getEntityAround(client->getPlayer()->getChunkPosition(), entities, client->getPlayer()->getEntityRange(), Entity::Type::PLAYER);
+
+						for (uint32_t entityId : entities) {
+							const std::shared_ptr<Player::Player> player = std::dynamic_pointer_cast<Player::Player>(EntityManager::getInstance().getEntity(entityId));
+
+							Java::Packet::Client::Play::swing(player->getClient(), client->getPlayer()->getEntityId(), client->getPlayer()->getClientInfo().mainHand, Entity::SwingType::WHACK); // FIXME swing handle types
+						}
+					});
 				}
 
 				static void clientInformation(const std::shared_ptr<::Client>& client, Watermelon* server, const std::vector<uint8_t>& packet) {
@@ -196,7 +208,7 @@ namespace Java {
 					case (int32_t)Java::Packet::PacketId::PlayServer::SET_PLAYER_ROTATION:
 						return setPlayerRotation(client, server, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::PUNCH:
-						return punch(packet);
+						return punch(client, server, packet);
 					case (int32_t)Java::Packet::PacketId::PlayServer::CLIENT_INFORMATION:
 						return clientInformation(client, server, packet);
 					default:

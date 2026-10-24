@@ -38,8 +38,15 @@ public:
 		float headYaw;
 	};
 
-	enum Type {
+	enum class Type {
+		NONE = -1,
 		PLAYER = 159
+	};
+
+	enum class SwingType {
+		NONE = 0,
+		WHACK = 1,
+		STAB = 2
 	};
 
 	Entity(uint32_t entityId, const Vec3& position, const Rotation& rotation, Type type, std::pair<uint64_t, uint64_t> uuid);

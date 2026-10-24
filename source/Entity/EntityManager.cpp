@@ -30,7 +30,7 @@ void EntityManager::moveEntity(const Entity::ChunkPosition& oldChunkPosition, co
 	addToPosMap(newChunkPosition, entityId);
 }
 
-void EntityManager::getEntityAround(const Entity::ChunkPosition& chunkPosition, std::vector<uint32_t>& out, int distance) {
+void EntityManager::getEntityAround(const Entity::ChunkPosition& chunkPosition, std::vector<uint32_t>& out, int distance, Entity::Type type) {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	for (int x = chunkPosition.x - distance; x <= chunkPosition.x + distance; x++) {
 		for (int z = chunkPosition.z - distance; z <= chunkPosition.z + distance; z++) {
@@ -40,7 +40,21 @@ void EntityManager::getEntityAround(const Entity::ChunkPosition& chunkPosition, 
 				continue;
 			}
 
-			out.insert(out.end(), it->second.begin(), it->second.end());
+			if (type == Entity::Type::NONE) {
+				out.insert(out.end(), it->second.begin(), it->second.end());
+			} else {
+				for (uint32_t entityId : it->second) {
+					auto it = m_map.find(entityId);
+
+					if (it == m_map.end()) {
+						continue;
+					}
+
+					if (it->second->getType() == type) {
+						out.emplace_back(entityId);
+					}
+				}
+			}
 		}
 	}
 }

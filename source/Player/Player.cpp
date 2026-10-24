@@ -128,7 +128,7 @@ namespace Player {
 	void Player::syncEntities() {
 		m_entitiesVec.clear();
 		m_visibleEntitiesNow.clear();
-		EntityManager::getInstance().getEntityAround(m_chunkPosition, m_entitiesVec, std::min({ static_cast<uint8_t>(5), m_clientInfo.viewDistance, m_server->getConfig()["networking"]["java"]["view_distance"].value_or<uint8_t>(16) }));
+		EntityManager::getInstance().getEntityAround(m_chunkPosition, m_entitiesVec, getEntityRange());
 
 		for (uint32_t entityId : m_entitiesVec) {
 			if (entityId == m_entityId) {
@@ -271,5 +271,13 @@ namespace Player {
 
 	bool Player::isFlying() const {
 		return m_isFlying;
+	}
+
+	uint8_t Player::getEntityRange() const {
+		return std::min({ static_cast<uint8_t>(5), m_clientInfo.viewDistance, m_server->getConfig()["networking"]["java"]["view_distance"].value_or<uint8_t>(16) });
+	}
+
+	std::shared_ptr<Client> Player::getClient() const {
+		return m_client->shared_from_this();
 	}
 }

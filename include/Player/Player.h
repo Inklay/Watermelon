@@ -73,6 +73,8 @@ namespace Player {
 		void setFlying(bool isFlying);
 		bool isFlying() const;
 		void syncEntities();
+		uint8_t getEntityRange() const;
+		std::shared_ptr<Client> getClient() const;
 
 	private:
 		bool isNewPositionValid(Vec3& position);

@@ -23,6 +23,7 @@ namespace Java {
 				void updateEntityPosition(const std::shared_ptr<::Client>& client, const std::shared_ptr<Entity>& entity);
 				void updateEntityRotation(const std::shared_ptr<::Client>& client, const std::shared_ptr<Entity>& entity);
 				void setHeadRotation(const std::shared_ptr<::Client>& client, const std::shared_ptr<Entity>& entity);
+				void swing(const std::shared_ptr<::Client>& client, int entityId, int hand, Entity::SwingType swingType);
 			};
 		};
 	};

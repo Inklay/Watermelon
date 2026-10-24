@@ -14,7 +14,7 @@ public:
 	void deleteEntity(const std::shared_ptr<Entity>& entity);
 	const std::shared_ptr<Entity> getEntity(uint32_t entityId);
 	void moveEntity(const Entity::ChunkPosition& oldChunkPosition, const Entity::ChunkPosition& newChunkPosition, uint32_t entityId);
-	void getEntityAround(const Entity::ChunkPosition& chunkPosition, std::vector<uint32_t>& out, int distance);
+	void getEntityAround(const Entity::ChunkPosition& chunkPosition, std::vector<uint32_t>& out, int distance, Entity::Type type = Entity::Type::NONE);
 	static EntityManager& getInstance();
 
 private:

@@ -96,7 +96,11 @@ namespace Java {
 
 				void synchronizePlayerPosition(const std::shared_ptr<::Client>& client) {
 					std::vector<uint8_t> buffer;
-					int32_t teleportId = client->getPlayer()->teleport({ 0, 0, 0 }, { 0, 0 });
+					std::shared_ptr<Player::Player> player = client->getPlayer();
+					Entity::Vec3 position = player->getPosition();
+					Entity::Vec3 velocity = player->getVelocity();
+					Entity::Rotation rotation= player->getRotation();
+					int32_t teleportId = player->teleport(position, rotation);
 
 					if (teleportId == -1) {
 						return;
@@ -104,15 +108,15 @@ namespace Java {
 
 					Java::Packet::writeVarInt(static_cast<int32_t>(Java::Packet::PacketId::PlayClient::SYNCHRONIZE_PLAYER_POSITION), buffer);
 					Java::Packet::writeVarInt(teleportId, buffer);
-					Java::Packet::writeDouble(0, buffer); // FIXME x
-					Java::Packet::writeDouble(0, buffer); // FIXME y
-					Java::Packet::writeDouble(0, buffer); // FIXME z
-					Java::Packet::writeDouble(0, buffer);
-					Java::Packet::writeDouble(0, buffer);
-					Java::Packet::writeDouble(0, buffer);
-					Java::Packet::writeFloat(0, buffer); // FIXME yaw
-					Java::Packet::writeFloat(0, buffer); // FIXME pitch
-					Java::Packet::write32(0, buffer);
+					Java::Packet::writeDouble(position.x, buffer);
+					Java::Packet::writeDouble(position.y, buffer);
+					Java::Packet::writeDouble(position.z, buffer);
+					Java::Packet::writeDouble(velocity.x, buffer);
+					Java::Packet::writeDouble(velocity.y, buffer);
+					Java::Packet::writeDouble(velocity.z, buffer);
+					Java::Packet::writeFloat(rotation.yaw, buffer);
+					Java::Packet::writeFloat(rotation.pitch, buffer);
+					Java::Packet::write32(0, buffer); // FIXME position flag
 
 					client->sendData(buffer);
 				}
@@ -310,6 +314,18 @@ namespace Java {
 					Java::Packet::writeVarInt(static_cast<uint32_t>(Java::Packet::PacketId::PlayClient::SET_HEAD_ROTATION), buffer);
 					Java::Packet::writeVarInt(entity->getEntityId(), buffer);
 					Java::Packet::writeAngle(entity->getRotation().headYaw, buffer);
+
+					client->sendData(buffer);
+				}
+
+				void swing(const std::shared_ptr<::Client>& client, int entityId, int hand, Entity::SwingType swingType) {
+					std::vector<uint8_t> buffer;
+
+					Java::Packet::writeVarInt(static_cast<uint32_t>(Java::Packet::PacketId::PlayClient::SWING_ANIMATION), buffer);
+					Java::Packet::writeVarInt(entityId, buffer);
+					Java::Packet::writeVarInt(hand, buffer);
+					Java::Packet::writeVarInt(static_cast<uint32_t>(swingType), buffer);
+					Java::Packet::writeVarInt(6, buffer);
 
 					client->sendData(buffer);
 				}
