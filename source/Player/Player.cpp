@@ -128,7 +128,7 @@ namespace Player {
 	void Player::syncEntities() {
 		m_entitiesVec.clear();
 		m_visibleEntitiesNow.clear();
-		EntityManager::getInstance().getEntityAround(m_chunkPosition, m_entitiesVec, 1); // FIXME 555555
+		EntityManager::getInstance().getEntityAround(m_chunkPosition, m_entitiesVec, std::min({ static_cast<uint8_t>(5), m_clientInfo.viewDistance, m_server->getConfig()["networking"]["java"]["view_distance"].value_or<uint8_t>(16) }));
 
 		for (uint32_t entityId : m_entitiesVec) {
 			if (entityId == m_entityId) {
@@ -146,10 +146,12 @@ namespace Player {
 
 				if (changedPosition && changedRotation) {
 					Java::Packet::Client::Play::updateEntityPositionAndRotation(m_client->shared_from_this(), entity);
+					Java::Packet::Client::Play::setHeadRotation(m_client->shared_from_this(), entity);
 				} else if (changedPosition) {
 					Java::Packet::Client::Play::updateEntityPosition(m_client->shared_from_this(), entity);
 				} else if (changedRotation) {
 					Java::Packet::Client::Play::updateEntityRotation(m_client->shared_from_this(), entity);
+					Java::Packet::Client::Play::setHeadRotation(m_client->shared_from_this(), entity);
 				}
 			} else {
 				if (entity->getType() == Type::PLAYER) {
@@ -174,7 +176,6 @@ namespace Player {
 		for (uint32_t id : m_trackedEntities) {
 			if (!m_visibleEntitiesNow.contains(id)) {
 				removed.push_back(id);
-
 				if (m_knownPlayers.contains(id)) {
 					m_knownPlayers.erase(id);
 				}

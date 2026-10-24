@@ -35,7 +35,14 @@ namespace Java {
 						Java::Packet::Client::Play::gameEvent(client, Java::Packet::GameEvent::START_WAITING_FOR_CHUNKS);
 						server->getLogger().log(player->getUsername() + " joined the game", "Watermelon", Logger::INFO);
 						Java::Packet::Client::Play::setCenterChunk(client);
-						Java::Packet::Client::Play::chunkDataAndUpdateLight(client, 0, 0);
+						const int viewDistance = std::min(player->getClientInfo().viewDistance, server->getConfig()["networking"]["java"]["view_distance"].value_or<uint8_t>(16));
+						const Entity::ChunkPosition chunkPosition = player->getChunkPosition();
+
+						for (int x = chunkPosition.x - viewDistance; x <= chunkPosition.x + viewDistance; x++) {
+							for (int z = chunkPosition.z - viewDistance; z <= chunkPosition.z + viewDistance; z++) {
+								Java::Packet::Client::Play::chunkDataAndUpdateLight(client, x, z);
+							}
+						}
 					});
 				}
 

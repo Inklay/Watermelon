@@ -102,7 +102,7 @@ namespace Java {
 						return;
 					}
 
-					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::SYNCHRONIZE_PLAYER_POSITION, buffer);
+					Java::Packet::writeVarInt(static_cast<int32_t>(Java::Packet::PacketId::PlayClient::SYNCHRONIZE_PLAYER_POSITION), buffer);
 					Java::Packet::writeVarInt(teleportId, buffer);
 					Java::Packet::writeDouble(0, buffer); // FIXME x
 					Java::Packet::writeDouble(0, buffer); // FIXME y
@@ -120,7 +120,7 @@ namespace Java {
 				void gameEvent(const std::shared_ptr<::Client>& client, GameEvent event, float data) {
 					std::vector<uint8_t> buffer;
 
-					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::GAME_EVENT, buffer);
+					Java::Packet::writeVarInt(static_cast<int32_t>(Java::Packet::PacketId::PlayClient::GAME_EVENT), buffer);
 					Java::Packet::writeU8((int8_t)event, buffer);
 					Java::Packet::writeFloat(data, buffer);
 
@@ -130,10 +130,11 @@ namespace Java {
 				void setCenterChunk(const std::shared_ptr<::Client>& client) {
 					std::vector<uint8_t> buffer;
 					const std::shared_ptr<Player::Player> player = client->getPlayer();
+					const Entity::ChunkPosition chunkPosition = player->getChunkPosition();
 
-					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::SET_CENTER_CHUNK, buffer);
-					Java::Packet::writeVarInt((int32_t)(std::floor(player->getPosition().x / 16)), buffer);
-					Java::Packet::writeVarInt((int32_t)(std::floor(player->getPosition().z / 16)), buffer);
+					Java::Packet::writeVarInt(static_cast<int32_t>(Java::Packet::PacketId::PlayClient::SET_CENTER_CHUNK), buffer);
+					Java::Packet::writeVarInt(chunkPosition.x, buffer);
+					Java::Packet::writeVarInt(chunkPosition.z, buffer);
 
 					client->sendData(buffer);
 				}
@@ -145,7 +146,7 @@ namespace Java {
 					std::vector<uint8_t> buffer;
 					std::vector<uint8_t> sectionBuffer;
 
-					Java::Packet::writeVarInt((int32_t)Java::Packet::PacketId::PlayClient::CHUNK_DATA_AND_UPDATE_LIGHT, buffer);
+					Java::Packet::writeVarInt(static_cast<int32_t>(Java::Packet::PacketId::PlayClient::CHUNK_DATA_AND_UPDATE_LIGHT), buffer);
 					Java::Packet::write32(x, buffer);
 					Java::Packet::write32(z, buffer);
 					Java::Packet::writeVarInt(1, buffer); // FIXME heightmaps count
@@ -165,7 +166,7 @@ namespace Java {
 						Java::Packet::writeVarInt(0, sectionBuffer); // FIXME biome palette
 					}
 
-					Java::Packet::writeVarInt((int)sectionBuffer.size(), buffer);
+					Java::Packet::writeVarInt(static_cast<int>(sectionBuffer.size()), buffer);
 					buffer.insert(buffer.end(), sectionBuffer.begin(), sectionBuffer.end());
 					Java::Packet::writeVarInt(0, buffer); // FIXME block entities count
 
@@ -292,7 +293,6 @@ namespace Java {
 				}
 
 				void updateEntityRotation(const std::shared_ptr<::Client>& client, const std::shared_ptr<Entity>& entity) {
-					//std::cout << "update rotation " << entity->getRotation().yaw << "/" << entity->getRotation().pitch << std::endl;
 					std::vector<uint8_t> buffer;
 
 					Java::Packet::writeVarInt(static_cast<uint32_t>(Java::Packet::PacketId::PlayClient::UPDATE_ENTITY_ROTATION), buffer);
@@ -300,6 +300,16 @@ namespace Java {
 					Java::Packet::writeBool(entity->isOnGround(), buffer);
 					Java::Packet::writeAngle(entity->getRotation().yaw, buffer);
 					Java::Packet::writeAngle(entity->getRotation().pitch, buffer);
+
+					client->sendData(buffer);
+				}
+
+				void setHeadRotation(const std::shared_ptr<::Client>& client, const std::shared_ptr<Entity>& entity) {
+					std::vector<uint8_t> buffer;
+
+					Java::Packet::writeVarInt(static_cast<uint32_t>(Java::Packet::PacketId::PlayClient::SET_HEAD_ROTATION), buffer);
+					Java::Packet::writeVarInt(entity->getEntityId(), buffer);
+					Java::Packet::writeAngle(entity->getRotation().headYaw, buffer);
 
 					client->sendData(buffer);
 				}
